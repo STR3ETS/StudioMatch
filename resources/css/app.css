@@ -80,6 +80,22 @@
     color: transparent;
 }
 
+/* iOS Safari: datum-/tijdvelden respecteren hun breedte niet en krijgen
+   afwijkende native styling. appearance uitschakelen laat ze zich als
+   gewone tekstvelden gedragen binnen grid/flex. */
+input[type='date'],
+input[type='time'] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    min-height: 2.5rem;
+}
+
+input[type='date']::-webkit-date-and-time-value,
+input[type='time']::-webkit-date-and-time-value {
+    text-align: left;
+}
+
 /* Dunne, subtiele scrollbar (prussian-blue) voor scrollbare panelen. */
 .custom-scrollbar {
     scrollbar-width: thin;
