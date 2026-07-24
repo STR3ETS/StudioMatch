@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <div data-slider-track class="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div data-slider-track class="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-6 pb-2 scroll-px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             @foreach ($studios as $studio)
                 <div class="shrink-0 snap-start {{ $cardWidth }}">
                     <x-studio-card :studio="$studio" />

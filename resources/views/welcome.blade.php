@@ -63,8 +63,8 @@
                 <div>
                     <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('home.search.when') }}</span>
                     <div class="mt-2 flex gap-2">
-                        <input type="date" name="date" class="w-full rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
-                        <input type="time" name="time" class="w-full rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                        <input type="date" name="date" class="w-full min-w-0 rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                        <input type="time" name="time" class="w-full min-w-0 rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
                     </div>
                 </div>
 

@@ -192,13 +192,13 @@
 
                         <div class="mt-4 space-y-3">
                             <div class="grid grid-cols-2 gap-2">
-                                <div>
+                                <div class="min-w-0">
                                     <label class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.date') }}</label>
-                                    <input type="date" class="mt-1 w-full rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                                    <input type="date" class="mt-1 w-full min-w-0 rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
                                 </div>
-                                <div>
+                                <div class="min-w-0">
                                     <label class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.time') }}</label>
-                                    <input type="time" class="mt-1 w-full rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                                    <input type="time" class="mt-1 w-full min-w-0 rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
                                 </div>
                             </div>
                             <div>

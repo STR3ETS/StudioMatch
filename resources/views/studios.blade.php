@@ -44,7 +44,7 @@
                         </div>
 
                         {{-- Locatie & afstand --}}
-                        <x-filter-group :title="__('studios.filters.groups.location')" open>
+                        <x-filter-group :title="__('studios.filters.groups.location')">
                             <input type="text" placeholder="{{ __('studios.filters.location_placeholder') }}" class="{{ $field }}">
                             <button type="button" class="mt-2 flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ruby-red hover:underline">
                                 <i class="fa-solid fa-location-crosshairs"></i> {{ __('studios.filters.near_me') }}
@@ -59,7 +59,7 @@
                         </x-filter-group>
 
                         {{-- Prijs --}}
-                        <x-filter-group :title="__('studios.filters.groups.price')" open>
+                        <x-filter-group :title="__('studios.filters.groups.price')">
                             <div class="flex items-center gap-2">
                                 <input type="number" min="0" placeholder="&euro; 0" class="{{ $field }}">
                                 <span class="text-prussian-blue/30">&ndash;</span>
@@ -70,8 +70,8 @@
                         {{-- Beschikbaarheid --}}
                         <x-filter-group :title="__('studios.filters.groups.availability')">
                             <div class="flex gap-2">
-                                <input type="date" class="{{ $field }}">
-                                <input type="time" class="{{ $field }}">
+                                <input type="date" class="{{ $field }} min-w-0">
+                                <input type="time" class="{{ $field }} min-w-0">
                             </div>
                         </x-filter-group>
 
