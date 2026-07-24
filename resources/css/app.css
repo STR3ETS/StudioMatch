@@ -1,0 +1,105 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme {
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --color-ruby-red: #ad0924;
+    --color-prussian-blue: #101529;
+    --color-charcoal-blue: #383e46;
+    --color-white: #ffffff;
+}
+
+/* Zwevende hero-icoontjes: van onder naar boven, in- en uitfadend. */
+@keyframes float-up {
+    0% {
+        transform: translateY(40px) rotate(-8deg);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-440px) rotate(12deg);
+        opacity: 0;
+    }
+}
+
+.hero-float {
+    position: absolute;
+    bottom: -50px;
+    animation: float-up linear infinite;
+    will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-float {
+        animation: none;
+        opacity: 0;
+    }
+}
+
+/* Scroll-reveal: blokken faden en schuiven in beeld zodra ze de viewport raken. */
+.reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0s);
+}
+
+.reveal-visible {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
+/* Subtiel stippenpatroon voor sectie-achtergronden. */
+.bg-dots {
+    background-image: radial-gradient(circle, rgb(16 21 41 / 0.08) 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+
+/* Gigantische outline-tekst als decoratie op donkere vlakken. */
+.text-outline-white {
+    -webkit-text-stroke: 2px rgb(255 255 255 / 0.12);
+    color: transparent;
+}
+
+/* Dunne, subtiele scrollbar (prussian-blue) voor scrollbare panelen. */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 21, 41, 0.2) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(16, 21, 41, 0.2);
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(16, 21, 41, 0.35);
+}
