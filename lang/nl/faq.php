@@ -15,7 +15,7 @@ return [
             'items' => [
                 ['q' => 'Heb ik een account nodig om te boeken?', 'a' => 'Ja, boeken doe je met een gratis account. Je kunt je ook pas registreren op het moment dat je een studio boekt, dat kan gewoon in de boekflow.'],
                 ['q' => 'Hoe kan ik betalen?', 'a' => 'Met iDEAL of creditcard. De betaling verloopt beveiligd via Stripe.'],
-                ['q' => 'Wat betaal ik bovenop de huur?', 'a' => 'Naast de huur betaal je 9% servicekosten en btw over die servicekosten. De volledige opbouw zie je vóór je betaalt, geen verrassingen achteraf.'],
+                ['q' => 'Wat betaal ik bovenop de huur?', 'a' => 'Naast de huur betaal je een kleine servicebijdrage. De volledige opbouw zie je vóór je betaalt, geen verrassingen achteraf.'],
                 ['q' => 'Hoe lang staat mijn tijdslot vast tijdens het afrekenen?', 'a' => 'Zodra je begint met afrekenen staat het slot 15 minuten voor jou gereserveerd. Rond je de betaling niet af, dan komt het slot automatisch weer vrij.'],
                 ['q' => 'Wanneer is mijn boeking definitief?', 'a' => 'Na acceptatie door de studio. Je ontvangt dan een bevestiging met het adres en de contactgegevens. Reageert de studio niet op tijd of weigert hij, dan krijg je automatisch het volledige bedrag terug.'],
             ],

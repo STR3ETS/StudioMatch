@@ -55,7 +55,7 @@ return [
         'email' => 'info@studiomatch.nl',
         'response' => 'We reageren doorgaans binnen één werkdag.',
         'socials_title' => 'Volg ons',
-        'company' => 'StudioMatch VOF',
+        'company' => 'StudioMatch',
         'kvk' => 'KvK 94893527',
         'btw' => 'Btw NL866927827B01',
     ],

@@ -1,11 +1,11 @@
 @props(['title', 'studios', 'first' => false, 'last' => false])
 
 @php
-    $cardWidth = 'w-[80%] sm:w-[calc((100%_-_1rem)/2)] md:w-[calc((100%_-_2rem)/3)] lg:w-[calc((100%_-_5rem)/6)]';
+    $cardWidth = 'w-[80%] sm:w-[calc((100%_-_1rem)/2)] md:w-[calc((100%_-_2rem)/3)] lg:w-[calc((100%_-_4rem)/5)]';
 @endphp
 
 <section data-slider @class(['w-full', 'pt-16' => $first, 'pb-16' => $last, 'pb-8' => ! $last])>
-    <div class="mx-auto px-6">
+    <div class="mx-auto max-w-7xl px-6">
         <div class="mb-6 flex items-end justify-between gap-4">
             <div>
                 <h2 class="text-2xl font-bold text-prussian-blue">{{ $title }}</h2>
@@ -22,7 +22,7 @@
             </div>
         </div>
 
-        <div data-slider-track class="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-6 pb-2 scroll-px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div data-slider-track class="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-6 pb-2 scroll-px-6 sm:mx-0 sm:px-0 sm:scroll-px-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             @foreach ($studios as $studio)
                 <div class="shrink-0 snap-start {{ $cardWidth }}">
                     <x-studio-card :studio="$studio" />

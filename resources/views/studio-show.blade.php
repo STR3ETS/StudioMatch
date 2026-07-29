@@ -17,12 +17,10 @@
             'rules' => [
                 'Maximaal 6 personen in de studio',
                 'Niet roken in de opnameruimte',
-                'Op- en afbouw binnen de geboekte tijd',
-                'Laat de ruimte achter zoals je hem aantrof',
             ],
         ];
 
-        $equipment = ['mic_condenser', 'mic_dynamic', 'monitors', 'preamp', 'midi', 'amp'];
+        $equipment = ['mic_condenser', 'mic_dynamic', 'monitors', 'midi61', 'piano', 'guitar_acoustic', 'drums'];
         $daws = ['Logic', 'Pro Tools', 'Ableton'];
         $facilities = [
             'wifi' => 'fa-wifi',
@@ -40,13 +38,18 @@
             ['name' => 'Sanne Willems', 'initials' => 'SW', 'date' => 'april 2026', 'rating' => 5, 'comment' => 'Warme sfeer, top monitors en een schone controlroom. Aanrader!'],
         ];
 
-        // Prijsberekening conform W1 stap 5 (artiest betaalt de fee bovenop - BESLISSING 2).
+        // Alleen de huur tonen; servicekosten volgen aan het einde van de boekflow (klantfeedback).
         $hours = 3;
         $rent = $studio['price'] * $hours;
-        $fee = round($rent * 0.09, 2);
-        $vat = round($fee * 0.21, 2);
-        $total = $rent + $fee + $vat;
         $money = fn ($v) => '€ ' . number_format($v, 2, ',', '.');
+
+        // Tijdslots per 30 minuten.
+        $slots = [];
+        for ($h = 8; $h <= 22; $h++) {
+            foreach ([0, 30] as $m) {
+                $slots[] = sprintf('%02d:%02d', $h, $m);
+            }
+        }
 @endphp
 
 <x-layout :title="$studio['name']" :description="$studio['description']">
@@ -78,9 +81,9 @@
 
             {{-- Fotogalerij --}}
             <div data-reveal style="--reveal-delay: .1s" class="mt-5 grid gap-2 overflow-hidden rounded-2xl sm:h-[440px] sm:grid-cols-4 sm:grid-rows-2">
-                <img src="{{ $studio['photos'][0] }}" alt="{{ $studio['name'] }}" class="h-64 w-full object-cover sm:col-span-2 sm:row-span-2 sm:h-full">
+                <img src="{{ $studio['photos'][0] }}" alt="{{ $studio['name'] }}" data-lightbox-src="{{ $studio['photos'][0] }}" class="h-64 w-full cursor-zoom-in object-cover transition hover:brightness-90 sm:col-span-2 sm:row-span-2 sm:h-full">
                 @foreach (array_slice($studio['photos'], 1, 4) as $photo)
-                    <img src="{{ $photo }}" alt="{{ $studio['name'] }}" class="hidden h-full w-full object-cover sm:block">
+                    <img src="{{ $photo }}" alt="{{ $studio['name'] }}" data-lightbox-src="{{ $photo }}" class="hidden h-full w-full cursor-zoom-in object-cover transition hover:brightness-90 sm:block">
                 @endforeach
             </div>
 
@@ -89,9 +92,7 @@
                 <div class="min-w-0 flex-1">
                     {{-- Kernfeiten --}}
                     <div class="flex flex-wrap gap-x-8 gap-y-3 border-b border-prussian-blue/10 pb-6 text-sm text-prussian-blue">
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-users text-prussian-blue/40"></i> {{ __('studio.facts.capacity', ['count' => $studio['capacity']]) }}</span>
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-clock text-prussian-blue/40"></i> {{ __('studio.facts.min_duration', ['count' => $studio['min_hours']]) }}</span>
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-headphones text-prussian-blue/40"></i> {{ $studio['engineer'] ? __('studio.facts.engineer_yes') : __('studio.facts.engineer_no') }}</span>
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-users text-ruby-red"></i> {{ __('studio.facts.capacity', ['count' => $studio['capacity']]) }}</span>
                     </div>
 
                     {{-- Over deze studio --}}
@@ -198,7 +199,11 @@
                                 </div>
                                 <div class="min-w-0">
                                     <label class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.time') }}</label>
-                                    <input type="time" class="mt-1 w-full min-w-0 rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                                    <select class="mt-1 w-full min-w-0 cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                                        @foreach ($slots as $slot)
+                                            <option @selected($slot === '12:00')>{{ $slot }}</option>
+                                        @endforeach
+                                    </select>
                                 </div>
                             </div>
                             <div>
@@ -211,24 +216,10 @@
                             </div>
                         </div>
 
-                        {{-- Prijs-breakdown --}}
-                        <div class="mt-5 space-y-2 border-t border-prussian-blue/10 pt-4 text-sm">
-                            <div class="flex justify-between text-prussian-blue/70">
-                                <span>{{ __('studio.booking.rent', ['count' => $hours]) }}</span>
-                                <span>{{ $money($rent) }}</span>
-                            </div>
-                            <div class="flex justify-between text-prussian-blue/70">
-                                <span>{{ __('studio.booking.service_fee') }}</span>
-                                <span>{{ $money($fee) }}</span>
-                            </div>
-                            <div class="flex justify-between text-prussian-blue/70">
-                                <span>{{ __('studio.booking.vat') }}</span>
-                                <span>{{ $money($vat) }}</span>
-                            </div>
-                            <div class="flex justify-between border-t border-prussian-blue/10 pt-2 font-bold text-prussian-blue">
-                                <span>{{ __('studio.booking.total') }}</span>
-                                <span>{{ $money($total) }}</span>
-                            </div>
+                        {{-- Totaal (servicekosten volgen in de checkout - klantfeedback) --}}
+                        <div class="mt-5 flex justify-between border-t border-prussian-blue/10 pt-4 font-bold text-prussian-blue">
+                            <span>{{ __('studio.booking.total') }} ({{ __('studio.booking.hours', ['count' => $hours]) }})</span>
+                            <span>{{ $money($rent) }}</span>
                         </div>
 
                         <button type="button" class="mt-5 w-full cursor-pointer rounded-full bg-ruby-red py-3 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('studio.booking.book') }}</button>
@@ -240,6 +231,22 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- Lightbox voor de fotogalerij --}}
+    <div data-lightbox class="fixed inset-0 z-[1300] hidden bg-prussian-blue/95 p-4">
+        <button type="button" data-lightbox-close aria-label="{{ __('home.search.close') }}" class="absolute right-5 top-5 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <button type="button" data-lightbox-prev aria-label="{{ __('home.studios.prev') }}" class="absolute left-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button type="button" data-lightbox-next aria-label="{{ __('home.studios.next') }}" class="absolute right-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <div class="flex h-full items-center justify-center">
+            <img src="" alt="{{ $studio['name'] }}" class="max-h-full max-w-full rounded-2xl object-contain">
         </div>
     </div>
 </x-layout>

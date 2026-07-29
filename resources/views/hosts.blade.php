@@ -9,7 +9,7 @@
     @endphp
 
     {{-- ===== Split-hero met mockup en zwevende UI-kaartjes ===== --}}
-    <div class="relative w-full overflow-hidden bg-prussian-blue pt-38 pb-20">
+    <div class="relative w-full overflow-hidden bg-ruby-red pt-38 pb-20">
         <x-floating-icons />
 
         <div class="relative z-10 mx-auto max-w-7xl px-6">
@@ -19,7 +19,7 @@
                     <h1 class="mt-3 text-4xl font-bold text-white sm:text-5xl">{{ __('hosts.hero.heading') }}</h1>
                     <p class="mt-4 max-w-xl text-white/60 max-lg:mx-auto">{{ __('hosts.hero.subtitle') }}</p>
                     <div class="mt-8 flex flex-wrap items-center gap-3 max-lg:justify-center">
-                        <a href="#aanmelden" class="rounded-full bg-ruby-red px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">{{ __('hosts.hero.cta') }}</a>
+                        <a href="#aanmelden" class="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ruby-red shadow-sm transition hover:bg-white/90">{{ __('hosts.hero.cta') }}</a>
                         <a href="#hoe-werkt-het" class="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">{{ __('hosts.hero.secondary') }}</a>
                     </div>
 
@@ -38,7 +38,7 @@
                 <div data-reveal style="--reveal-delay: .15s" class="relative mx-auto w-fit max-lg:hidden">
                     <x-phone-mockup class="rotate-2" :label="__('hosts.hero.mock')" />
 
-                    <div class="absolute -left-40 top-20 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/25">
+                    <div class="absolute -left-40 top-20 flex items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/25">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-calendar-check fa-sm"></i></span>
                         <div>
                             <p class="text-xs font-bold text-prussian-blue">{{ __('hosts.hero.cards.booking_title') }}</p>
@@ -46,7 +46,7 @@
                         </div>
                     </div>
 
-                    <div class="absolute -right-32 bottom-24 flex items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/25">
+                    <div class="absolute -right-32 bottom-24 flex items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/25">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"><i class="fa-solid fa-money-bill-wave fa-sm"></i></span>
                         <div>
                             <p class="text-xs font-bold text-prussian-blue">{{ __('hosts.hero.cards.payout_title') }}</p>
@@ -113,7 +113,7 @@
                 </div>
                 <div class="relative flex flex-1 justify-center">
                     <x-phone-mockup class="-rotate-2" :label="__('hosts.features.items.dashboard.mock')" />
-                    <div class="absolute -right-2 top-16 hidden items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
+                    <div class="absolute -right-2 top-16 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-chart-line fa-sm"></i></span>
                         <div>
                             <p class="text-xs font-bold text-prussian-blue">{{ __('hosts.features.items.dashboard.card_title') }}</p>
@@ -142,7 +142,7 @@
                 </div>
                 <div class="relative flex flex-1 justify-center">
                     <x-phone-mockup class="rotate-2" :label="__('hosts.features.items.availability.mock')" />
-                    <div class="absolute -left-6 bottom-20 hidden items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/30 xl:flex">
+                    <div class="absolute -left-6 bottom-20 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/30 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-prussian-blue/5 text-prussian-blue"><i class="fa-solid fa-umbrella-beach fa-sm"></i></span>
                         <div>
                             <p class="text-xs font-bold text-prussian-blue">{{ __('hosts.features.items.availability.card_title') }}</p>
@@ -172,7 +172,7 @@
                 {{-- Uitbetalings-bonnetje --}}
                 <div class="relative w-full max-w-sm flex-1">
                     <div class="absolute inset-0 -rotate-3 rounded-3xl bg-prussian-blue/5"></div>
-                    <div class="relative rotate-1 rounded-3xl border border-prussian-blue/10 bg-white p-6 shadow-2xl shadow-prussian-blue/10">
+                    <div class="relative rotate-1 rounded-3xl border border-prussian-blue/10 bg-white p-6 shadow-2xl shadow-prussian-blue/10 transition-transform duration-300 hover:rotate-0">
                         <div class="flex items-center justify-between">
                             <p class="font-bold text-prussian-blue">{{ __('hosts.receipt.title') }}</p>
                             <span class="rounded-full bg-prussian-blue/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-prussian-blue/60">Stripe</span>
@@ -210,7 +210,7 @@
 
             <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {{-- Grote tegel: boekingsinbox met mini-preview --}}
-                <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 lg:col-span-2">
+                <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-prussian-blue/5 lg:col-span-2">
                     <div class="flex items-center justify-between gap-6">
                         <div>
                             <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-inbox"></i></span>
@@ -234,7 +234,7 @@
                 </div>
 
                 @foreach ([['agenda', 'fa-calendar-days'], ['revenue', 'fa-chart-line'], ['invoices', 'fa-file-invoice'], ['rooms', 'fa-door-open']] as [$tile, $icon])
-                    <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
+                    <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-prussian-blue/5">
                         <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-ruby-red/10 text-ruby-red"><i class="fa-solid {{ $icon }}"></i></span>
                         <h3 class="mt-4 font-bold text-prussian-blue">{{ __('hosts.included.tiles.' . $tile . '.title') }}</h3>
                         <p class="mt-2 text-sm leading-relaxed text-prussian-blue/60">{{ __('hosts.included.tiles.' . $tile . '.text') }}</p>
@@ -303,7 +303,7 @@
             <h2 class="text-center text-3xl font-bold text-prussian-blue">{{ __('hosts.faq.title') }}</h2>
             <div class="mt-8 space-y-3">
                 @foreach (__('hosts.faq.items') as $item)
-                    <details class="group rounded-2xl border border-prussian-blue/10 bg-white px-5 py-4">
+                    <details class="group rounded-2xl border border-prussian-blue/10 bg-white px-5 py-4 transition-colors hover:border-prussian-blue/30">
                         <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-prussian-blue [&::-webkit-details-marker]:hidden">
                             {{ $item['q'] }}
                             <i class="fa-solid fa-chevron-down text-sm text-prussian-blue/40 transition group-open:rotate-180"></i>

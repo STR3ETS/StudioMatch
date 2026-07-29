@@ -58,17 +58,16 @@ return [
     'pricing' => [
         'label' => 'Transparent',
         'title' => 'You know exactly what you pay upfront',
-        'text' => 'The price consists of the studio rent plus a 9% service fee (and VAT on that fee). No surprises at checkout, the full breakdown is already in your cart.',
+        'text' => 'The price consists of the studio rent plus a small service contribution, and you see all of it in your cart. No surprises at checkout.',
         'bullets' => [
             'Hourly rate × hours, straight to the studio',
-            '9% service fee for the platform',
+            'Service costs are already included in the total',
             'Invoice or proof of payment automatically in your dashboard',
         ],
         'receipt' => [
             'title' => 'Price breakdown',
             'rent' => 'Rent (3 hrs × € 50)',
-            'fee' => 'Service fee (9%)',
-            'vat' => 'VAT on service fee (21%)',
+            'fee' => 'Service costs',
             'total' => 'Total',
             'footer' => 'Paid securely via Stripe',
         ],

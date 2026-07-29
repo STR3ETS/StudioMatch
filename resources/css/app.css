@@ -45,6 +45,26 @@
     }
 }
 
+/* Zwevende UI-kaartjes: zachte dobber-animatie. */
+@keyframes bob {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+.float-card {
+    animation: bob 5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .float-card {
+        animation: none;
+    }
+}
+
 /* Scroll-reveal: blokken faden en schuiven in beeld zodra ze de viewport raken. */
 .reveal {
     opacity: 0;
@@ -66,6 +86,135 @@
         transform: none;
         transition: none;
     }
+}
+
+/* Studio-kaart: donkere ondergrond, geen UI-chrome, prijs-pins en hover-cards. */
+.leaflet-container {
+    font-family: inherit;
+    background-color: #0b0f1e;
+}
+
+.leaflet-control-attribution {
+    background: rgb(16 21 41 / 0.7) !important;
+    color: rgb(255 255 255 / 0.35);
+    font-size: 9px;
+}
+
+.leaflet-control-attribution a {
+    color: rgb(255 255 255 / 0.5);
+}
+
+.map-pin {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+    display: inline-flex;
+    white-space: nowrap;
+    padding: 0.25rem 0.625rem;
+    border-radius: 9999px;
+    background: #ffffff;
+    border: 1px solid rgb(16 21 41 / 0.1);
+    color: #101529;
+    font-size: 0.75rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.35);
+    transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.map-pin-wrap:hover .map-pin,
+.map-pin-wrap.is-active .map-pin {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: #ad0924;
+    color: #ffffff;
+}
+
+.leaflet-popup {
+    margin-bottom: 12px;
+}
+
+.leaflet-popup .leaflet-popup-content-wrapper {
+    padding: 0;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgb(0 0 0 / 0.35);
+}
+
+.leaflet-popup .leaflet-popup-content {
+    margin: 0 !important;
+    width: 11rem !important;
+    line-height: 1.4;
+}
+
+/* Geen puntje onder de card. */
+.leaflet-popup-tip-container {
+    display: none;
+}
+
+.map-card {
+    display: block;
+    text-decoration: none;
+}
+
+.map-card-media {
+    display: block;
+    position: relative;
+    height: 6rem;
+    overflow: hidden;
+}
+
+.map-card img {
+    display: block;
+    width: 100%;
+    height: 6rem;
+    object-fit: cover;
+}
+
+.map-card-body {
+    display: block;
+    padding: 0.75rem;
+}
+
+.map-card-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.map-card-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #101529;
+}
+
+.map-card-rating {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #ad0924;
+}
+
+.map-card-city {
+    display: block;
+    font-size: 0.75rem;
+    color: rgb(16 21 41 / 0.5);
+}
+
+.map-card-price {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #101529;
+}
+
+.map-card-price span {
+    font-weight: 400;
+    color: rgb(16 21 41 / 0.5);
 }
 
 /* Subtiel stippenpatroon voor sectie-achtergronden. */

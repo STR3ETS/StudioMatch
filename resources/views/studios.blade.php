@@ -2,7 +2,7 @@
     @php
         // Placeholder-data - vervang later door echte studio's uit de database.
         $studioNames = ['Redlight Recordings', 'Northside Studio', 'De Fabriek', 'Echo Chamber', 'Sound Garden', 'Studio Zuid', 'Waveform Lab', 'The Booth', 'Analog Attic', 'Bassline Studio', 'Loud & Clear', 'Nightshift Audio', 'Vinyl Room'];
-        $studioTypes = ['Opname', 'Mix & master'];
+        $studioTypes = ['Opname', 'Mix', 'Master'];
         $studioPhotos = ['/temp-studio-1.webp', '/temp-studio-2.webp', '/temp-studio-3.jpg', '/temp-studio-4.jpg', '/temp-studio-5.jpg'];
         $studioCities = ['Amsterdam', 'Rotterdam', 'Utrecht', 'Den Haag', 'Groningen', 'Tilburg', 'Eindhoven', 'Haarlem', 'Nijmegen', 'Breda'];
 
@@ -10,16 +10,48 @@
             'name' => $studioNames[$i % count($studioNames)],
             'city' => $studioCities[$i % count($studioCities)],
             'price' => 30 + (($i * 7) % 45),
-            'type' => $studioTypes[$i % 2],
+            'type' => $studioTypes[$i % 3],
             'rating' => number_format(4.1 + (($i * 7) % 9) / 10, 1),
             'reviews' => 6 + (($i * 13) % 200),
-            'photo' => $studioPhotos[$i % count($studioPhotos)],
+            'photos' => [$studioPhotos[$i % 5], $studioPhotos[($i + 2) % 5], $studioPhotos[($i + 4) % 5]],
         ])->all();
 
-        // Filteropties conform de scope (§2.3).
+        // Filteropties conform de scope (§2.3) en klantfeedback.
         $daws = ['Logic', 'Pro Tools', 'FL Studio', 'Ableton', 'Cubase'];
-        $equipment = ['mic_condenser', 'mic_dynamic', 'monitors', 'preamp', 'midi', 'amp'];
+        $equipment = ['mic_condenser', 'mic_dynamic', 'mic_usb', 'monitors', 'midi25', 'midi49', 'midi61', 'midi88', 'piano', 'guitar_acoustic', 'guitar_electric', 'bass', 'drums'];
         $facilities = ['wifi', 'parking', 'kitchen', 'microwave', 'fridge', 'coffee', 'smoking', 'ac'];
+
+        // Tijdslots per 30 minuten.
+        $slots = [];
+        for ($h = 0; $h < 24; $h++) {
+            foreach ([0, 30] as $m) {
+                $slots[] = sprintf('%02d:%02d', $h, $m);
+            }
+        }
+
+        // Kaartdata: één pin per stad (eerste studio uit de lijst).
+        $cityCoords = [
+            'Amsterdam' => [52.3676, 4.9041],
+            'Rotterdam' => [51.9244, 4.4777],
+            'Utrecht' => [52.0907, 5.1214],
+            'Den Haag' => [52.0705, 4.3007],
+            'Groningen' => [53.2194, 6.5665],
+            'Tilburg' => [51.5606, 5.0919],
+            'Eindhoven' => [51.4416, 5.4697],
+            'Haarlem' => [52.3874, 4.6462],
+            'Nijmegen' => [51.8126, 5.8372],
+            'Breda' => [51.5719, 4.7683],
+        ];
+        $mapStudios = collect($studios)->unique('city')->map(fn ($studio) => [
+            'name' => $studio['name'],
+            'city' => $studio['city'],
+            'price' => $studio['price'],
+            'rating' => $studio['rating'],
+            'photos' => $studio['photos'],
+            'url' => route('studios.show', str($studio['name'])->slug()),
+            'lat' => $cityCoords[$studio['city']][0],
+            'lng' => $cityCoords[$studio['city']][1],
+        ])->values()->all();
 
         $subLabel = 'block text-xs font-bold uppercase tracking-wide text-prussian-blue/50';
         $checkbox = 'h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red';
@@ -32,7 +64,7 @@
         <p class="mx-auto mt-3 max-w-xl text-white/60">{{ __('studios.hero_subtitle') }}</p>
     </x-hero>
 
-    <div class="py-12">
+    <div class="py-16">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col gap-8 lg:flex-row">
                 {{-- Sticky filter card met inklapbare groepen --}}
@@ -67,11 +99,28 @@
                             </div>
                         </x-filter-group>
 
-                        {{-- Beschikbaarheid --}}
+                        {{-- Beschikbaarheid: boekingsperiode met slots per 30 min --}}
                         <x-filter-group :title="__('studios.filters.groups.availability')">
-                            <div class="flex gap-2">
-                                <input type="date" class="{{ $field }} min-w-0">
-                                <input type="time" class="{{ $field }} min-w-0">
+                            <input type="date" class="{{ $field }} min-w-0">
+                            <div class="mt-2 grid grid-cols-2 gap-2">
+                                <div class="min-w-0">
+                                    <span class="{{ $subLabel }}">{{ __('studios.filters.start') }}</span>
+                                    <select class="{{ $field }} mt-1 cursor-pointer">
+                                        <option value="">--:--</option>
+                                        @foreach ($slots as $slot)
+                                            <option>{{ $slot }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="min-w-0">
+                                    <span class="{{ $subLabel }}">{{ __('studios.filters.end') }}</span>
+                                    <select class="{{ $field }} mt-1 cursor-pointer">
+                                        <option value="">--:--</option>
+                                        @foreach ($slots as $slot)
+                                            <option>{{ $slot }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
                             </div>
                         </x-filter-group>
 
@@ -80,20 +129,21 @@
                             <div>
                                 <span class="{{ $subLabel }}">{{ __('studios.filters.type') }}</span>
                                 <div class="mt-2 space-y-2">
-                                    @foreach ([__('studios.type.recording'), __('studios.type.mixmaster')] as $label)
+                                    @foreach ([__('studios.type.recording'), __('studios.type.mix'), __('studios.type.master')] as $label)
                                         <label class="{{ $checkLabel }}"><input type="checkbox" class="{{ $checkbox }}"> {{ $label }}</label>
                                     @endforeach
                                 </div>
                             </div>
                             <div class="mt-4">
                                 <span class="{{ $subLabel }}">{{ __('studios.filters.capacity') }}</span>
-                                <select class="{{ $field }} mt-2 cursor-pointer">
-                                    <option value="">{{ __('studios.filters.capacity_any') }}</option>
-                                    <option value="1">1&ndash;2</option>
-                                    <option value="3">3&ndash;4</option>
-                                    <option value="5">5&ndash;8</option>
-                                    <option value="9">9+</option>
-                                </select>
+                                <div class="mt-2 flex items-center justify-between rounded-xl border border-prussian-blue/15 px-3 py-2" data-stepper data-stepper-any="{{ __('studios.filters.capacity_any') }}">
+                                    <span class="text-sm text-prussian-blue" data-stepper-label>{{ __('studios.filters.capacity_any') }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" data-stepper-minus class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-prussian-blue/20 text-prussian-blue transition hover:bg-prussian-blue/5 disabled:cursor-not-allowed disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
+                                        <button type="button" data-stepper-plus class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-prussian-blue/20 text-prussian-blue transition hover:bg-prussian-blue/5 disabled:cursor-not-allowed disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>
+                                    </div>
+                                    <input type="hidden" name="capacity" value="0">
+                                </div>
                             </div>
                             <div class="mt-4">
                                 <span class="{{ $subLabel }}">{{ __('studios.filters.engineer') }}</span>
@@ -105,23 +155,21 @@
                             </div>
                         </x-filter-group>
 
-                        {{-- Uitrusting: apparatuur + DAW's --}}
+                        {{-- Apparatuur --}}
                         <x-filter-group :title="__('studios.filters.groups.equipment')">
-                            <div>
-                                <span class="{{ $subLabel }}">{{ __('studios.filters.equipment') }}</span>
-                                <div class="mt-2 space-y-2">
-                                    @foreach ($equipment as $item)
-                                        <label class="{{ $checkLabel }}"><input type="checkbox" class="{{ $checkbox }}"> {{ __('studios.equipment.' . $item) }}</label>
-                                    @endforeach
-                                </div>
+                            <div class="space-y-2">
+                                @foreach ($equipment as $item)
+                                    <label class="{{ $checkLabel }}"><input type="checkbox" class="{{ $checkbox }}"> {{ __('studios.equipment.' . $item) }}</label>
+                                @endforeach
                             </div>
-                            <div class="mt-4">
-                                <span class="{{ $subLabel }}">{{ __('studios.filters.daw') }}</span>
-                                <div class="mt-2 space-y-2">
-                                    @foreach ($daws as $daw)
-                                        <label class="{{ $checkLabel }}"><input type="checkbox" class="{{ $checkbox }}"> {{ $daw }}</label>
-                                    @endforeach
-                                </div>
+                        </x-filter-group>
+
+                        {{-- DAW's --}}
+                        <x-filter-group :title="__('studios.filters.groups.daw')">
+                            <div class="space-y-2">
+                                @foreach ($daws as $daw)
+                                    <label class="{{ $checkLabel }}"><input type="checkbox" class="{{ $checkbox }}"> {{ $daw }}</label>
+                                @endforeach
                             </div>
                         </x-filter-group>
 
@@ -166,6 +214,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {{-- Kaart onder de lijst --}}
+            <div data-reveal class="mt-16">
+                <x-studio-map :studios="$mapStudios" class="aspect-[2/1] rounded-[2.5rem] border border-prussian-blue/10" />
             </div>
         </div>
     </div>

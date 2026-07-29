@@ -9,17 +9,18 @@
     ];
 @endphp
 
-<footer class="bg-prussian-blue text-white">
+<footer class="bg-ruby-red text-white">
     <div class="mx-auto max-w-7xl px-6 py-16">
         <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-6">
             {{-- Brand --}}
             <div class="col-span-2 sm:col-span-3 lg:col-span-2">
                 <img src="/logos/sm-primary-logo-wit.png" alt="StudioMatch" class="h-10 w-auto">
-                <p class="mt-4 max-w-xs text-sm leading-relaxed text-white/60">{{ __('footer.description') }}</p>
+                <p class="mt-4 text-sm font-semibold italic text-white">{{ __('footer.tagline') }}</p>
+                <p class="mt-2 max-w-xs text-sm leading-relaxed text-white/70">{{ __('footer.description') }}</p>
                 <div class="mt-6 flex items-center gap-3">
                     @foreach ($socials as $social)
                         <a href="#" aria-label="{{ $social['label'] }}"
-                           class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/20 hover:text-white">
+                           class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:-translate-y-0.5 hover:bg-white/20 hover:text-white">
                             <i class="fa-brands {{ $social['icon'] }} fa-sm"></i>
                         </a>
                     @endforeach
@@ -87,7 +88,7 @@
             <p class="shrink-0 text-xs text-white/50 w-full">
                 {{ __('footer.made_with') }}
                 <a href="https://eazyonline.nl" target="_blank" rel="noopener"
-                   class="font-semibold text-white transition hover:text-ruby-red ml-0.25">Eazyonline</a>
+                   class="font-semibold text-white transition hover:underline ml-0.25">Eazyonline</a>
             </p>
         </div>
     </div>

@@ -26,19 +26,23 @@ return [
         'facilities' => 'Voorzieningen',
         'daw' => "DAW's",
         'apply' => 'Toon resultaten',
+        'start' => 'Starttijd',
+        'end' => 'Eindtijd',
         'groups' => [
             'location' => 'Locatie',
             'price' => 'Prijs',
             'availability' => 'Beschikbaarheid',
             'studio' => 'Studio',
-            'equipment' => 'Uitrusting',
+            'equipment' => 'Apparatuur',
+            'daw' => "DAW's",
             'facilities' => 'Voorzieningen',
         ],
     ],
 
     'type' => [
         'recording' => 'Opname',
-        'mixmaster' => 'Mix & master',
+        'mix' => 'Mix',
+        'master' => 'Master',
     ],
 
     'engineer' => [
@@ -49,10 +53,17 @@ return [
     'equipment' => [
         'mic_condenser' => 'Condensatormicrofoon',
         'mic_dynamic' => 'Dynamische microfoon',
+        'mic_usb' => 'USB-microfoon',
         'monitors' => 'Studiomonitors',
-        'preamp' => 'Preamp',
-        'midi' => 'MIDI-keyboard',
-        'amp' => 'Gitaarversterker',
+        'midi25' => 'Midi 25',
+        'midi49' => 'Midi 49',
+        'midi61' => 'Midi 61',
+        'midi88' => 'Midi 88',
+        'piano' => 'Piano',
+        'guitar_acoustic' => 'Akoestische gitaar',
+        'guitar_electric' => 'Elektrische gitaar',
+        'bass' => 'Basgitaar',
+        'drums' => 'Drumstel',
     ],
 
     'facilities' => [

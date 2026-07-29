@@ -55,7 +55,7 @@ return [
         'email' => 'info@studiomatch.nl',
         'response' => 'We usually respond within one business day.',
         'socials_title' => 'Follow us',
-        'company' => 'StudioMatch VOF',
+        'company' => 'StudioMatch',
         'kvk' => 'CoC 94893527',
         'btw' => 'VAT NL866927827B01',
     ],

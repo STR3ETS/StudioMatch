@@ -58,17 +58,16 @@ return [
     'pricing' => [
         'label' => 'Transparant',
         'title' => 'Je weet vooraf precies wat je betaalt',
-        'text' => 'De prijs is opgebouwd uit de huur van de studio plus 9% servicekosten (en btw daarover). Geen verrassingen bij het afrekenen, de volledige opbouw staat al in je winkelmandje.',
+        'text' => 'De prijs bestaat uit de huur van de studio plus een kleine servicebijdrage, en die zie je allemaal al in je winkelmandje. Geen verrassingen bij het afrekenen.',
         'bullets' => [
             'Uurtarief × aantal uren, rechtstreeks naar de studio',
-            '9% servicekosten voor het platform',
+            'Servicekosten zitten al in het totaal verwerkt',
             'Factuur of betaalbewijs automatisch in je dashboard',
         ],
         'receipt' => [
             'title' => 'Prijsopbouw',
             'rent' => 'Huur (3 uur × € 50)',
-            'fee' => 'Servicekosten (9%)',
-            'vat' => 'Btw over servicekosten (21%)',
+            'fee' => 'Servicekosten',
             'total' => 'Totaal',
             'footer' => 'Veilig betaald via Stripe',
         ],

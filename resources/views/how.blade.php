@@ -52,7 +52,7 @@
                 </div>
                 <div class="relative flex flex-1 justify-center">
                     <x-phone-mockup class="rotate-2" :label="__('how.steps.items.book.mock')" />
-                    <div class="absolute -left-4 top-20 hidden items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/30 xl:flex">
+                    <div class="absolute -left-4 top-20 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/30 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-hourglass-half fa-sm"></i></span>
                         <div>
                             <p class="text-xs font-bold text-prussian-blue">{{ __('how.steps.items.book.card_title') }}</p>
@@ -83,7 +83,7 @@
                 </div>
                 <div class="relative flex flex-1 justify-center">
                     <x-phone-mockup class="rotate-2" :label="__('how.steps.items.session.mock')" />
-                    <div class="absolute -right-4 bottom-24 hidden items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
+                    <div class="absolute -right-4 bottom-24 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"><i class="fa-solid fa-circle-check fa-sm"></i></span>
                         <div>
                             <p class="text-xs font-bold text-prussian-blue">{{ __('how.steps.items.session.card_title') }}</p>
@@ -113,15 +113,14 @@
 
                     <div class="relative mx-auto w-full max-w-sm">
                         <div class="absolute inset-0 rotate-3 rounded-3xl bg-white/10"></div>
-                        <div class="relative -rotate-1 rounded-3xl bg-white p-6 shadow-2xl shadow-black/30">
+                        <div class="relative -rotate-1 rounded-3xl bg-white p-6 shadow-2xl shadow-black/30 transition-transform duration-300 hover:rotate-0">
                             <div class="flex items-center justify-between">
                                 <p class="font-bold text-prussian-blue">{{ __('how.pricing.receipt.title') }}</p>
                                 <span class="rounded-full bg-prussian-blue/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-prussian-blue/60">iDEAL</span>
                             </div>
                             <div class="mt-5 space-y-3 text-sm">
                                 <div class="flex justify-between text-prussian-blue/70"><span>{{ __('how.pricing.receipt.rent') }}</span><span>€ 150,00</span></div>
-                                <div class="flex justify-between text-prussian-blue/70"><span>{{ __('how.pricing.receipt.fee') }}</span><span>€ 13,50</span></div>
-                                <div class="flex justify-between text-prussian-blue/70"><span>{{ __('how.pricing.receipt.vat') }}</span><span>€ 2,84</span></div>
+                                <div class="flex justify-between text-prussian-blue/70"><span>{{ __('how.pricing.receipt.fee') }}</span><span>€ 16,34</span></div>
                                 <div class="flex justify-between border-t border-dashed border-prussian-blue/15 pt-3 font-bold text-prussian-blue"><span>{{ __('how.pricing.receipt.total') }}</span><span class="text-ruby-red">€ 166,34</span></div>
                             </div>
                             <p class="mt-5 flex items-center gap-2 text-xs text-prussian-blue/50"><i class="fa-solid fa-lock text-prussian-blue/30"></i> {{ __('how.pricing.receipt.footer') }}</p>
@@ -150,7 +149,7 @@
 
             <div class="mt-10 grid gap-4 sm:grid-cols-3">
                 @foreach (__('how.cancel.tiers') as $i => $tier)
-                    <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
+                    <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-prussian-blue/5">
                         <span class="flex h-11 w-11 items-center justify-center rounded-xl {{ $tierIcons[$i][1] }}"><i class="fa-solid {{ $tierIcons[$i][0] }}"></i></span>
                         <p class="mt-4 text-sm text-prussian-blue/60">{{ $tier['when'] }}</p>
                         <p class="mt-1 text-xl font-bold text-prussian-blue">{{ $tier['refund'] }}</p>
@@ -159,7 +158,7 @@
             </div>
 
             <div class="mt-4 grid gap-4 lg:grid-cols-2">
-                <div class="flex gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-6">
+                <div class="flex gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-prussian-blue/5">
                     <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-prussian-blue/5 text-prussian-blue"><i class="fa-solid fa-calendar-plus"></i></span>
                     <div>
                         <h3 class="font-bold text-prussian-blue">{{ __('how.cancel.reschedule_title') }}</h3>
@@ -201,7 +200,7 @@
             <h2 class="text-center text-3xl font-bold text-prussian-blue">{{ __('how.faq.title') }}</h2>
             <div class="mt-8 space-y-3">
                 @foreach (__('how.faq.items') as $item)
-                    <details class="group rounded-2xl border border-prussian-blue/10 bg-white px-5 py-4">
+                    <details class="group rounded-2xl border border-prussian-blue/10 bg-white px-5 py-4 transition-colors hover:border-prussian-blue/30">
                         <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-prussian-blue [&::-webkit-details-marker]:hidden">
                             {{ $item['q'] }}
                             <i class="fa-solid fa-chevron-down text-sm text-prussian-blue/40 transition group-open:rotate-180"></i>

@@ -15,7 +15,7 @@ return [
             'items' => [
                 ['q' => 'Do I need an account to book?', 'a' => 'Yes, booking requires a free account. You can also register at the moment you book a studio, right inside the booking flow.'],
                 ['q' => 'How can I pay?', 'a' => 'With iDEAL or credit card. Payment is processed securely via Stripe.'],
-                ['q' => 'What do I pay on top of the rent?', 'a' => 'Besides the rent you pay a 9% service fee and VAT on that fee. You see the full breakdown before you pay, no surprises afterwards.'],
+                ['q' => 'What do I pay on top of the rent?', 'a' => 'Besides the rent you pay a small service contribution. You see the full breakdown before you pay, no surprises afterwards.'],
                 ['q' => 'How long is my time slot held during checkout?', 'a' => "Once you start checking out, the slot is reserved for you for 15 minutes. If you don't complete the payment, the slot is automatically released."],
                 ['q' => 'When is my booking final?', 'a' => "After the studio accepts it. You then receive a confirmation with the address and contact details. If the studio doesn't respond in time or declines, you automatically get a full refund."],
             ],

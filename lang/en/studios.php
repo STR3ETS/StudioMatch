@@ -26,19 +26,23 @@ return [
         'facilities' => 'Amenities',
         'daw' => 'DAWs',
         'apply' => 'Show results',
+        'start' => 'Start time',
+        'end' => 'End time',
         'groups' => [
             'location' => 'Location',
             'price' => 'Price',
             'availability' => 'Availability',
             'studio' => 'Studio',
             'equipment' => 'Equipment',
+            'daw' => 'DAWs',
             'facilities' => 'Amenities',
         ],
     ],
 
     'type' => [
         'recording' => 'Recording',
-        'mixmaster' => 'Mix & master',
+        'mix' => 'Mix',
+        'master' => 'Master',
     ],
 
     'engineer' => [
@@ -49,10 +53,17 @@ return [
     'equipment' => [
         'mic_condenser' => 'Condenser microphone',
         'mic_dynamic' => 'Dynamic microphone',
+        'mic_usb' => 'USB microphone',
         'monitors' => 'Studio monitors',
-        'preamp' => 'Preamp',
-        'midi' => 'MIDI keyboard',
-        'amp' => 'Guitar amp',
+        'midi25' => 'Midi 25',
+        'midi49' => 'Midi 49',
+        'midi61' => 'Midi 61',
+        'midi88' => 'Midi 88',
+        'piano' => 'Piano',
+        'guitar_acoustic' => 'Acoustic guitar',
+        'guitar_electric' => 'Electric guitar',
+        'bass' => 'Bass guitar',
+        'drums' => 'Drum kit',
     ],
 
     'facilities' => [

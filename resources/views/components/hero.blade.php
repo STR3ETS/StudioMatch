@@ -1,7 +1,7 @@
 @props(['compact' => false])
 
 <div @class([
-    'relative w-full overflow-hidden bg-prussian-blue',
+    'relative w-full overflow-hidden bg-ruby-red',
     'pt-38 pb-20' => ! $compact,
     'pt-37 pb-20' => $compact,
 ])>

@@ -40,7 +40,7 @@
                             </h2>
                             <div class="mt-4 space-y-3">
                                 @foreach ($category['items'] as $item)
-                                    <details class="group rounded-2xl border border-prussian-blue/10 bg-white px-5 py-4">
+                                    <details class="group rounded-2xl border border-prussian-blue/10 bg-white px-5 py-4 transition-colors hover:border-prussian-blue/30">
                                         <summary class="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold text-prussian-blue [&::-webkit-details-marker]:hidden">
                                             {{ $item['q'] }}
                                             <i class="fa-solid fa-chevron-down text-sm text-prussian-blue/40 transition group-open:rotate-180"></i>
