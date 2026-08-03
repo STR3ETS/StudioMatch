@@ -54,7 +54,7 @@
 
 <x-layout :title="$studio['name']" :description="$studio['description']">
 
-    <div class="pt-28 pb-16">
+    <div class="pt-28 pb-32 lg:pb-16">
         <div class="max-w-7xl mx-auto px-6">
             {{-- Breadcrumb + titel --}}
             <nav data-reveal class="text-sm text-prussian-blue/50">
@@ -185,7 +185,7 @@
 
                 {{-- Boekwidget --}}
                 <div data-reveal style="--reveal-delay: .15s" class="lg:w-[360px] lg:shrink-0">
-                    <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 shadow-lg lg:sticky lg:top-28">
+                    <div id="boeken" class="scroll-mt-28 rounded-2xl border border-prussian-blue/10 bg-white p-6 shadow-lg lg:sticky lg:top-28">
                         <p class="text-prussian-blue">
                             <span class="text-2xl font-bold">{{ $money($studio['price']) }}</span>
                             <span class="text-sm text-prussian-blue/50">{{ __('studio.booking.per_hour') }}</span>
@@ -232,6 +232,16 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    {{-- Sticky boekbalk op mobiel: vanaf-prijs + directe CTA naar de kalender (klantfeedback) --}}
+    <div class="fixed inset-x-0 bottom-0 z-[1100] flex items-center justify-between gap-4 border-t border-prussian-blue/10 bg-white px-5 py-3 shadow-[0_-8px_30px_rgba(16,43,63,0.12)] lg:hidden">
+        <p class="text-prussian-blue">
+            <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.from') }}</span>
+            <span class="text-lg font-bold">{{ $money($studio['price']) }}</span>
+            <span class="text-sm text-prussian-blue/50">{{ __('studio.booking.per_hour') }}</span>
+        </p>
+        <a href="#boeken" class="shrink-0 rounded-full bg-ruby-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('studio.booking.book') }}</a>
     </div>
 
     {{-- Lightbox voor de fotogalerij --}}

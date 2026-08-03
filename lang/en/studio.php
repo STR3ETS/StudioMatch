@@ -20,13 +20,14 @@ return [
     ],
 
     'booking' => [
+        'from' => 'from',
         'per_hour' => 'per hour',
         'date' => 'Date',
         'time' => 'Start time',
         'duration' => 'Hours',
         'hours' => ':count hours',
         'rent' => 'Rent (:count hrs)',
-        'service_fee' => 'Service fee (9%)',
+        'service_fee' => 'Service fee',
         'vat' => 'VAT 21% on service fee',
         'total' => 'Total',
         'book' => 'Book now',

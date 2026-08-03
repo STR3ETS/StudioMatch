@@ -30,6 +30,18 @@ Route::get('/faq', function () {
     return view('faq');
 })->name('faq');
 
+Route::get('/inloggen', function () {
+    return view('auth.login');
+})->name('login');
+
+Route::get('/registreren', function () {
+    return view('auth.register');
+})->name('register');
+
+Route::get('/wachtwoord-vergeten', function () {
+    return view('auth.forgot-password');
+})->name('password.request');
+
 Route::get('/language/{locale}', function (string $locale) {
     if (array_key_exists($locale, config('localization.supported', []))) {
         session()->put('locale', $locale);

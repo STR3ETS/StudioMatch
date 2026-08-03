@@ -2,7 +2,7 @@
 
 return [
     'meta_title' => 'For studios: list your studio',
-    'meta_description' => 'List your recording or mix/master studio on StudioMatch, increase your occupancy and let the platform handle admin and payments. 9% commission, no hidden costs.',
+    'meta_description' => 'List your recording or mix/master studio on StudioMatch, increase your occupancy and let the platform handle admin and payments. Free to join, at no cost to hosts.',
 
     'hero' => [
         'eyebrow' => 'For studio owners',
@@ -15,18 +15,18 @@ return [
             'booking_title' => 'New request',
             'booking_sub' => 'Sat 14:00 – 17:00 · Recording',
             'payout_title' => 'Payout sent',
-            'payout_sub' => '€ 133.66 via Stripe',
+            'payout_sub' => '€ 150.00 via Stripe',
         ],
         'stats' => [
-            ['value' => '9%', 'label' => 'commission per booking'],
-            ['value' => '€ 0', 'label' => 'setup or subscription fees'],
+            ['value' => '€ 0', 'label' => 'costs for you as a host'],
+            ['value' => '24/7', 'label' => 'bookable online for artists'],
             ['value' => '100%', 'label' => 'your calendar, your rules'],
         ],
     ],
 
     'statement' => [
         'no' => 'No',
-        'lines' => ['hidden costs.', 'exclusivity.', 'double calendar management.'],
+        'lines' => ['costs.', 'exclusivity.', 'double calendar management.'],
         'sub' => "The three biggest worries of studio owners, deliberately removed from the model. What's left: bookings, paid.",
     ],
 
@@ -52,7 +52,7 @@ return [
                 'bullets' => [
                     'Add, edit or remove rooms',
                     'Adjust prices and minimum booking duration whenever you want',
-                    'Revenue at a glance: gross, commission and net',
+                    'Revenue and payouts at a glance',
                 ],
                 'mock' => 'Screenshot: host dashboard with revenue overview',
                 'card_title' => 'Net revenue',
@@ -87,8 +87,7 @@ return [
     'receipt' => [
         'title' => 'Payout statement',
         'booking' => 'Booking (3 hrs × € 50)',
-        'commission' => 'Commission (9%)',
-        'vat' => 'VAT on commission (21%)',
+        'fee' => 'Costs for you as a host',
         'net' => 'Your payout',
         'footer' => 'Processed automatically via Stripe Connect',
     ],
@@ -106,7 +105,7 @@ return [
                 'decline' => 'Decline',
             ],
             'agenda' => ['title' => 'Calendar & blocks', 'text' => 'Weekly schedule, block your own sessions and holiday mode.'],
-            'revenue' => ['title' => 'Revenue overview', 'text' => 'Gross, commission and net at a glance.'],
+            'revenue' => ['title' => 'Revenue overview', 'text' => 'Your revenue and payouts at a glance.'],
             'invoices' => ['title' => 'Invoices & statements', 'text' => 'Generated automatically and always available to download.'],
             'rooms' => ['title' => 'Rooms & pricing', 'text' => 'Multiple rooms, each with its own rate and minimum booking duration.'],
             'stripe' => ['title' => 'Stripe onboarding', 'text' => 'Secure identity and bank verification through your personal checklist, your listing goes live once everything is green.'],
@@ -124,22 +123,22 @@ return [
         ],
     ],
 
-    'commission' => [
-        'label' => 'Commission',
-        'value' => '9%',
-        'per_booking' => 'per booking',
-        'text' => "It's that simple. You only pay when you earn, no fixed costs upfront.",
+    'payout' => [
+        'label' => 'Your payout',
+        'value' => '100%',
+        'suffix' => 'of your hourly rate',
+        'text' => 'You set your rate and that is exactly what you receive. StudioMatch handles the bookings, payments and admin around it, so you can focus on the sessions.',
         'bullets' => [
-            'No subscription',
-            'No setup fees',
-            'No hidden costs on top of the commission',
+            'Automatic invoices and payouts',
+            'One real-time calendar, no double management',
+            'More occupancy through artists actively searching',
         ],
     ],
 
     'faq' => [
         'title' => 'Frequently asked questions',
         'items' => [
-            ['q' => 'What does it cost to join?', 'a' => 'Signing up is free. You only pay 9% commission per successful booking, no subscription or setup fees.'],
+            ['q' => 'What does it cost to join?', 'a' => 'Nothing. Signing up is free and there are no subscription or setup fees. The platform service fee is charged to the artist at booking; you simply receive your full hourly rate.'],
             ['q' => 'When do I get paid?', 'a' => 'Payouts run through Stripe Connect and are released shortly after the session, once the dispute window has passed.'],
             ['q' => 'Do I have to rent exclusively through StudioMatch?', 'a' => "No. You're free to keep renting your space through your own channels too."],
             ['q' => 'Will I have to manage my calendar twice?', 'a' => 'No. You manage your availability entirely in StudioMatch; booked times automatically disappear from search results.'],

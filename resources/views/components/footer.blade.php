@@ -1,6 +1,4 @@
 @php
-    $cities = ['Amsterdam', 'Rotterdam', 'Utrecht', 'Den Haag', 'Groningen', 'Tilburg'];
-
     $socials = [
         ['icon' => 'fa-instagram', 'label' => 'Instagram'],
         ['icon' => 'fa-tiktok', 'label' => 'TikTok'],
@@ -11,7 +9,7 @@
 
 <footer class="bg-ruby-red text-white">
     <div class="mx-auto max-w-7xl px-6 py-16">
-        <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-6">
+        <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
             {{-- Brand --}}
             <div class="col-span-2 sm:col-span-3 lg:col-span-2">
                 <img src="/logos/sm-primary-logo-wit.png" alt="StudioMatch" class="h-10 w-auto">
@@ -43,7 +41,6 @@
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
                     <li><a href="{{ route('hosts') }}" class="transition hover:text-white">{{ __('footer.hosts.become_host') }}</a></li>
                     <li><a href="#" class="transition hover:text-white">{{ __('footer.hosts.how_hosting_works') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('footer.hosts.pricing') }}</a></li>
                 </ul>
             </div>
 
@@ -53,16 +50,6 @@
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
                     <li><a href="#" class="transition hover:text-white">{{ __('footer.company.about') }}</a></li>
                     <li><a href="{{ route('contact') }}" class="transition hover:text-white">{{ __('footer.company.contact') }}</a></li>
-                </ul>
-            </div>
-
-            {{-- Populaire steden --}}
-            <div>
-                <h3 class="text-sm font-bold">{{ __('footer.cities.title') }}</h3>
-                <ul class="mt-4 space-y-3 text-sm text-white/60">
-                    @foreach ($cities as $city)
-                        <li><a href="#" class="transition hover:text-white">{{ $city }}</a></li>
-                    @endforeach
                 </ul>
             </div>
         </div>

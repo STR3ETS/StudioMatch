@@ -33,35 +33,6 @@ return [
         ],
     ],
 
-    'features' => [
-        'book' => [
-            'label' => 'Boeken',
-            'title' => 'Vind en boek in een paar tikken',
-            'text' => 'Filter op locatie, prijs, datum en apparatuur en zie alleen tijden die echt vrij zijn. Afrekenen doe je veilig via iDEAL of creditcard.',
-            'bullets' => [
-                'Realtime beschikbaarheid, wat je ziet kun je boeken',
-                'Volledige prijsopbouw vóór je betaalt',
-                'Veilig betalen via Stripe',
-            ],
-            'mock' => 'Screenshot: boekflow met prijsoverzicht',
-            'card_title' => 'Slot gereserveerd',
-            'card_sub' => 'Nog 14:59 minuten',
-        ],
-        'manage' => [
-            'label' => 'Jouw dashboard',
-            'title' => 'Alles geregeld in je dashboard',
-            'text' => 'Na je boeking vind je alles op één plek: de bevestiging met adres en contactgegevens, je facturen en een herinnering 24 uur vooraf.',
-            'bullets' => [
-                'Bevestiging met adres en contactgegevens',
-                'Herinnering 24 uur voor je sessie',
-                'Facturen en betaalbewijzen altijd bij de hand',
-            ],
-            'mock' => 'Screenshot: artiest-dashboard met boekingen',
-            'card_title' => 'Boeking bevestigd',
-            'card_sub' => 'za 14:00 – 17:00',
-        ],
-    ],
-
     'map' => [
         'title' => 'Studio locaties',
         'text' => "Ontdek studio's door heel Nederland, van grote steden tot verborgen parels.",

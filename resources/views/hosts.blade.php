@@ -182,13 +182,10 @@
                                 <span>{{ __('hosts.receipt.booking') }}</span><span>€ 150,00</span>
                             </div>
                             <div class="flex justify-between text-prussian-blue/70">
-                                <span>{{ __('hosts.receipt.commission') }}</span><span>− € 13,50</span>
-                            </div>
-                            <div class="flex justify-between text-prussian-blue/70">
-                                <span>{{ __('hosts.receipt.vat') }}</span><span>− € 2,84</span>
+                                <span>{{ __('hosts.receipt.fee') }}</span><span>€ 0,00</span>
                             </div>
                             <div class="flex justify-between border-t border-dashed border-prussian-blue/15 pt-3 font-bold text-prussian-blue">
-                                <span>{{ __('hosts.receipt.net') }}</span><span class="text-ruby-red">€ 133,66</span>
+                                <span>{{ __('hosts.receipt.net') }}</span><span class="text-ruby-red">€ 150,00</span>
                             </div>
                         </div>
                         <p class="mt-5 flex items-center gap-2 text-xs text-prussian-blue/50">
@@ -276,19 +273,19 @@
         </div>
     </section>
 
-    {{-- ===== Commissie-band met gigantische 9% ===== --}}
+    {{-- ===== Uitbetalingsband: 100% jouw uurtarief ===== --}}
     <section class="pb-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-3xl bg-prussian-blue px-8 py-14 lg:px-14">
-                <span class="text-outline-white pointer-events-none absolute -right-4 -top-14 hidden select-none text-[14rem] font-black leading-none sm:block">9%</span>
+                <span class="text-outline-white pointer-events-none absolute -right-4 -top-10 hidden select-none text-[10rem] font-black leading-none sm:block">100%</span>
                 <div class="relative grid items-center gap-10 lg:grid-cols-2">
                     <div class="text-white">
-                        <p class="text-sm font-semibold uppercase tracking-wider text-white/50">{{ __('hosts.commission.label') }}</p>
-                        <p class="mt-1"><span class="text-6xl font-bold">{{ __('hosts.commission.value') }}</span> <span class="text-white/60">{{ __('hosts.commission.per_booking') }}</span></p>
-                        <p class="mt-4 max-w-md text-white/70">{{ __('hosts.commission.text') }}</p>
+                        <p class="text-sm font-semibold uppercase tracking-wider text-white/50">{{ __('hosts.payout.label') }}</p>
+                        <p class="mt-1"><span class="text-6xl font-bold">{{ __('hosts.payout.value') }}</span> <span class="text-white/60">{{ __('hosts.payout.suffix') }}</span></p>
+                        <p class="mt-4 max-w-md text-white/70">{{ __('hosts.payout.text') }}</p>
                     </div>
                     <ul class="space-y-3">
-                        @foreach (__('hosts.commission.bullets') as $bullet)
+                        @foreach (__('hosts.payout.bullets') as $bullet)
                             <li class="flex items-center gap-3 text-sm text-white/80"><i class="fa-solid fa-circle-check text-ruby-red"></i> {{ $bullet }}</li>
                         @endforeach
                     </ul>
@@ -323,7 +320,7 @@
                 <div class="relative z-10 max-w-xl max-lg:text-center">
                     <h2 class="text-3xl font-bold text-white sm:text-4xl">{{ __('hosts.cta.title') }}</h2>
                     <p class="mt-3 text-white/60">{{ __('hosts.cta.text') }}</p>
-                    <a href="#" class="mt-7 inline-flex rounded-full bg-ruby-red px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">{{ __('hosts.cta.button') }}</a>
+                    <a href="{{ route('register', ['rol' => 'verhuurder']) }}" class="mt-7 inline-flex rounded-full bg-ruby-red px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">{{ __('hosts.cta.button') }}</a>
                 </div>
             </div>
         </div>

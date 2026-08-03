@@ -2,7 +2,7 @@
 
 return [
     'meta_title' => "Voor studio's: verhuur jouw studio",
-    'meta_description' => "Zet je opname- of mix/master-studio op StudioMatch, verhoog je bezettingsgraad en laat het platform de administratie en betaling regelen. 9% commissie, geen verborgen kosten.",
+    'meta_description' => "Zet je opname- of mix/master-studio op StudioMatch, verhoog je bezettingsgraad en laat het platform de administratie en betaling regelen. Gratis aanmelden, zonder kosten voor verhuurders.",
 
     'hero' => [
         'eyebrow' => 'Voor studio-eigenaren',
@@ -15,18 +15,18 @@ return [
             'booking_title' => 'Nieuwe aanvraag',
             'booking_sub' => 'za 14:00 – 17:00 · Opname',
             'payout_title' => 'Uitbetaling verzonden',
-            'payout_sub' => '€ 133,66 via Stripe',
+            'payout_sub' => '€ 150,00 via Stripe',
         ],
         'stats' => [
-            ['value' => '9%', 'label' => 'commissie per boeking'],
-            ['value' => '€ 0', 'label' => 'opstart- of abonnementskosten'],
+            ['value' => '€ 0', 'label' => 'kosten voor jou als verhuurder'],
+            ['value' => '24/7', 'label' => 'online boekbaar voor artiesten'],
             ['value' => '100%', 'label' => 'jouw agenda, jouw regels'],
         ],
     ],
 
     'statement' => [
         'no' => 'Geen',
-        'lines' => ['verborgen kosten.', 'exclusiviteit.', 'dubbel agendabeheer.'],
+        'lines' => ['kosten.', 'exclusiviteit.', 'dubbel agendabeheer.'],
         'sub' => 'De drie grootste zorgen van studio-eigenaren hebben we bewust uit het model gesloopt. Wat overblijft: boekingen, betaald.',
     ],
 
@@ -52,7 +52,7 @@ return [
                 'bullets' => [
                     'Ruimtes toevoegen, bewerken of verwijderen',
                     'Prijzen en minimale boekingsduur aanpassen wanneer je wilt',
-                    'Omzet in één oogopslag: bruto, commissie en netto',
+                    'Omzet en uitbetalingen in één oogopslag',
                 ],
                 'mock' => 'Screenshot: verhuurder-dashboard met omzetoverzicht',
                 'card_title' => 'Netto omzet',
@@ -87,8 +87,7 @@ return [
     'receipt' => [
         'title' => 'Uitbetalingsspecificatie',
         'booking' => 'Boeking (3 uur × € 50)',
-        'commission' => 'Commissie (9%)',
-        'vat' => 'Btw over commissie (21%)',
+        'fee' => 'Kosten voor jou als verhuurder',
         'net' => 'Jouw uitbetaling',
         'footer' => 'Automatisch verwerkt via Stripe Connect',
     ],
@@ -106,7 +105,7 @@ return [
                 'decline' => 'Weigeren',
             ],
             'agenda' => ['title' => 'Agenda & blokkades', 'text' => 'Wekelijks schema, eigen sessies blokkeren en vakantiemodus.'],
-            'revenue' => ['title' => 'Omzetoverzicht', 'text' => 'Bruto, commissie en netto in één oogopslag.'],
+            'revenue' => ['title' => 'Omzetoverzicht', 'text' => 'Je omzet en uitbetalingen in één oogopslag.'],
             'invoices' => ['title' => 'Facturen & specificaties', 'text' => 'Automatisch gegenereerd en altijd te downloaden.'],
             'rooms' => ['title' => 'Ruimtes & prijzen', 'text' => 'Meerdere ruimtes, elk met een eigen tarief en minimale boekingsduur.'],
             'stripe' => ['title' => 'Stripe-onboarding', 'text' => 'Veilige identiteits- en bankverificatie via je persoonlijke checklist, je listing gaat live zodra alles groen is.'],
@@ -124,22 +123,22 @@ return [
         ],
     ],
 
-    'commission' => [
-        'label' => 'Commissie',
-        'value' => '9%',
-        'per_booking' => 'per boeking',
-        'text' => 'Zo simpel is het. Je betaalt alleen wanneer je verdient, geen vaste kosten vooraf.',
+    'payout' => [
+        'label' => 'Jouw uitbetaling',
+        'value' => '100%',
+        'suffix' => 'van jouw uurtarief',
+        'text' => 'Jij bepaalt je tarief en dat is precies wat je ontvangt. StudioMatch regelt de boekingen, betalingen en administratie eromheen, zodat jij je op de sessies kunt richten.',
         'bullets' => [
-            'Geen abonnement',
-            'Geen opstartkosten',
-            'Geen verborgen kosten bovenop de commissie',
+            'Automatische facturen en uitbetalingen',
+            'Eén realtime agenda, geen dubbel beheer',
+            'Meer bezetting via artiesten die actief zoeken',
         ],
     ],
 
     'faq' => [
         'title' => 'Veelgestelde vragen',
         'items' => [
-            ['q' => 'Wat kost het om mee te doen?', 'a' => 'Aanmelden is gratis. Je betaalt alleen 9% commissie per succesvolle boeking, geen abonnement of opstartkosten.'],
+            ['q' => 'Wat kost het om mee te doen?', 'a' => 'Niets. Aanmelden is gratis en er zijn geen abonnements- of opstartkosten. De servicekosten van het platform worden bij de boeking aan de artiest berekend; jij ontvangt gewoon je volledige uurtarief.'],
             ['q' => 'Wanneer word ik uitbetaald?', 'a' => 'Uitbetalingen lopen via Stripe Connect en worden kort na de sessie vrijgegeven, zodra het dispuutvenster is verstreken.'],
             ['q' => 'Moet ik exclusief via StudioMatch verhuren?', 'a' => 'Nee. Je blijft vrij om je ruimte ook via je eigen kanalen te verhuren.'],
             ['q' => 'Beheer ik mijn agenda dan dubbel?', 'a' => 'Nee. Je beheert je beschikbaarheid volledig in StudioMatch; geboekte tijden verdwijnen automatisch uit de zoekresultaten.'],

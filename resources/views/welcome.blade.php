@@ -185,68 +185,6 @@
         </div>
     </section>
 
-    {{-- Feature: boeken (wit, mockup rechts) --}}
-    <section class="py-16">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="flex flex-col items-center gap-12 lg:flex-row lg:gap-20">
-                <div class="flex-1">
-                    <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-ruby-red"><i class="fa-solid fa-calendar-check"></i> {{ __('home.features.book.label') }}</span>
-                    <h2 class="mt-2 text-2xl font-bold text-prussian-blue sm:text-3xl">{{ __('home.features.book.title') }}</h2>
-                    <p class="mt-3 text-prussian-blue/60">{{ __('home.features.book.text') }}</p>
-                    <ul class="mt-5 space-y-3">
-                        @foreach (__('home.features.book.bullets') as $bullet)
-                            <li class="flex items-start gap-3 text-sm text-prussian-blue/80"><i class="fa-solid fa-check mt-0.5 text-ruby-red"></i> {{ $bullet }}</li>
-                        @endforeach
-                    </ul>
-                    <a href="{{ route('studios') }}" class="mt-7 inline-flex items-center gap-2 rounded-full bg-ruby-red px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
-                        <i class="fa-solid fa-magnifying-glass fa-sm"></i> {{ __('home.cta_book') }}
-                    </a>
-                </div>
-                <div class="relative flex flex-1 justify-center">
-                    <x-phone-mockup class="-rotate-2" :label="__('home.features.book.mock')" />
-                    <div class="absolute -left-2 top-16 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-hourglass-half fa-sm"></i></span>
-                        <div>
-                            <p class="text-xs font-bold text-prussian-blue">{{ __('home.features.book.card_title') }}</p>
-                            <p class="text-[11px] text-prussian-blue/50">{{ __('home.features.book.card_sub') }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- Feature: dashboard (stippenpatroon, mockup links) --}}
-    <section class="bg-dots py-16">
-        <div class="mx-auto max-w-7xl px-6">
-            <div class="flex flex-col items-center gap-12 lg:flex-row-reverse lg:gap-20">
-                <div class="flex-1">
-                    <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-ruby-red"><i class="fa-solid fa-gauge-high"></i> {{ __('home.features.manage.label') }}</span>
-                    <h2 class="mt-2 text-2xl font-bold text-prussian-blue sm:text-3xl">{{ __('home.features.manage.title') }}</h2>
-                    <p class="mt-3 text-prussian-blue/60">{{ __('home.features.manage.text') }}</p>
-                    <ul class="mt-5 space-y-3">
-                        @foreach (__('home.features.manage.bullets') as $bullet)
-                            <li class="flex items-start gap-3 text-sm text-prussian-blue/80"><i class="fa-solid fa-check mt-0.5 text-ruby-red"></i> {{ $bullet }}</li>
-                        @endforeach
-                    </ul>
-                    <a href="{{ route('how') }}" class="mt-7 inline-flex items-center gap-2 rounded-full border border-prussian-blue/20 px-6 py-3 text-sm font-semibold text-prussian-blue transition hover:bg-prussian-blue/5">
-                        {{ __('nav.how_it_works') }} <i class="fa-solid fa-arrow-right fa-xs"></i>
-                    </a>
-                </div>
-                <div class="relative flex flex-1 justify-center">
-                    <x-phone-mockup class="rotate-2" :label="__('home.features.manage.mock')" />
-                    <div class="absolute -right-2 bottom-20 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
-                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"><i class="fa-solid fa-circle-check fa-sm"></i></span>
-                        <div>
-                            <p class="text-xs font-bold text-prussian-blue">{{ __('home.features.manage.card_title') }}</p>
-                            <p class="text-[11px] text-prussian-blue/50">{{ __('home.features.manage.card_sub') }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
     {{-- CTA voor studioverhuurders --}}
     <section class="py-16">
         <div class="mx-auto max-w-7xl px-6">

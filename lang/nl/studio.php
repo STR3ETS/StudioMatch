@@ -20,13 +20,14 @@ return [
     ],
 
     'booking' => [
+        'from' => 'vanaf',
         'per_hour' => 'per uur',
         'date' => 'Datum',
         'time' => 'Starttijd',
         'duration' => 'Aantal uur',
         'hours' => ':count uur',
         'rent' => 'Huur (:count uur)',
-        'service_fee' => 'Servicekosten (9%)',
+        'service_fee' => 'Servicekosten',
         'vat' => 'Btw 21% over servicekosten',
         'total' => 'Totaal',
         'book' => 'Boek nu',

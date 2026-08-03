@@ -15,17 +15,12 @@ return [
         'title' => "Voor studio's",
         'become_host' => 'Studio aanmelden',
         'how_hosting_works' => 'Zo werkt verhuren',
-        'pricing' => 'Tarieven & commissie',
     ],
 
     'company' => [
         'title' => 'Bedrijf',
         'about' => 'Over StudioMatch',
         'contact' => 'Contact',
-    ],
-
-    'cities' => [
-        'title' => 'Populaire steden',
     ],
 
     'legal' => [

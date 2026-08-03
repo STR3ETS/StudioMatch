@@ -15,17 +15,12 @@ return [
         'title' => 'For studios',
         'become_host' => 'List your studio',
         'how_hosting_works' => 'How hosting works',
-        'pricing' => 'Rates & commission',
     ],
 
     'company' => [
         'title' => 'Company',
         'about' => 'About StudioMatch',
         'contact' => 'Contact',
-    ],
-
-    'cities' => [
-        'title' => 'Popular cities',
     ],
 
     'legal' => [
