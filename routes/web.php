@@ -11,6 +11,7 @@ use App\Http\Controllers\Artist\OverviewController as ArtistOverviewController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Host\BookingController as HostBookingController;
+use App\Http\Controllers\Host\DamageController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
@@ -134,6 +135,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/agenda', AgendaController::class)->name('host.agenda');
         Route::get('/omzet', RevenueController::class)->name('host.revenue');
 
+        Route::get('/schade', [DamageController::class, 'index'])->name('host.damage.index');
+        Route::post('/schade/{booking}', [DamageController::class, 'store'])->name('host.damage.store');
+
         Route::get('/beschikbaarheid', [AvailabilityController::class, 'index'])->name('host.availability.index');
         Route::get('/beschikbaarheid/{room}', [AvailabilityController::class, 'edit'])->name('host.availability.edit');
         Route::put('/beschikbaarheid/{room}/schema', [AvailabilityController::class, 'updateSchedule'])->name('host.availability.schedule');
@@ -171,6 +175,11 @@ Route::middleware('auth')->group(function () {
 Route::get('/ical/ruimte/{room}', IcalController::class)->middleware('signed')->name('ical.room');
 
 Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
+
+// Juridische pagina's: stubs totdat de definitieve teksten zijn aangeleverd (scope §6).
+foreach (['voorwaarden' => 'terms', 'privacy' => 'privacy', 'disclaimer' => 'disclaimer', 'cookiebeleid' => 'cookies'] as $uri => $key) {
+    Route::get('/' . $uri, fn () => view('legal', ['title' => __('legal.' . $key)]))->name('legal.' . $key);
+}
 
 Route::get('/language/{locale}', function (string $locale) {
     if (array_key_exists($locale, config('localization.supported', []))) {

@@ -104,5 +104,11 @@ return [
         'problem_host_note' => 'StudioMatch bemiddelt en neemt zo nodig contact met je op. Je hoeft nu niets te doen.',
         'reminder_subject' => 'Herinnering: morgen sessie in :room',
         'reminder_line' => 'Een herinnering aan de sessie in :room op :date van :time.',
+        'damage_subject' => 'Schade gemeld bij :room',
+        'damage_line' => ':host heeft schade gemeld na de sessie in :room op :date van :time.',
+        'damage_reason' => 'Melding: :reason',
+        'damage_host_contact' => 'Verhuurder: :name (:email)',
+        'damage_artist_contact' => 'Artiest: :name (:email)',
+        'damage_note' => 'Deel de gegevens van de artiest met de verhuurder. De afhandeling van de schade gebeurt buiten het platform.',
     ],
 ];

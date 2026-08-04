@@ -61,10 +61,10 @@
             <div class="w-full flex flex-wrap items-center justify-between gap-y-3 text-xs text-white/50">
                 <div class="flex flex-wrap items-center gap-x-5 gap-y-2">
                     <span>&copy; {{ date('Y') }} StudioMatch. {{ __('footer.rights') }}</span>
-                    <a href="#" class="transition hover:text-white">{{ __('footer.legal.terms') }}</a>
-                    <a href="#" class="transition hover:text-white">{{ __('footer.legal.privacy') }}</a>
-                    <a href="#" class="transition hover:text-white">{{ __('footer.legal.disclaimer') }}</a>
-                    <a href="#" class="transition hover:text-white">{{ __('footer.legal.cookies') }}</a>
+                    <a href="{{ route('legal.terms') }}" class="transition hover:text-white">{{ __('footer.legal.terms') }}</a>
+                    <a href="{{ route('legal.privacy') }}" class="transition hover:text-white">{{ __('footer.legal.privacy') }}</a>
+                    <a href="{{ route('legal.disclaimer') }}" class="transition hover:text-white">{{ __('footer.legal.disclaimer') }}</a>
+                    <a href="{{ route('legal.cookies') }}" class="transition hover:text-white">{{ __('footer.legal.cookies') }}</a>
                 </div>
                 <div class="flex items-center gap-5">
                     <span class="hidden sm:inline">KvK 94893527</span>

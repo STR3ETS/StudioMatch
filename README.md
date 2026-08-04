@@ -29,7 +29,7 @@ StudioMatch is een Nederlandse marktplaats voor opname- en mix/master-studio's. 
 
 **Voor artiesten:** zoeken op locatie, prijs, datum, apparatuur en meer; direct online boeken en veilig betalen via iDEAL of creditcard.
 
-**Voor studio-eigenaren:** één agenda, automatische facturatie en snelle uitbetaling via Stripe Connect, tegen 9% commissie per boeking. Geen abonnement, geen exclusiviteit.
+**Voor studio-eigenaren:** één agenda, automatische facturatie en snelle uitbetaling via Stripe Connect. De verhuurder ontvangt 100% van zijn uurtarief (servicekosten liggen bij de artiest), zonder abonnement of exclusiviteit.
 
 ### Kernprincipes (uit de scope)
 
@@ -49,37 +49,44 @@ StudioMatch is een Nederlandse marktplaats voor opname- en mix/master-studio's. 
 | Beschikbaarheid, blokkades en vakantiemodus | Reviews *(placeholder-UI aanwezig, formeel beslispunt)* |
 | Boeken en betalen via Stripe (iDEAL + creditcard) | Kortingscodes, toeslagen, dagdeeltarieven |
 | Facturatie en btw via Moneybird | Borg, verzekering en no-showboetes |
-| Uitbetaling via Stripe Connect Express (9%) | Native app, meerdere landen/valuta |
+| Uitbetaling via Stripe Connect Express | Native app, meerdere landen/valuta |
 | Dashboards: artiest, verhuurder en admin | Automatische dispute-/chargebackworkflows |
 | "Meld een probleem"-flow met payout-hold | Eigen KYC/IBAN-validatie *(doet Stripe)* |
 
 De volledige functionele afbakening, beslispunten (1 t/m 17) en risico's staan in [`studiomatch-scope.md`](studiomatch-scope.md).
 
-## Status frontend
+## Status
 
-| Pagina | Route | Status |
+Het platform is functioneel compleet, op de onderdelen na die op aanleveringen van de klant wachten.
+
+**Publieke site (NL/EN, echte data)** — home met uitgelichte studio's en kaart, zoeken met werkende filters (incl. datum/tijd op echte beschikbaarheid), studiopagina's met slug-URL's, boekingskalender, exacte kaartpin (PDOK-geocoding), schema.org, sitemap.xml en cookiebanner.
+
+**Artiest** — registreren/inloggen (ook ín de boekflow), boeken met slot-reservering (15 min blokkade), prijsopbouw en huisregels-akkoord, verzetten (1x, tot 48u vooraf), annuleren met staffel, "meld een probleem" met bewijsfoto's, accountbeheer (AVG-verwijdering).
+
+**Verhuurder** — bedrijfsgegevens, meerdere studio's met automatische geocoding, ruimtebeheer met reviewflow (min. 5 foto's), beschikbaarheid (weekschema, uitzonderingen, blokkades, vakantiemodus), iCal-export, boekingsinbox met 24-uurstermijn, agenda, omzetoverzicht en schade melden.
+
+**Admin** — goedkeuringswachtrij, tickets met payout-hold, alle boekingen met handmatige statuswijziging (vangnet), gebruikers, omzet per studio en CSV-exports.
+
+**Automatisering** — `bookings:maintain` (scheduler, elke 5 min): verlopen betaalblokkades, auto-annulering na 24u zonder reactie, herinneringsmails en afronden van sessies. Alle mails uit de mailmatrix lopen via notifications en loggen lokaal naar `storage/logs/laravel.log` tot Mailgun is geconfigureerd.
+
+### Testaccounts (na `php artisan db:seed`)
+
+| Rol | E-mail | Wachtwoord |
 |---|---|---|
-| Home (hero + zoekbalk + studio-sliders) | `/` | ✅ |
-| Studio's zoeken (filters conform scope §2.3) | `/studios` | ✅ |
-| Studio-detail (profiel + boekwidget met prijsopbouw) | `/studios/{studio}` | ✅ |
-| Voor studio's (wervingspagina) | `/voor-studios` | ✅ |
-| Hoe werkt StudioMatch | `/hoe-werkt-het` | ✅ |
-| FAQ | `/faq` | ✅ |
-| Contact | `/contact` | ✅ |
-| Taalwissel NL/EN | `/language/{locale}` | ✅ |
+| Artiest | `artiest@studiomatch.test` | `wachtwoord123` |
+| Verhuurder | `verhuurder@studiomatch.test` | `wachtwoord123` |
+| Demo-verhuurder (met data) | `demo-verhuurder@studiomatch.test` | `wachtwoord123` |
+| Admin | `admin@studiomatch.test` | `wachtwoord123` |
 
-Alle pagina's zijn responsive (mobiel-first, incl. fullscreen menu en mobiele zoek-modal), tweetalig, voorzien van SEO-meta + schema.org en scroll-animaties. Data is nog **placeholder**; het datamodel, auth en de boekflow volgen.
+### Wacht op aanlevering klant
 
-### Volgende stappen
-
-- [ ] Datamodel: studio's, ruimtes, beschikbaarheid, boekingen
-- [ ] Auth + rollen (artiest / verhuurder / admin, BESLISSING 10)
-- [ ] Boekflow met slot-reservering (15 min) en statusmachine
-- [ ] Stripe Connect: checkout, webhooks, payout-hold
-- [ ] Facturatie via Moneybird
-- [ ] Dashboards en admin-paneel
-- [ ] Mailmatrix (transactionele mail met SPF/DKIM/DMARC)
-- [ ] Juridische pagina's *(teksten worden aangeleverd)*
+| Wat | Ontgrendelt |
+|---|---|
+| Mailgun-gegevens (`MAIL_*`) | Echte mails, e-mailverificatie, contactformulier |
+| Geverifieerd Stripe-account | Betaalfase: iDEAL/kaart, Connect-onboarding, refunds, uitbetaling op start + 24u |
+| Moneybird + btw-bevestiging accountant | Facturatie (scope §2.6) |
+| Definitieve juridische teksten | AV, privacy, disclaimer, cookiebeleid *(stubs staan klaar)* |
+| BESLISSING 13 | Blog wel/niet in MVP |
 
 ## Huisstijl
 
@@ -116,9 +123,26 @@ composer run setup
 
 # 2. Maak de database aan (naam: studiomatch) en check de DB-gegevens in .env
 
-# 3. Ontwikkelen: server + queue + logs + Vite in één commando
+# 3. Migraties, storage-link en demodata
+php artisan migrate
+php artisan storage:link
+php artisan db:seed
+
+# 4. Ontwikkelen: server + queue + logs + Vite in één commando
 composer run dev
+
+# 5. Scheduler (boekingsonderhoud) in een tweede terminal
+php artisan schedule:work
 ```
+
+### Handige commando's
+
+| Commando | Doel |
+|---|---|
+| `php artisan test` | Volledige testsuite (feature-tests) |
+| `php artisan bookings:maintain` | Boekingsonderhoud eenmalig draaien |
+| `php artisan studios:geocode` | Studio-adressen geocoderen via PDOK (`--force` voor alles) |
+| `php artisan db:seed` | Demodata (idempotent) |
 
 Draai je via Laragon, dan is de site bereikbaar op `http://studiomatch.test`. Los ontwikkelen kan ook met `php artisan serve` + `npm run dev`.
 

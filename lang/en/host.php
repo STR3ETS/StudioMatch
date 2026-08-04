@@ -214,6 +214,23 @@ return [
         'dispute_upheld' => 'Resolved in favour of the artist. The booking has been cancelled and fully refunded.',
     ],
 
+    'damage' => [
+        'title' => 'Report damage',
+        'subtitle' => 'Damage after a session? Report it here with evidence and StudioMatch will get in touch.',
+        'note' => 'After your report the admin receives an alert and shares the artist\'s details with you. The damage itself is settled outside the platform.',
+        'eligible_title' => 'Recent sessions',
+        'eligible_empty' => 'No recent sessions to report damage for. Reporting is possible up to 14 days after a session ends.',
+        'report_button' => 'Report damage for this session',
+        'placeholder' => 'Describe the damage as concretely as possible...',
+        'window_note' => 'Reporting is possible up to 14 days after the session ends.',
+        'submit' => 'Send report',
+        'reported' => 'Your damage report has been sent. The admin will contact you.',
+        'reported_title' => 'Reported damages',
+        'reported_on' => 'reported on :date',
+        'badge' => 'Damage reported',
+        'followup' => 'The admin has received an alert and shares the artist\'s details with you. Settlement happens outside the platform.',
+    ],
+
     'mail' => [
         'greeting' => 'Hi :name,',
         'approved_subject' => 'Your room ":room" is live!',

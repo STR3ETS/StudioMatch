@@ -295,6 +295,52 @@ class BookingExtrasTest extends TestCase
             ->assertSee('€ 150,00');
     }
 
+    public function test_host_can_report_damage_with_photos(): void
+    {
+        Notification::fake();
+        \Illuminate\Support\Facades\Storage::fake('public');
+        $admin = User::factory()->create(['role' => 'admin']);
+        $booking = $this->booking(['date' => today()->subDays(2), 'status' => 'completed']);
+
+        $this->actingAs($this->host)->get('/dashboard/verhuurder/schade')
+            ->assertOk()
+            ->assertSee('Live room A');
+
+        $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/' . $booking->id, [
+            'damage_reason' => 'De condensatormicrofoon is beschadigd achtergelaten.',
+            'photos' => [\Illuminate\Http\UploadedFile::fake()->image('schade.jpg')],
+        ])->assertRedirect(route('host.damage.index'));
+
+        $booking->refresh();
+        $this->assertNotNull($booking->damage_reported_at);
+        $this->assertCount(1, $booking->damage_photos);
+        Notification::assertSentTo($admin, \App\Notifications\DamageReported::class);
+
+        // Historie zichtbaar en niet nogmaals te melden.
+        $this->actingAs($this->host)->get('/dashboard/verhuurder/schade')
+            ->assertSee('De condensatormicrofoon is beschadigd achtergelaten.');
+        $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/' . $booking->id, [
+            'damage_reason' => 'Nog een keer proberen te melden.',
+        ])->assertNotFound();
+    }
+
+    public function test_damage_cannot_be_reported_for_another_hosts_booking(): void
+    {
+        $booking = $this->booking(['date' => today()->subDays(2), 'status' => 'completed']);
+        $other = User::factory()->create(['role' => 'verhuurder']);
+
+        $this->actingAs($other)->post('/dashboard/verhuurder/schade/' . $booking->id, [
+            'damage_reason' => 'Dit is niet mijn boeking maar toch proberen.',
+        ])->assertForbidden();
+    }
+
+    public function test_legal_stub_pages_render(): void
+    {
+        foreach (['/voorwaarden', '/privacy', '/disclaimer', '/cookiebeleid'] as $uri) {
+            $this->get($uri)->assertOk()->assertSee(__('legal.pending_title'));
+        }
+    }
+
     public function test_ical_feed_requires_signature_and_lists_events(): void
     {
         $this->booking(['date' => today()->addDays(3)]);

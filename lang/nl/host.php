@@ -214,6 +214,23 @@ return [
         'dispute_upheld' => 'Afgehandeld in het voordeel van de artiest. De boeking is geannuleerd en volledig terugbetaald.',
     ],
 
+    'damage' => [
+        'title' => 'Schade melden',
+        'subtitle' => 'Schade na een sessie? Meld het hier met bewijs, dan neemt StudioMatch contact op.',
+        'note' => 'Na je melding krijgt de admin een alert en deelt hij de gegevens van de artiest met je. De afhandeling van de schade gebeurt buiten het platform.',
+        'eligible_title' => 'Recente sessies',
+        'eligible_empty' => 'Geen recente sessies om schade voor te melden. Melden kan tot 14 dagen na afloop van een sessie.',
+        'report_button' => 'Schade melden voor deze sessie',
+        'placeholder' => 'Beschrijf de schade zo concreet mogelijk...',
+        'window_note' => 'Melden kan tot 14 dagen na afloop van de sessie.',
+        'submit' => 'Melding versturen',
+        'reported' => 'Je schademelding is verstuurd. De admin neemt contact met je op.',
+        'reported_title' => 'Gemelde schades',
+        'reported_on' => 'gemeld op :date',
+        'badge' => 'Schade gemeld',
+        'followup' => 'De admin heeft een alert ontvangen en deelt de gegevens van de artiest met je. De afhandeling gebeurt buiten het platform.',
+    ],
+
     'mail' => [
         'greeting' => 'Hoi :name,',
         'approved_subject' => 'Je ruimte ":room" staat live!',

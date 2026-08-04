@@ -5,7 +5,7 @@
         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-cookie-bite fa-sm"></i></span>
         <p class="text-sm leading-relaxed text-prussian-blue/70">
             {{ __('cookies.text') }}
-            <a href="#" class="font-semibold text-ruby-red hover:underline">{{ __('cookies.link') }}</a>
+            <a href="{{ route('legal.cookies') }}" class="font-semibold text-ruby-red hover:underline">{{ __('cookies.link') }}</a>
         </p>
     </div>
     <div class="mt-4 flex flex-wrap gap-2">

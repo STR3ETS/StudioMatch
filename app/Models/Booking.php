@@ -14,6 +14,7 @@ use Illuminate\Support\Carbon;
     'hourly_rate_cents', 'rent_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_photos', 'reminder_sent_at',
+    'damage_reported_at', 'damage_reason', 'damage_photos',
 ])]
 class Booking extends Model
 {
@@ -35,6 +36,8 @@ class Booking extends Model
             'disputed_at' => 'datetime',
             'dispute_photos' => 'array',
             'reminder_sent_at' => 'datetime',
+            'damage_reported_at' => 'datetime',
+            'damage_photos' => 'array',
         ];
     }
 
@@ -147,6 +150,18 @@ class Booking extends Model
         return $this->disputed_at !== null
             && $this->status === BookingStatus::Cancelled
             && $this->cancelled_by === 'admin';
+    }
+
+    /**
+     * Schade melden kan na afloop van de sessie, tot 14 dagen erna, en
+     * per boeking één keer (scope §2.8).
+     */
+    public function canReportDamage(): bool
+    {
+        return in_array($this->status, [BookingStatus::Confirmed, BookingStatus::Completed, BookingStatus::Disputed], true)
+            && $this->damage_reported_at === null
+            && $this->endsAt()->isPast()
+            && $this->endsAt()->addDays(14)->isFuture();
     }
 
     /**

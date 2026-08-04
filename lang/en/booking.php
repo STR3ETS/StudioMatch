@@ -104,5 +104,11 @@ return [
         'problem_host_note' => 'StudioMatch mediates and will contact you if needed. You do not have to do anything right now.',
         'reminder_subject' => 'Reminder: session in :room tomorrow',
         'reminder_line' => 'A reminder of the session in :room on :date from :time.',
+        'damage_subject' => 'Damage reported at :room',
+        'damage_line' => ':host reported damage after the session in :room on :date from :time.',
+        'damage_reason' => 'Report: :reason',
+        'damage_host_contact' => 'Host: :name (:email)',
+        'damage_artist_contact' => 'Artist: :name (:email)',
+        'damage_note' => 'Share the artist\'s details with the host. The damage itself is settled outside the platform.',
     ],
 ];

@@ -11,7 +11,7 @@
         ['key' => 'agenda', 'icon' => 'fa-calendar', 'url' => route('host.agenda')],
         ['key' => 'revenue', 'icon' => 'fa-chart-line', 'url' => route('host.revenue')],
         ['key' => 'invoices', 'icon' => 'fa-file-invoice', 'url' => null],
-        ['key' => 'damage', 'icon' => 'fa-triangle-exclamation', 'url' => null],
+        ['key' => 'damage', 'icon' => 'fa-triangle-exclamation', 'url' => route('host.damage.index')],
         ['key' => 'stripe', 'icon' => 'fa-shield-halved', 'url' => null],
         ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit')],
     ];

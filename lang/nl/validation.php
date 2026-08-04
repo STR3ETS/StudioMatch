@@ -63,6 +63,7 @@ return [
         'days.*.open_hour' => 'de openingstijd',
         'days.*.close_hour' => 'de sluitingstijd',
         'dispute_reason' => 'de omschrijving van het probleem',
+        'damage_reason' => 'de omschrijving van de schade',
         'rejection_reason' => 'de reden',
         'current_password' => 'je huidige wachtwoord',
         'delete_password' => 'je wachtwoord',
