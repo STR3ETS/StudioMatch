@@ -32,10 +32,10 @@ return [
         'hosts' => [
             'title' => 'For studios',
             'items' => [
-                ['q' => 'What does it cost to list my studio?', 'a' => 'Nothing. Signing up is free and there are no subscription or setup fees. The platform service fee is charged to the artist at booking; you simply receive your full hourly rate.'],
+                ['q' => 'What does it cost to list my studio?', 'a' => 'Nothing. Signing up is free and there are no subscription or setup fees. The platform service fee is charged to the artist at booking. You simply receive your full hourly rate.'],
                 ['q' => 'When do I get paid?', 'a' => 'Payouts run through Stripe Connect and are released shortly after the session, once the dispute window has passed.'],
                 ['q' => 'Do I have to rent exclusively through StudioMatch?', 'a' => "No. You're free to keep renting your space through your own channels too."],
-                ['q' => 'Will I have to manage my calendar twice?', 'a' => 'No. You manage your availability entirely in StudioMatch; booked times automatically disappear from search results.'],
+                ['q' => 'Will I have to manage my calendar twice?', 'a' => 'No. You manage your availability entirely in StudioMatch. Booked times automatically disappear from search results.'],
                 ['q' => 'What about VAT and invoices?', 'a' => 'The platform automatically generates the correct invoices based on your VAT status. You never have to do it manually.'],
             ],
         ],

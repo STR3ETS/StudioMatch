@@ -10,8 +10,13 @@ if (mapEl) {
     const studios = JSON.parse(mapEl.dataset.studios || '[]');
     const perHour = mapEl.dataset.perHour || '/uur';
 
+    // Optioneel inzoomen (bijv. de studiopagina): data-zoom + centreren op de eerste pin.
+    const zoom = parseInt(mapEl.dataset.zoom || '7', 10);
+    const center = zoom > 7 && studios.length ? [studios[0].lat, studios[0].lng] : [52.2, 5.4];
+
     const map = L.map(mapEl, {
         zoomControl: false,
+        attributionControl: false,
         scrollWheelZoom: true,
         doubleClickZoom: true,
         boxZoom: false,
@@ -20,10 +25,9 @@ if (mapEl) {
         maxZoom: 18,
         maxBounds: [[50.4, 2.6], [54.1, 7.8]],
         maxBoundsViscosity: 1.0,
-    }).setView([52.2, 5.4], 7);
+    }).setView(center, zoom);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
         maxZoom: 19,
     }).addTo(map);
 
@@ -68,7 +72,7 @@ if (mapEl) {
         const icon = L.divIcon({ className: 'map-pin-wrap', html: `<span class="map-pin">&euro;${studio.price}</span>`, iconSize: null });
         const marker = L.marker([studio.lat, studio.lng], { icon }).addTo(map);
         const photos = studio.photos || [];
-        const photosHtml = photos.map((photo, i) => `<img src="${photo}" alt="${studio.name}" class="h-full w-full shrink-0 snap-start object-cover transition duration-500 group-hover:scale-[1.03]"${i ? ' loading="lazy"' : ''}>`).join('');
+        const photosHtml = photos.map((photo, i) => `<span class="h-full w-full shrink-0 snap-start overflow-hidden"><img src="${photo}" alt="${studio.name}" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"${i ? ' loading="lazy"' : ''}></span>`).join('');
         const dotsHtml = photos.map((photo, i) => `<span data-carousel-dot class="h-1.5 w-1.5 rounded-full shadow transition ${i ? 'bg-white/50' : 'bg-white'}"></span>`).join('');
         const arrowsHtml = photos.length > 1
             ? `<button type="button" data-carousel-prev class="absolute left-2 top-1/2 hidden h-8 w-8 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue opacity-0 shadow transition hover:bg-white group-hover:opacity-100 sm:flex"><i class="fa-solid fa-chevron-left text-xs"></i></button>
@@ -83,7 +87,7 @@ if (mapEl) {
                     ${arrowsHtml}
                 </span>
                 <span class="map-card-body">
-                    <span class="map-card-row"><span class="map-card-title">${studio.name}</span><span class="map-card-rating">&#9733; ${studio.rating}</span></span>
+                    <span class="map-card-row"><span class="map-card-title">${studio.name}</span>${studio.rating ? `<span class="map-card-rating">&#9733; ${studio.rating}</span>` : ''}</span>
                     <span class="map-card-city">${studio.city}</span>
                     <span class="map-card-price">&euro;${studio.price} <span>${perHour}</span></span>
                 </span>

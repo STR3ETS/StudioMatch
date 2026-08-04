@@ -8,6 +8,8 @@ return [
     'hero_subtitle' => "Ontdek en boek opname- en mix/master-studio's door heel Nederland.",
     'results' => ':count studios gevonden',
     'load_more' => 'Meer laden',
+    'empty_title' => 'Geen studios gevonden',
+    'empty_text' => 'Er zijn geen studios die aan je filters voldoen. Pas je filters aan of wis ze om alles te zien.',
 
     'filters' => [
         'title' => 'Filters',

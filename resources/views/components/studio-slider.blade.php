@@ -29,7 +29,7 @@
                 </div>
             @endforeach
 
-            <a href="#" class="group shrink-0 snap-start {{ $cardWidth }} h-fit">
+            <a href="{{ route('studios') }}" class="group shrink-0 snap-start {{ $cardWidth }} h-fit">
                 <div class="relative aspect-[1] border border-prussian-blue/10 rounded-2xl">
                     <img src="/temp-studio-2.webp" alt="" class="absolute left-[8%] top-[21%] aspect-square w-[47%] -rotate-[8deg] rounded-xl border-2 border-white object-cover shadow-lg transition-transform duration-300 group-hover:-rotate-[14deg]">
                     <img src="/temp-studio-4.jpg" alt="" class="absolute right-[8%] top-[9%] aspect-square w-[47%] rotate-[8deg] rounded-xl border-2 border-white object-cover shadow-lg transition-transform duration-300 group-hover:rotate-[14deg]">

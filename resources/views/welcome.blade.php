@@ -95,52 +95,10 @@
         </div>
     </div>
 
-    @php
-        // Placeholder-data - vervang later door echte studio's uit de database.
-        $studioNames = ['Redlight Recordings', 'Northside Studio', 'De Fabriek', 'Echo Chamber', 'Sound Garden', 'Studio Zuid', 'Waveform Lab', 'The Booth'];
-        $studioTypes = ['Opname', 'Mix', 'Master'];
-        $studioPhotos = ['/temp-studio-1.webp', '/temp-studio-2.webp', '/temp-studio-3.jpg', '/temp-studio-4.jpg', '/temp-studio-5.jpg'];
-        $studioCities = ['Amsterdam', 'Groningen', 'Rotterdam', 'Utrecht', 'Eindhoven', 'Tilburg', 'Den Haag', 'Nijmegen'];
-
-        $featured = collect($studioNames)->map(fn ($name, $i) => [
-            'name' => $name,
-            'city' => $studioCities[$i],
-            'price' => 33 + (($i * 5) % 25),
-            'type' => $studioTypes[$i % 3],
-            'rating' => number_format(4.3 + (($i * 3) % 7) / 10, 1),
-            'reviews' => 14 + (($i * 11) % 160),
-            'photos' => [$studioPhotos[$i % 5], $studioPhotos[($i + 2) % 5], $studioPhotos[($i + 4) % 5]],
-        ])->all();
-
-        // Coördinaten per stad voor de kaart.
-        $mapCoords = [
-            ['i' => 0, 'lat' => 52.3676, 'lng' => 4.9041],
-            ['i' => 1, 'lat' => 53.2194, 'lng' => 6.5665],
-            ['i' => 2, 'lat' => 51.9244, 'lng' => 4.4777],
-            ['i' => 3, 'lat' => 52.0907, 'lng' => 5.1214],
-            ['i' => 4, 'lat' => 51.4416, 'lng' => 5.4697],
-            ['i' => 5, 'lat' => 51.5606, 'lng' => 5.0919],
-            ['i' => 6, 'lat' => 52.0705, 'lng' => 4.3007],
-            ['i' => 7, 'lat' => 51.8126, 'lng' => 5.8372],
-        ];
-        $mapStudios = collect($mapCoords)->map(function ($c) use ($featured) {
-            $studio = $featured[$c['i']];
-
-            return [
-                'name' => $studio['name'],
-                'city' => $studio['city'],
-                'price' => $studio['price'],
-                'rating' => $studio['rating'],
-                'photos' => $studio['photos'],
-                'url' => route('studios.show', str($studio['name'])->slug()),
-                'lat' => $c['lat'],
-                'lng' => $c['lng'],
-            ];
-        })->all();
-    @endphp
-
-    {{-- Uitgelichte studio's --}}
-    <x-studio-slider :title="__('home.studios.title')" :studios="$featured" :first="true" />
+    {{-- Uitgelichte studio's (live ruimtes uit de database) --}}
+    @if ($featured->isNotEmpty())
+        <x-studio-slider :title="__('home.studios.title')" :studios="$featured" :first="true" />
+    @endif
 
     {{-- Waarom StudioMatch (zelfde stijl als de Voor studio's-pagina) --}}
     <section class="py-16">
@@ -178,12 +136,14 @@
         </div>
     </section>
 
-    {{-- Studio locaties (kaart-placeholder) --}}
-    <section class="py-16">
-        <div class="mx-auto max-w-7xl px-6">
-            <x-studio-map :studios="$mapStudios" class="aspect-[2/1] max-sm:aspect-square rounded-[2.5rem] border border-white/10" />
-        </div>
-    </section>
+    {{-- Studio locaties op de kaart --}}
+    @if (count($mapStudios) > 0)
+        <section class="py-16">
+            <div class="mx-auto max-w-7xl px-6">
+                <x-studio-map :studios="$mapStudios" class="aspect-[2/1] max-sm:aspect-square rounded-[2.5rem] border border-white/10" />
+            </div>
+        </section>
+    @endif
 
     {{-- CTA voor studioverhuurders --}}
     <section class="py-16">

@@ -50,4 +50,17 @@ return [
         'submit' => 'Send reset link',
         'back' => 'Back to login',
     ],
+
+    'reset' => [
+        'title' => 'Set a new password',
+        'subtitle' => 'Choose a new password for your account.',
+        'password' => 'New password',
+        'password_confirm' => 'Repeat password',
+        'submit' => 'Save password',
+    ],
+
+    // Keys used by Laravel during login.
+    'failed' => 'These credentials do not match our records.',
+    'password' => 'The provided password is incorrect.',
+    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 ];

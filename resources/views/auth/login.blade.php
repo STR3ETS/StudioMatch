@@ -7,15 +7,23 @@
     <h1 class="text-3xl font-bold text-prussian-blue">{{ __('auth.login.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('auth.login.subtitle') }}</p>
 
-    <form action="#" class="mt-8 space-y-5">
+    @if (session('status'))
+        <p class="mt-6 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-700">{{ session('status') }}</p>
+    @endif
+
+    <form method="POST" action="{{ route('login.store') }}" class="mt-8 space-y-5">
+        @csrf
+
         <div>
             <label for="email" class="{{ $label }}">{{ __('auth.fields.email') }}</label>
-            <input id="email" type="email" name="email" placeholder="{{ __('auth.fields.email_placeholder') }}" class="{{ $field }}" required autofocus>
+            <input id="email" type="email" name="email" value="{{ old('email') }}" placeholder="{{ __('auth.fields.email_placeholder') }}" class="{{ $field }}" required autofocus>
+            <x-input-error field="email" />
         </div>
 
         <div>
             <label for="password" class="{{ $label }}">{{ __('auth.fields.password') }}</label>
             <input id="password" type="password" name="password" placeholder="{{ __('auth.fields.password_placeholder') }}" class="{{ $field }}" required>
+            <x-input-error field="password" />
         </div>
 
         <div class="flex items-center justify-between gap-4">

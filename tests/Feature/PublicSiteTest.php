@@ -1,0 +1,164 @@
+<?php
+
+namespace Tests\Feature;
+
+use App\Models\Room;
+use App\Models\Studio;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class PublicSiteTest extends TestCase
+{
+    use RefreshDatabase;
+
+    private function studio(array $attributes = []): Studio
+    {
+        $host = User::factory()->create(['role' => 'verhuurder']);
+
+        return $host->studios()->create(array_merge([
+            'name' => 'Redlight Recordings',
+            'street' => 'Prinsengracht 263',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
+        ], $attributes));
+    }
+
+    private function liveRoom(?Studio $studio = null, array $attributes = []): Room
+    {
+        $room = ($studio ?? $this->studio())->rooms()->create(array_merge([
+            'title' => 'Live room A',
+            'description' => 'Professionele opnamestudio met fijne akoestiek.',
+            'type' => 'opname',
+            'hourly_rate_cents' => 4500,
+            'min_hours' => 2,
+            'capacity' => 6,
+            'engineer_included' => true,
+            'equipment' => ['mic_condenser', 'monitors'],
+            'daws' => ['Logic'],
+            'facilities' => ['wifi', 'coffee'],
+            'status' => 'live',
+        ], $attributes));
+
+        $room->seedDefaultHours();
+        $room->photos()->create(['path' => 'rooms/' . $room->id . '/foto.jpg']);
+
+        return $room->fresh();
+    }
+
+    public function test_search_page_shows_only_live_rooms(): void
+    {
+        $studio = $this->studio();
+        $this->liveRoom($studio, ['title' => 'Zichtbare ruimte']);
+        $this->liveRoom($studio, ['title' => 'In review ruimte', 'status' => 'in_review']);
+        $this->liveRoom($studio, ['title' => 'Vakantie ruimte', 'on_vacation' => true]);
+
+        $this->get('/studios')
+            ->assertOk()
+            ->assertSee('Zichtbare ruimte')
+            ->assertDontSee('In review ruimte')
+            ->assertDontSee('Vakantie ruimte');
+    }
+
+    public function test_expired_vacation_room_is_visible_again(): void
+    {
+        $this->liveRoom(null, ['on_vacation' => true, 'vacation_until' => today()->subDay()]);
+
+        $this->get('/studios')->assertOk()->assertSee('Live room A');
+    }
+
+    public function test_search_filters_on_price_type_and_engineer(): void
+    {
+        $studio = $this->studio();
+        $this->liveRoom($studio, ['title' => 'Goedkope opname', 'hourly_rate_cents' => 3000]);
+        $this->liveRoom($studio, ['title' => 'Dure mix', 'type' => 'mix_master', 'hourly_rate_cents' => 9000, 'engineer_included' => false]);
+
+        $this->get('/studios?price_max=50')->assertSee('Goedkope opname')->assertDontSee('Dure mix');
+        $this->get('/studios?types[]=mix_master')->assertSee('Dure mix')->assertDontSee('Goedkope opname');
+        $this->get('/studios?engineer[]=1')->assertSee('Goedkope opname')->assertDontSee('Dure mix');
+    }
+
+    public function test_search_filters_on_location_and_capacity(): void
+    {
+        $this->liveRoom($this->studio(['city' => 'Amsterdam']), ['title' => 'Ruimte Amsterdam', 'capacity' => 4]);
+        $this->liveRoom($this->studio(['city' => 'Groningen']), ['title' => 'Ruimte Groningen', 'capacity' => 10]);
+
+        $this->get('/studios?location=Groningen')->assertSee('Ruimte Groningen')->assertDontSee('Ruimte Amsterdam');
+        $this->get('/studios?capacity=8')->assertSee('Ruimte Groningen')->assertDontSee('Ruimte Amsterdam');
+    }
+
+    public function test_search_filters_on_availability_date(): void
+    {
+        // Standaardschema: ma t/m vr open 09:00-21:00, weekend dicht.
+        $this->liveRoom();
+
+        $monday = today()->next('monday');
+        $sunday = today()->next('sunday');
+
+        $this->get('/studios?date=' . $monday->toDateString())->assertSee('Live room A');
+        $this->get('/studios?date=' . $sunday->toDateString())->assertDontSee('Live room A');
+        $this->get('/studios?date=' . $monday->toDateString() . '&start=10&end=12')->assertSee('Live room A');
+        $this->get('/studios?date=' . $monday->toDateString() . '&start=6&end=8')->assertDontSee('Live room A');
+    }
+
+    public function test_gallery_shows_more_photos_indicator(): void
+    {
+        $room = $this->liveRoom();
+        foreach (range(2, 7) as $i) {
+            $room->photos()->create(['path' => "rooms/{$room->id}/foto{$i}.jpg", 'sort_order' => $i]);
+        }
+
+        // 7 foto's, 5 in de galerij → "+2" op de laatste tegel.
+        $this->get('/studios/' . $room->slug)->assertOk()->assertSee('+2');
+    }
+
+    public function test_detail_page_renders_live_room_by_slug(): void
+    {
+        $room = $this->liveRoom();
+
+        $this->get('/studios/' . $room->slug)
+            ->assertOk()
+            ->assertSee('Live room A')
+            ->assertSee('Redlight Recordings')
+            ->assertSee('Professionele opnamestudio')
+            ->assertSee('Condensatormicrofoon')
+            ->assertSee('Prinsengracht 263');
+    }
+
+    public function test_detail_page_is_not_available_for_unpublished_rooms(): void
+    {
+        $inReview = $this->liveRoom(null, ['status' => 'in_review']);
+        $vacation = $this->liveRoom($inReview->studio, ['title' => 'Vakantie', 'on_vacation' => true]);
+
+        $this->get('/studios/' . $inReview->slug)->assertNotFound();
+        $this->get('/studios/' . $vacation->slug)->assertNotFound();
+    }
+
+    public function test_rooms_get_a_unique_slug(): void
+    {
+        $studio = $this->studio();
+        $roomA = $this->liveRoom($studio);
+        $roomB = $this->liveRoom($studio);
+
+        $this->assertNotNull($roomA->slug);
+        $this->assertNotSame($roomA->slug, $roomB->slug);
+        $this->assertStringContainsString('redlight-recordings-live-room-a', $roomA->slug);
+    }
+
+    public function test_homepage_features_live_rooms(): void
+    {
+        $this->liveRoom(null, ['title' => 'Uitgelichte ruimte']);
+
+        $this->get('/')->assertOk()->assertSee('Uitgelichte ruimte');
+    }
+
+    public function test_homepage_search_type_from_search_bar_maps_to_room_types(): void
+    {
+        $studio = $this->studio();
+        $this->liveRoom($studio, ['title' => 'Opname ruimte']);
+        $this->liveRoom($studio, ['title' => 'Mix ruimte', 'type' => 'mix_master']);
+
+        $this->get('/studios?type=recording')->assertSee('Opname ruimte')->assertDontSee('Mix ruimte');
+        $this->get('/studios?type=mix')->assertSee('Mix ruimte')->assertDontSee('Opname ruimte');
+    }
+}

@@ -50,4 +50,17 @@ return [
         'submit' => 'Verstuur herstellink',
         'back' => 'Terug naar inloggen',
     ],
+
+    'reset' => [
+        'title' => 'Nieuw wachtwoord instellen',
+        'subtitle' => 'Kies een nieuw wachtwoord voor je account.',
+        'password' => 'Nieuw wachtwoord',
+        'password_confirm' => 'Herhaal wachtwoord',
+        'submit' => 'Wachtwoord opslaan',
+    ],
+
+    // Door Laravel gebruikte sleutels bij inloggen.
+    'failed' => 'De combinatie van e-mailadres en wachtwoord klopt niet.',
+    'password' => 'Het opgegeven wachtwoord is onjuist.',
+    'throttle' => 'Te veel inlogpogingen. Probeer het over :seconds seconden opnieuw.',
 ];

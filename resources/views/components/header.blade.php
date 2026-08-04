@@ -57,9 +57,15 @@
             </details>
 
             {{-- Account --}}
-            <a href="{{ route('login') }}" class="flex h-9 items-center gap-2 rounded-full bg-ruby-red px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
-                <i class="fa-solid fa-user fa-sm"></i> {{ __('nav.account') }}
-            </a>
+            @auth
+                <a href="{{ route('dashboard') }}" class="flex h-9 items-center gap-2 rounded-full bg-ruby-red px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
+                    <i class="fa-solid fa-gauge-high fa-sm"></i> {{ __('nav.dashboard') }}
+                </a>
+            @else
+                <a href="{{ route('login') }}" class="flex h-9 items-center gap-2 rounded-full bg-ruby-red px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
+                    <i class="fa-solid fa-user fa-sm"></i> {{ __('nav.account') }}
+                </a>
+            @endauth
 
             {{-- Hamburger (mobiel) --}}
             <button type="button" data-menu-toggle aria-expanded="false" aria-label="Menu"

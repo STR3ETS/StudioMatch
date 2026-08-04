@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null])
+@props(['title' => null, 'description' => null, 'schema' => null])
 
 @php
     $siteName = config('app.name', 'StudioMatch');
@@ -30,6 +30,11 @@
             ],
         ],
     ];
+
+    // Paginaspecifieke structured data (bijv. LocalBusiness op studiopagina's).
+    if ($schema !== null) {
+        $structuredData[] = $schema;
+    }
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -79,5 +84,7 @@
         {{ $slot }}
 
         <x-footer />
+
+        <x-cookie-banner />
     </body>
 </html>

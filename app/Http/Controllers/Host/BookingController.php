@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Http\Controllers\Host;
+
+use App\Enums\BookingStatus;
+use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Notifications\BookingConfirmed;
+use App\Notifications\BookingDeclined;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+
+class BookingController extends Controller
+{
+    /**
+     * Boekingsinbox (scope §2.9): nieuwe aanvragen plus komende bevestigde sessies.
+     */
+    public function index(Request $request): View
+    {
+        $bookings = Booking::query()
+            ->whereIn('room_id', $request->user()->rooms()->select('rooms.id'))
+            ->with(['room.studio', 'user'])
+            ->get();
+
+        return view('host.bookings.index', [
+            'requests' => $bookings->where('status', BookingStatus::PendingConfirmation)
+                ->sortBy(fn (Booking $booking) => $booking->startsAt())->values(),
+            'upcoming' => $bookings->where('status', BookingStatus::Confirmed)
+                ->filter(fn (Booking $booking) => $booking->endsAt()->isFuture())
+                ->sortBy(fn (Booking $booking) => $booking->startsAt())->values(),
+            'disputes' => $bookings->whereNotNull('disputed_at')
+                ->sortByDesc('disputed_at')->values(),
+        ]);
+    }
+
+    /**
+     * Accepteren: pending_confirmation → confirmed, beide partijen krijgen
+     * de bevestiging met adres en contactgegevens (scope §2.10).
+     */
+    public function accept(Request $request, Booking $booking): RedirectResponse
+    {
+        $this->authorizeBooking($request, $booking);
+
+        $booking->update(['status' => BookingStatus::Confirmed, 'confirmed_at' => now()]);
+
+        $booking->user->notify(new BookingConfirmed($booking));
+        $booking->room->studio->user->notify(new BookingConfirmed($booking));
+
+        return redirect()->route('host.bookings.index')->with('status', __('host.bookings.accepted'));
+    }
+
+    /**
+     * Weigeren: automatisch 100% terug naar de artiest (scope §2.8).
+     */
+    public function decline(Request $request, Booking $booking): RedirectResponse
+    {
+        $this->authorizeBooking($request, $booking);
+
+        $booking->update(['status' => BookingStatus::Declined]);
+
+        $booking->user->notify(new BookingDeclined($booking));
+
+        return redirect()->route('host.bookings.index')->with('status', __('host.bookings.declined'));
+    }
+
+    private function authorizeBooking(Request $request, Booking $booking): void
+    {
+        abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
+        abort_unless($booking->status === BookingStatus::PendingConfirmation, 404);
+    }
+}

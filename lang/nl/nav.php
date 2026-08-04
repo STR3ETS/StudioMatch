@@ -8,4 +8,5 @@ return [
     'faq' => 'FAQ',
     'contact' => 'Contact',
     'account' => 'Account',
+    'dashboard' => 'Dashboard',
 ];

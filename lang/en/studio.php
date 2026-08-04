@@ -31,6 +31,8 @@ return [
         'vat' => 'VAT 21% on service fee',
         'total' => 'Total',
         'book' => 'Book now',
+        'pick_date_first' => 'Pick a date in the calendar first.',
+        'no_slots' => 'No free start times on this day for this duration. Pick another day or a shorter session.',
         'disclaimer' => "You won't be charged yet",
         'cancel' => 'Free cancellation up to 48 hours before start',
     ],

@@ -32,10 +32,10 @@ return [
         'hosts' => [
             'title' => "Voor studio's",
             'items' => [
-                ['q' => 'Wat kost het om mijn studio aan te melden?', 'a' => 'Niets. Aanmelden is gratis en er zijn geen abonnements- of opstartkosten. De servicekosten van het platform worden bij de boeking aan de artiest berekend; jij ontvangt gewoon je volledige uurtarief.'],
+                ['q' => 'Wat kost het om mijn studio aan te melden?', 'a' => 'Niets. Aanmelden is gratis en er zijn geen abonnements- of opstartkosten. De servicekosten van het platform worden bij de boeking aan de artiest berekend. Jij ontvangt gewoon je volledige uurtarief.'],
                 ['q' => 'Wanneer word ik uitbetaald?', 'a' => 'Uitbetalingen lopen via Stripe Connect en worden kort na de sessie vrijgegeven, zodra het dispuutvenster is verstreken.'],
                 ['q' => 'Moet ik exclusief via StudioMatch verhuren?', 'a' => 'Nee. Je blijft vrij om je ruimte ook via je eigen kanalen te verhuren.'],
-                ['q' => 'Beheer ik mijn agenda dan dubbel?', 'a' => 'Nee. Je beheert je beschikbaarheid volledig in StudioMatch; geboekte tijden verdwijnen automatisch uit de zoekresultaten.'],
+                ['q' => 'Beheer ik mijn agenda dan dubbel?', 'a' => 'Nee. Je beheert je beschikbaarheid volledig in StudioMatch. Geboekte tijden verdwijnen automatisch uit de zoekresultaten.'],
                 ['q' => 'Hoe zit het met btw en facturen?', 'a' => 'Het platform genereert automatisch de juiste facturen op basis van je btw-status. Jij hoeft niets handmatig te doen.'],
             ],
         ],

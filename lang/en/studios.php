@@ -8,6 +8,8 @@ return [
     'hero_subtitle' => 'Discover and book recording and mix/master studios across the Netherlands.',
     'results' => ':count studios found',
     'load_more' => 'Load more',
+    'empty_title' => 'No studios found',
+    'empty_text' => 'No studios match your filters. Adjust your filters or clear them to see everything.',
 
     'filters' => [
         'title' => 'Filters',

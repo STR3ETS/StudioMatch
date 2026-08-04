@@ -31,6 +31,8 @@ return [
         'vat' => 'Btw 21% over servicekosten',
         'total' => 'Totaal',
         'book' => 'Boek nu',
+        'pick_date_first' => 'Kies eerst een datum in de kalender.',
+        'no_slots' => 'Geen vrije starttijden op deze dag voor deze duur. Kies een andere dag of een kortere sessie.',
         'disclaimer' => 'Je wordt nu nog niet gefactureerd',
         'cancel' => 'Gratis annuleren tot 48 uur voor aanvang',
     ],
