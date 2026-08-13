@@ -44,7 +44,7 @@
     </head>
     <body class="min-h-screen bg-prussian-blue/[0.04]">
         <div class="lg:flex">
-            <aside data-sidebar class="fixed inset-y-0 left-0 z-[1300] w-72 -translate-x-full transition-transform duration-300 lg:sticky lg:top-4 lg:ml-4 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0 lg:transition-none [view-transition-name:dash-sidebar]">
+            <aside data-sidebar class="fixed inset-y-0 left-0 z-[1300] w-72 -translate-x-full transition-transform duration-300 lg:sticky lg:inset-y-auto lg:top-4 lg:my-4 lg:ml-4 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0 lg:transition-none [view-transition-name:dash-sidebar]">
                 <div class="flex h-full flex-col rounded-r-3xl bg-ruby-red shadow-xl shadow-ruby-red/25 lg:rounded-3xl">
                     <div class="flex items-center justify-between px-6 pb-2 pt-6">
                         <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-wit.png" alt="StudioMatch" class="h-8 w-auto"></a>
