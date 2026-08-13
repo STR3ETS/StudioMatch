@@ -95,6 +95,8 @@ return [
         'approve_title' => 'Goedkeuren',
         'approve_text' => 'De ruimte gaat live en de verhuurder ontvangt een mail.',
         'approve_button' => 'Zet live',
+        'stripe_required_title' => 'Stripe-onboarding nog niet afgerond',
+        'stripe_required' => ':host heeft de Stripe-onboarding nog niet afgerond. De ruimte kan pas live zodra uitbetalingen aan deze verhuurder mogelijk zijn.',
         'approved' => '":room" staat nu live. De verhuurder is gemaild.',
         'reject_title' => 'Afwijzen met reden',
         'reject_placeholder' => 'Bijv. de foto\'s zijn te donker of de omschrijving is te summier...',

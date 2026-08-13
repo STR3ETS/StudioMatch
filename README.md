@@ -67,7 +67,9 @@ Het platform is functioneel compleet, op de onderdelen na die op aanleveringen v
 
 **Admin** — goedkeuringswachtrij, tickets met payout-hold, alle boekingen met handmatige statuswijziging (vangnet), gebruikers, omzet per studio en CSV-exports.
 
-**Automatisering** — `bookings:maintain` (scheduler, elke 5 min): verlopen betaalblokkades, auto-annulering na 24u zonder reactie, herinneringsmails en afronden van sessies. Alle mails uit de mailmatrix lopen via notifications en loggen lokaal naar `storage/logs/laravel.log` tot Mailgun is geconfigureerd.
+**Betalingen (Stripe-testmode)** — Stripe Checkout met iDEAL en creditcard, automatische refunds bij weigeren/annuleren/tickets (annuleringsstaffel 100/50/0%), Connect Express-onboarding voor verhuurders ("Stripe & uitbetalingen" + checklist-stap), admin kan een ruimte pas live zetten als de verhuurder uitbetalingen heeft geactiveerd, en een webhook-endpoint (`POST /stripe/webhook`). Zonder keys draait alles in simulatiemodus.
+
+**Automatisering** — `bookings:maintain` (scheduler, elke 5 min): verlopen betaalblokkades, auto-annulering na 24u zonder reactie, herinneringsmails, afronden van sessies en automatische uitbetaling van de huur aan de verhuurder op starttijd + 24u (Stripe-transfer). Alle mails uit de mailmatrix lopen via notifications en loggen lokaal naar `storage/logs/laravel.log` tot Mailgun is geconfigureerd.
 
 ### Testaccounts (na `php artisan db:seed`)
 
@@ -83,7 +85,7 @@ Het platform is functioneel compleet, op de onderdelen na die op aanleveringen v
 | Wat | Ontgrendelt |
 |---|---|
 | Mailgun-gegevens (`MAIL_*`) | Echte mails, e-mailverificatie, contactformulier |
-| Geverifieerd Stripe-account | Betaalfase: iDEAL/kaart, Connect-onboarding, refunds, uitbetaling op start + 24u |
+| Stripe-webhooksecret (`STRIPE_WEBHOOK_SECRET`, na aanmaken endpoint in het Stripe-dashboard) | Webhookverwerking van betalingen en accountstatussen |
 | Moneybird + btw-bevestiging accountant | Facturatie (scope §2.6) |
 | Definitieve juridische teksten | AV, privacy, disclaimer, cookiebeleid *(stubs staan klaar)* |
 | BESLISSING 13 | Blog wel/niet in MVP |
@@ -108,7 +110,7 @@ Het platform is functioneel compleet, op de onderdelen na die op aanleveringen v
 | Backend | Laravel 13, PHP 8.4 |
 | Frontend | Blade-components + Tailwind CSS 4 + Vite 8 |
 | Database | MySQL (`studiomatch`) |
-| Betalingen | Stripe Connect Express *(gepland)* |
+| Betalingen | Stripe Checkout (iDEAL + creditcard) en Connect Express, met simulatiemodus zonder keys |
 | Facturatie | Moneybird *(gepland)* |
 | i18n | Laravel-localisatie, NL (standaard) + EN |
 | Iconen | Font Awesome (lokaal, `public/fontawesome/`) |

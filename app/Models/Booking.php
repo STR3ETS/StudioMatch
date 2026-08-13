@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\BookingStatus;
+use App\Notifications\BookingReceived;
+use App\Notifications\BookingRequested;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 
 #[Fillable([
     'room_id', 'user_id', 'date', 'start_hour', 'end_hour',
@@ -15,6 +18,8 @@ use Illuminate\Support\Carbon;
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_photos', 'reminder_sent_at',
     'damage_reported_at', 'damage_reason', 'damage_photos',
+    'stripe_checkout_session_id', 'stripe_payment_intent_id', 'stripe_refund_id', 'refunded_cents',
+    'stripe_transfer_id', 'transferred_at',
 ])]
 class Booking extends Model
 {
@@ -34,6 +39,7 @@ class Booking extends Model
             'reminder_sent_at' => 'datetime',
             'damage_reported_at' => 'datetime',
             'damage_photos' => 'array',
+            'transferred_at' => 'datetime',
         ];
     }
 
@@ -133,6 +139,57 @@ class Booking extends Model
             && $this->damage_reported_at === null
             && $this->endsAt()->isPast()
             && $this->endsAt()->addDays(14)->isFuture();
+    }
+
+    public function markAsPaid(): bool
+    {
+        $marked = DB::transaction(function () {
+            $booking = self::whereKey($this->id)->lockForUpdate()->first();
+
+            if ($booking->status === BookingStatus::Expired) {
+                $taken = $booking->room->bookings()
+                    ->active()
+                    ->whereKeyNot($booking->id)
+                    ->whereDate('date', $booking->date)
+                    ->where('start_hour', '<', $booking->end_hour)
+                    ->where('end_hour', '>', $booking->start_hour)
+                    ->exists();
+
+                if ($taken) {
+                    return false;
+                }
+            } elseif ($booking->status !== BookingStatus::PendingPayment) {
+                return false;
+            }
+
+            $booking->update(['status' => BookingStatus::PendingConfirmation, 'requested_at' => now()]);
+
+            return true;
+        });
+
+        if ($marked) {
+            $this->refresh();
+            $this->room->studio->user->notify(new BookingRequested($this));
+            $this->user->notify(new BookingReceived($this));
+        }
+
+        return $marked;
+    }
+
+    public function refundAmountCents(int $percent): int
+    {
+        if ($percent <= 0) {
+            return 0;
+        }
+
+        return (int) round($this->rent_cents * $percent / 100) + $this->service_fee_cents + $this->vat_cents;
+    }
+
+    public function hostPayoutCents(): int
+    {
+        $refundedFromRent = max(0, ($this->refunded_cents ?? 0) - $this->service_fee_cents - $this->vat_cents);
+
+        return max(0, $this->rent_cents - $refundedFromRent);
     }
 
     public function refundPercentForCancellationNow(): int

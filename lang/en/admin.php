@@ -95,6 +95,8 @@ return [
         'approve_title' => 'Approve',
         'approve_text' => 'The room goes live and the host receives an email.',
         'approve_button' => 'Take live',
+        'stripe_required_title' => 'Stripe onboarding not completed yet',
+        'stripe_required' => ':host has not completed Stripe onboarding yet. The room can only go live once payouts to this host are possible.',
         'approved' => '":room" is now live. The host has been emailed.',
         'reject_title' => 'Reject with reason',
         'reject_placeholder' => 'E.g. the photos are too dark or the description is too brief...',

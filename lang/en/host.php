@@ -12,7 +12,7 @@ return [
         'revenue' => 'Revenue & payouts',
         'invoices' => 'Invoices',
         'damage' => 'Report damage',
-        'stripe' => 'Stripe details',
+        'stripe' => 'Stripe & payouts',
         'account' => 'Account',
     ],
 
@@ -192,6 +192,26 @@ return [
         'col_month' => 'Month',
         'col_sessions' => 'Sessions',
         'col_revenue' => 'Revenue',
+    ],
+
+    'stripe' => [
+        'title' => 'Stripe & payouts',
+        'subtitle' => 'Connect your Stripe account to receive payouts. You always keep 100% of your hourly rate.',
+        'profile_first' => 'Fill in your business details first. After that you can connect your Stripe account.',
+        'not_configured_title' => 'Payment environment not active yet',
+        'not_configured' => 'The payment environment is not configured yet. Please try again later.',
+        'demo_note' => 'The Stripe connection is not enabled in this environment yet. Once it is, connecting your account here takes just a few minutes.',
+        'failed' => 'The Stripe connection could not be started. Please try again later.',
+        'returned' => 'Welcome back. We updated your Stripe status.',
+        'not_connected_title' => 'Not connected yet',
+        'not_connected_text' => 'Start the Stripe onboarding and complete the identity and bank verification. It takes a few minutes and is required before your rooms can go live.',
+        'connect_button' => 'Start Stripe onboarding',
+        'pending_title' => 'Verification in progress',
+        'pending_text' => 'Your details have been (partly) submitted. Finish the onboarding or wait for Stripe to complete the verification. This page updates the status automatically.',
+        'continue_button' => 'Continue onboarding',
+        'active_title' => 'Payouts active',
+        'active_text' => 'Your Stripe account is connected and verified. Payouts now run automatically.',
+        'payout_note' => 'The rent for a session is transferred to your Stripe account automatically 24 hours after the start time, once the report window has closed.',
     ],
 
     'bookings' => [

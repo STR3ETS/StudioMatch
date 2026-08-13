@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Notifications\BookingCancelled;
+use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -45,6 +46,8 @@ class BookingController extends Controller
         ]);
 
         if ($newStatus === BookingStatus::Cancelled) {
+            StripeService::refund($booking, $booking->refundAmountCents(100));
+
             $booking->user->notify(new BookingCancelled($booking, 100));
             $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
         }

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Notifications\BookingConfirmed;
 use App\Notifications\BookingDeclined;
+use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -49,6 +50,8 @@ class BookingController extends Controller
         $this->authorizeBooking($request, $booking);
 
         $booking->update(['status' => BookingStatus::Declined]);
+
+        StripeService::refund($booking, $booking->refundAmountCents(100));
 
         $booking->user->notify(new BookingDeclined($booking));
 

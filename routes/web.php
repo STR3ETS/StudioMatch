@@ -24,9 +24,11 @@ use App\Http\Controllers\IcalController;
 use App\Http\Controllers\Host\ProfileController;
 use App\Http\Controllers\Host\RoomController;
 use App\Http\Controllers\Host\RoomPhotoController;
+use App\Http\Controllers\Host\StripeController as HostStripeController;
 use App\Http\Controllers\Host\StudioController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PublicStudioController;
+use App\Http\Controllers\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -97,6 +99,7 @@ Route::middleware('auth')->group(function () {
             ->middleware('throttle:10,1')->name('bookings.store');
         Route::get('/boekingen/{booking}/betalen', [BookingController::class, 'payment'])->name('bookings.payment');
         Route::post('/boekingen/{booking}/betalen', [BookingController::class, 'pay'])->name('bookings.pay');
+        Route::get('/boekingen/{booking}/betaald', [BookingController::class, 'paid'])->name('bookings.paid');
         Route::post('/boekingen/{booking}/annuleren', [BookingController::class, 'cancel'])->name('bookings.cancel');
         Route::get('/boekingen/{booking}/verzetten', [BookingController::class, 'reschedule'])->name('bookings.reschedule');
         Route::post('/boekingen/{booking}/verzetten', [BookingController::class, 'rescheduleStore'])->name('bookings.reschedule.store');
@@ -135,6 +138,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/schade', [DamageController::class, 'index'])->name('host.damage.index');
         Route::post('/schade/{booking}', [DamageController::class, 'store'])->name('host.damage.store');
 
+        Route::get('/uitbetalingen', [HostStripeController::class, 'show'])->name('host.stripe.show');
+        Route::post('/uitbetalingen/onboarding', [HostStripeController::class, 'onboard'])->name('host.stripe.onboard');
+        Route::get('/uitbetalingen/terug', [HostStripeController::class, 'returned'])->name('host.stripe.return');
+
         Route::get('/beschikbaarheid', [AvailabilityController::class, 'index'])->name('host.availability.index');
         Route::get('/beschikbaarheid/{room}', [AvailabilityController::class, 'edit'])->name('host.availability.edit');
         Route::put('/beschikbaarheid/{room}/schema', [AvailabilityController::class, 'updateSchedule'])->name('host.availability.schedule');
@@ -166,6 +173,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/uitloggen', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
+
+Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
 Route::get('/ical/ruimte/{room}', IcalController::class)->middleware('signed')->name('ical.room');
 

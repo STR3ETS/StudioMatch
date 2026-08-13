@@ -27,9 +27,19 @@
 
                 <x-info-note class="mt-3">{{ __('booking.payment.hold_note', ['time' => $booking->expires_at->format('H:i')]) }}</x-info-note>
 
-                <div class="mt-5 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-xs leading-relaxed text-prussian-blue/60">
-                    <i class="fa-solid fa-flask mr-1 text-amber-500"></i> {{ __('booking.payment.demo_note') }}
-                </div>
+                @if ($stripeEnabled)
+                    <div class="mt-5 rounded-xl bg-prussian-blue/[0.03] px-4 py-3 text-xs leading-relaxed text-prussian-blue/60">
+                        <i class="fa-solid fa-lock mr-1 text-prussian-blue/40"></i> {{ __('booking.payment.stripe_note') }}
+                    </div>
+                @else
+                    <div class="mt-5 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-xs leading-relaxed text-prussian-blue/60">
+                        <i class="fa-solid fa-flask mr-1 text-amber-500"></i> {{ __('booking.payment.demo_note') }}
+                    </div>
+                @endif
+
+                @error('payment')
+                    <p class="mt-4 text-sm font-semibold text-ruby-red">{{ $message }}</p>
+                @enderror
 
                 <form method="POST" action="{{ route('bookings.pay', $booking) }}" class="mt-6">
                     @csrf

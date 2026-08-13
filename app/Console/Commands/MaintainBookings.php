@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Notifications\BookingCancelled;
 use App\Notifications\SessionReminder;
+use App\Support\StripeService;
 use Illuminate\Console\Command;
 
 class MaintainBookings extends Command
@@ -29,6 +30,7 @@ class MaintainBookings extends Command
 
         foreach ($stale as $booking) {
             $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'auto']);
+            StripeService::refund($booking, $booking->refundAmountCents(100));
             $booking->user->notify(new BookingCancelled($booking, 100));
             $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
         }
@@ -52,7 +54,25 @@ class MaintainBookings extends Command
             ->each(fn (Booking $booking) => $booking->update(['status' => BookingStatus::Completed]))
             ->count();
 
-        $this->info("Verlopen: {$expired}, automatisch geannuleerd: {$stale->count()}, herinneringen: {$reminders->count()}, voltooid: {$completed}.");
+        $transfers = 0;
+
+        if (StripeService::enabled()) {
+            $due = Booking::whereIn('status', [BookingStatus::Completed, BookingStatus::Cancelled])
+                ->whereNull('transferred_at')
+                ->whereNotNull('stripe_payment_intent_id')
+                ->with('room.studio.user.hostProfile')
+                ->get()
+                ->filter(fn (Booking $booking) => $booking->startsAt()->addHours(24)->isPast()
+                    && $booking->hostPayoutCents() > 0);
+
+            foreach ($due as $booking) {
+                if (StripeService::transfer($booking)) {
+                    $transfers++;
+                }
+            }
+        }
+
+        $this->info("Verlopen: {$expired}, automatisch geannuleerd: {$stale->count()}, herinneringen: {$reminders->count()}, voltooid: {$completed}, uitbetalingen: {$transfers}.");
 
         return self::SUCCESS;
     }

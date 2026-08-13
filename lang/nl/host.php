@@ -12,7 +12,7 @@ return [
         'revenue' => 'Omzet & uitbetalingen',
         'invoices' => 'Facturen',
         'damage' => 'Schade melden',
-        'stripe' => 'Stripe-gegevens',
+        'stripe' => 'Stripe & uitbetalingen',
         'account' => 'Account',
     ],
 
@@ -192,6 +192,26 @@ return [
         'col_month' => 'Maand',
         'col_sessions' => 'Sessies',
         'col_revenue' => 'Omzet',
+    ],
+
+    'stripe' => [
+        'title' => 'Stripe & uitbetalingen',
+        'subtitle' => 'Koppel je Stripe-account om uitbetalingen te ontvangen. Jij krijgt altijd 100% van je uurtarief.',
+        'profile_first' => 'Vul eerst je bedrijfsgegevens in. Daarna kun je je Stripe-account koppelen.',
+        'not_configured_title' => 'Betaalomgeving nog niet actief',
+        'not_configured' => 'De betaalomgeving is nog niet geconfigureerd. Probeer het later opnieuw.',
+        'demo_note' => 'De koppeling met Stripe staat nog niet aan in deze omgeving. Zodra dat gebeurd is, koppel je hier in een paar minuten je account.',
+        'failed' => 'De koppeling met Stripe kon niet worden gestart. Probeer het later opnieuw.',
+        'returned' => 'Welkom terug. We hebben je Stripe-status bijgewerkt.',
+        'not_connected_title' => 'Nog niet gekoppeld',
+        'not_connected_text' => 'Start de Stripe-onboarding en doorloop de identiteits- en bankverificatie. Dit duurt een paar minuten en is nodig voordat je ruimtes live kunnen.',
+        'connect_button' => 'Start Stripe-onboarding',
+        'pending_title' => 'Verificatie in behandeling',
+        'pending_text' => 'Je gegevens zijn (deels) aangeleverd. Rond de onboarding af of wacht tot Stripe de verificatie heeft afgerond. Deze pagina werkt de status automatisch bij.',
+        'continue_button' => 'Onboarding voortzetten',
+        'active_title' => 'Uitbetalingen actief',
+        'active_text' => 'Je Stripe-account is gekoppeld en geverifieerd. Uitbetalingen gaan vanaf nu automatisch.',
+        'payout_note' => 'De huur van een sessie wordt 24 uur na de starttijd automatisch naar je Stripe-account overgemaakt, zodra het meldvenster is gesloten.',
     ],
 
     'bookings' => [

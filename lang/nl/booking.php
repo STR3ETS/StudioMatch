@@ -45,6 +45,8 @@ return [
         'unavailable' => 'Dit tijdvak is niet beschikbaar. Kies een andere datum of tijd.',
         'taken' => 'Dit tijdvak is net door iemand anders gereserveerd. Kies een ander moment.',
         'expired' => 'Je reservering is verlopen en het slot is weer vrijgegeven. Kies opnieuw een tijdvak.',
+        'expired_refunded' => 'Je reservering was al verlopen toen de betaling binnenkwam. Je ontvangt het volledige bedrag automatisch terug.',
+        'payment_failed' => 'De betaling kon niet worden gestart. Probeer het opnieuw.',
     ],
 
     'checkout' => [
@@ -64,6 +66,7 @@ return [
         'subtitle' => 'Je tijdslot is gereserveerd. Rond de betaling af om je aanvraag naar de studio te sturen.',
         'hold_note' => 'Dit tijdslot staat tot :time voor je vast. Betaal je niet op tijd, dan komt het automatisch weer vrij.',
         'demo_note' => 'Demo-omgeving: er wordt nog niets afgeschreven. De echte betaling via iDEAL en creditcard (Stripe) volgt in de betaalfase.',
+        'stripe_note' => 'Je rekent veilig af in de beveiligde betaalomgeving van Stripe, met iDEAL of creditcard.',
         'submit' => 'Betaal :amount',
     ],
 

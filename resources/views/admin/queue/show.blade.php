@@ -24,17 +24,27 @@
     </div>
 
     <div class="mt-6 grid gap-4">
-        <form method="POST" action="{{ route('admin.queue.approve', $room) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
-            @csrf
-            @method('PATCH')
-            <div>
-                <p class="text-sm font-bold text-prussian-blue">{{ __('admin.queue.approve_title') }}</p>
-                <p class="mt-0.5 text-xs text-prussian-blue/60">{{ __('admin.queue.approve_text') }}</p>
+        @if ($stripeBlocked)
+            <div class="flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 p-5">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-600"><i class="fa-solid fa-shield-halved fa-sm"></i></span>
+                <div>
+                    <p class="text-sm font-bold text-prussian-blue">{{ __('admin.queue.stripe_required_title') }}</p>
+                    <p class="mt-0.5 text-xs leading-relaxed text-prussian-blue/60">{{ __('admin.queue.stripe_required', ['host' => $room->studio->user->name]) }}</p>
+                </div>
             </div>
-            <button type="submit" class="shrink-0 cursor-pointer rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
-                <i class="fa-solid fa-check fa-sm mr-1.5"></i>{{ __('admin.queue.approve_button') }}
-            </button>
-        </form>
+        @else
+            <form method="POST" action="{{ route('admin.queue.approve', $room) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
+                @csrf
+                @method('PATCH')
+                <div>
+                    <p class="text-sm font-bold text-prussian-blue">{{ __('admin.queue.approve_title') }}</p>
+                    <p class="mt-0.5 text-xs text-prussian-blue/60">{{ __('admin.queue.approve_text') }}</p>
+                </div>
+                <button type="submit" class="shrink-0 cursor-pointer rounded-full bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                    <i class="fa-solid fa-check fa-sm mr-1.5"></i>{{ __('admin.queue.approve_button') }}
+                </button>
+            </form>
+        @endif
 
         <form method="POST" action="{{ route('admin.queue.reject', $room) }}" class="rounded-2xl border border-ruby-red/30 bg-ruby-red/5 p-5">
             @csrf

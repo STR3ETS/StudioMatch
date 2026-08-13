@@ -21,7 +21,7 @@ class OverviewController extends Controller
             ['key' => 'profile', 'done' => $user->hostProfile !== null, 'url' => route('host.profile.edit')],
             ['key' => 'studio', 'done' => $user->studios()->exists(), 'url' => route('host.studios.index')],
             ['key' => 'room', 'done' => $user->rooms()->exists(), 'url' => route('host.studios.index')],
-            ['key' => 'stripe', 'done' => false, 'url' => null],
+            ['key' => 'stripe', 'done' => (bool) $user->hostProfile?->stripe_payouts_enabled, 'url' => route('host.stripe.show')],
         ];
 
         $rooms = $user->rooms()->with('studio')->get();

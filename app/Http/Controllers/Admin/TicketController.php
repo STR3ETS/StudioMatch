@@ -6,6 +6,7 @@ use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Notifications\BookingCancelled;
+use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -36,6 +37,8 @@ class TicketController extends Controller
         abort_unless($booking->status === BookingStatus::Disputed, 404);
 
         $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'admin']);
+
+        StripeService::refund($booking, $booking->refundAmountCents(100));
 
         $booking->user->notify(new BookingCancelled($booking, 100));
         $booking->room->studio->user->notify(new BookingCancelled($booking, 100));

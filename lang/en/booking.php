@@ -45,6 +45,8 @@ return [
         'unavailable' => 'This time slot is not available. Pick another date or time.',
         'taken' => 'This time slot was just reserved by someone else. Pick another moment.',
         'expired' => 'Your reservation expired and the slot has been released. Pick a time slot again.',
+        'expired_refunded' => 'Your reservation had already expired when the payment came in. You automatically receive the full amount back.',
+        'payment_failed' => 'The payment could not be started. Please try again.',
     ],
 
     'checkout' => [
@@ -64,6 +66,7 @@ return [
         'subtitle' => 'Your time slot is reserved. Complete the payment to send your request to the studio.',
         'hold_note' => 'This time slot is held for you until :time. If you do not pay in time, it is automatically released.',
         'demo_note' => 'Demo environment: nothing is charged yet. The real payment via iDEAL and credit card (Stripe) follows in the payment phase.',
+        'stripe_note' => 'You check out safely in Stripe\'s secure payment environment, with iDEAL or credit card.',
         'submit' => 'Pay :amount',
     ],
 

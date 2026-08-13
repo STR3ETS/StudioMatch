@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Notifications\RoomApproved;
 use App\Notifications\RoomRejected;
+use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,14 +27,22 @@ class QueueController extends Controller
 
     public function show(Room $room): View
     {
+        $room->load(['studio.user.hostProfile', 'photos', 'hours']);
+
         return view('admin.queue.show', [
-            'room' => $room->load(['studio.user', 'photos', 'hours']),
+            'room' => $room,
+            'stripeBlocked' => $this->stripeBlocked($room),
         ]);
     }
 
     public function approve(Room $room): RedirectResponse
     {
         abort_unless($room->status === RoomStatus::InReview, 404);
+
+        if ($this->stripeBlocked($room)) {
+            return redirect()->route('admin.queue.show', $room)
+                ->withErrors(['stripe' => __('admin.queue.stripe_required', ['host' => $room->studio->user->name])]);
+        }
 
         $room->update(['status' => RoomStatus::Live, 'rejection_reason' => null]);
 
@@ -55,5 +64,11 @@ class QueueController extends Controller
         $room->studio->user->notify(new RoomRejected($room));
 
         return redirect()->route('admin.queue.index')->with('status', __('admin.queue.rejected', ['room' => $room->title]));
+    }
+
+    private function stripeBlocked(Room $room): bool
+    {
+        return StripeService::enabled()
+            && ! $room->studio->user->hostProfile?->stripe_payouts_enabled;
     }
 }

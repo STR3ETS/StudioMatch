@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\SetLocale::class,
         ]);
 
+        $middleware->validateCsrfTokens(except: [
+            'stripe/webhook',
+        ]);
+
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
         ]);

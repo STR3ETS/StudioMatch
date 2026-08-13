@@ -8,10 +8,9 @@ use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
 use App\Notifications\BookingCancelled;
-use App\Notifications\BookingReceived;
-use App\Notifications\BookingRequested;
 use App\Notifications\BookingRescheduled;
 use App\Notifications\ProblemReported;
+use App\Support\StripeService;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -92,7 +91,10 @@ class BookingController extends Controller
                 ->withErrors(['slot' => __('booking.errors.expired')]);
         }
 
-        return view('book.payment', ['booking' => $booking->load('room.studio')]);
+        return view('book.payment', [
+            'booking' => $booking->load('room.studio'),
+            'stripeEnabled' => StripeService::enabled(),
+        ]);
     }
 
     public function pay(Request $request, Booking $booking): RedirectResponse
@@ -109,10 +111,42 @@ class BookingController extends Controller
                 ->withErrors(['slot' => __('booking.errors.expired')]);
         }
 
-        $booking->update(['status' => BookingStatus::PendingConfirmation, 'requested_at' => now()]);
+        if (StripeService::enabled()) {
+            $url = StripeService::createCheckoutSession($booking);
 
-        $booking->room->studio->user->notify(new BookingRequested($booking));
-        $booking->user->notify(new BookingReceived($booking));
+            if ($url === null) {
+                return back()->withErrors(['payment' => __('booking.errors.payment_failed')]);
+            }
+
+            return redirect()->away($url);
+        }
+
+        $booking->markAsPaid();
+
+        return redirect()->route('dashboard.artist')->with('status', __('booking.paid'));
+    }
+
+    public function paid(Request $request, Booking $booking): RedirectResponse
+    {
+        $this->authorizeBooking($request, $booking);
+
+        $sessionId = (string) $request->query('session_id');
+
+        if ($sessionId === '' || ! StripeService::verifyCheckoutPaid($booking, $sessionId)) {
+            return redirect()->route('bookings.payment', $booking);
+        }
+
+        if (! $booking->markAsPaid()) {
+            $booking->refresh();
+
+            if ($booking->status === BookingStatus::Expired) {
+                StripeService::refund($booking, $booking->total_cents);
+
+                return redirect()
+                    ->route('studios.show', $booking->room)
+                    ->withErrors(['slot' => __('booking.errors.expired_refunded')]);
+            }
+        }
 
         return redirect()->route('dashboard.artist')->with('status', __('booking.paid'));
     }
@@ -132,6 +166,8 @@ class BookingController extends Controller
             : $booking->refundPercentForCancellationNow();
 
         $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'artist']);
+
+        StripeService::refund($booking, $booking->refundAmountCents($refundPercent));
 
         $booking->user->notify(new BookingCancelled($booking, $refundPercent));
         $booking->room->studio->user->notify(new BookingCancelled($booking, $refundPercent));
