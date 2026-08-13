@@ -2,7 +2,7 @@
     <h1 class="text-2xl font-bold text-prussian-blue">{{ __('host.stripe.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('host.stripe.subtitle') }}</p>
 
-    <div class="mt-8 max-w-2xl">
+    <div class="mt-8">
         @if (! $stripeEnabled)
             <div class="flex items-start gap-3 rounded-2xl border border-dashed border-amber-500/40 bg-amber-500/5 p-6">
                 <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600"><i class="fa-solid fa-flask"></i></span>
