@@ -137,26 +137,44 @@ class StripeService
     {
         try {
             if ($profile->stripe_account_id === null) {
-                $account = self::client()->accounts->create([
-                    'country' => 'NL',
-                    'email' => $profile->user->email,
-                    'business_type' => $profile->owner_type->value === 'ondernemer' ? 'company' : 'individual',
-                    'capabilities' => ['transfers' => ['requested' => true]],
-                    'controller' => [
-                        'stripe_dashboard' => ['type' => 'express'],
-                        'fees' => ['payer' => 'application'],
-                        'losses' => ['payments' => 'application'],
+                $account = self::client()->v2->core->accounts->create([
+                    'contact_email' => $profile->user->email,
+                    'display_name' => $profile->name,
+                    'dashboard' => 'express',
+                    'identity' => [
+                        'country' => 'NL',
+                        'entity_type' => $profile->owner_type->value === 'ondernemer' ? 'company' : 'individual',
+                    ],
+                    'defaults' => [
+                        'currency' => 'eur',
+                        'locales' => ['nl-NL'],
+                        'responsibilities' => [
+                            'fees_collector' => 'application',
+                            'losses_collector' => 'application',
+                        ],
+                    ],
+                    'configuration' => [
+                        'recipient' => [
+                            'capabilities' => [
+                                'stripe_balance' => ['stripe_transfers' => ['requested' => true]],
+                            ],
+                        ],
                     ],
                 ]);
 
                 $profile->update(['stripe_account_id' => $account->id]);
             }
 
-            $link = self::client()->accountLinks->create([
+            $link = self::client()->v2->core->accountLinks->create([
                 'account' => $profile->stripe_account_id,
-                'refresh_url' => route('host.stripe.show'),
-                'return_url' => route('host.stripe.return'),
-                'type' => 'account_onboarding',
+                'use_case' => [
+                    'type' => 'account_onboarding',
+                    'account_onboarding' => [
+                        'configurations' => ['recipient'],
+                        'refresh_url' => route('host.stripe.show'),
+                        'return_url' => route('host.stripe.return'),
+                    ],
+                ],
             ]);
 
             return $link->url;
@@ -174,11 +192,16 @@ class StripeService
         }
 
         try {
-            $account = self::client()->accounts->retrieve($profile->stripe_account_id);
+            $account = self::client()->v2->core->accounts->retrieve($profile->stripe_account_id, [
+                'include' => ['configuration.recipient', 'requirements'],
+            ]);
+
+            $status = $account->configuration->recipient->capabilities->stripe_balance->stripe_transfers->status ?? null;
+            $openRequirements = count($account->requirements->entries ?? []);
 
             $profile->update([
-                'stripe_details_submitted' => (bool) $account->details_submitted,
-                'stripe_payouts_enabled' => (bool) $account->payouts_enabled,
+                'stripe_details_submitted' => $status === 'active' || $openRequirements === 0,
+                'stripe_payouts_enabled' => $status === 'active',
             ]);
         } catch (Throwable $e) {
             Log::error('Stripe accountstatus ophalen mislukt', ['profile' => $profile->id, 'error' => $e->getMessage()]);
