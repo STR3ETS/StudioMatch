@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Enums\BookingStatus;
 use App\Models\Booking;
 use App\Notifications\BookingCancelled;
+use App\Notifications\ResponseReminder;
 use App\Notifications\SessionReminder;
 use App\Support\StripeService;
 use Illuminate\Console\Command;
@@ -33,6 +34,18 @@ class MaintainBookings extends Command
             StripeService::refund($booking, $booking->refundAmountCents(100));
             $booking->user->notify(new BookingCancelled($booking, 100));
             $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
+        }
+
+        $responseReminders = Booking::where('status', BookingStatus::PendingConfirmation)
+            ->whereNull('response_reminder_sent_at')
+            ->with('room.studio.user')
+            ->get()
+            ->filter(fn (Booking $booking) => ($booking->requested_at ?? $booking->created_at)->addHours(12)->isPast()
+                && $booking->startsAt()->isFuture());
+
+        foreach ($responseReminders as $booking) {
+            $booking->update(['response_reminder_sent_at' => now()]);
+            $booking->room->studio->user->notify(new ResponseReminder($booking));
         }
 
         $reminders = Booking::where('status', BookingStatus::Confirmed)
@@ -72,7 +85,7 @@ class MaintainBookings extends Command
             }
         }
 
-        $this->info("Verlopen: {$expired}, automatisch geannuleerd: {$stale->count()}, herinneringen: {$reminders->count()}, voltooid: {$completed}, uitbetalingen: {$transfers}.");
+        $this->info("Verlopen: {$expired}, automatisch geannuleerd: {$stale->count()}, reactieherinneringen: {$responseReminders->count()}, herinneringen: {$reminders->count()}, voltooid: {$completed}, uitbetalingen: {$transfers}.");
 
         return self::SUCCESS;
     }

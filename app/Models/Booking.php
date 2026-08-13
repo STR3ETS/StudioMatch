@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
     'hourly_rate_cents', 'rent_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_photos', 'reminder_sent_at',
-    'damage_reported_at', 'damage_reason', 'damage_photos',
+    'response_reminder_sent_at', 'damage_reported_at', 'damage_reason', 'damage_photos',
     'stripe_checkout_session_id', 'stripe_payment_intent_id', 'stripe_refund_id', 'refunded_cents',
     'stripe_transfer_id', 'transferred_at',
 ])]
@@ -37,6 +37,7 @@ class Booking extends Model
             'disputed_at' => 'datetime',
             'dispute_photos' => 'array',
             'reminder_sent_at' => 'datetime',
+            'response_reminder_sent_at' => 'datetime',
             'damage_reported_at' => 'datetime',
             'damage_photos' => 'array',
             'transferred_at' => 'datetime',
@@ -139,6 +140,11 @@ class Booking extends Model
             && $this->damage_reported_at === null
             && $this->endsAt()->isPast()
             && $this->endsAt()->addDays(14)->isFuture();
+    }
+
+    public function wasPaid(): bool
+    {
+        return ! in_array($this->status, [BookingStatus::PendingPayment, BookingStatus::Expired], true);
     }
 
     public function markAsPaid(): bool

@@ -34,6 +34,47 @@
     <x-info-note class="mt-6">{{ __('host.revenue.payout_note') }}</x-info-note>
 
     <section class="mt-8">
+        <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.revenue.payouts_title') }}</h2>
+
+        @if ($payouts->isEmpty())
+            <p class="mt-4 rounded-xl border border-dashed border-prussian-blue/20 bg-white px-4 py-6 text-center text-sm text-prussian-blue/50">{{ __('host.revenue.payouts_empty') }}</p>
+        @else
+            <div class="mt-4 overflow-hidden rounded-2xl border border-prussian-blue/10 bg-white">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-prussian-blue/10 text-left text-xs font-bold uppercase tracking-wide text-prussian-blue/50">
+                            <th class="px-5 py-3.5">{{ __('host.revenue.col_session') }}</th>
+                            <th class="hidden px-5 py-3.5 sm:table-cell">{{ __('host.revenue.col_date') }}</th>
+                            <th class="px-5 py-3.5 text-right">{{ __('host.revenue.col_amount') }}</th>
+                            <th class="px-5 py-3.5 text-right">{{ __('host.revenue.col_status') }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($payouts as $payout)
+                            <tr class="border-b border-prussian-blue/5 last:border-0">
+                                <td class="px-5 py-3.5 font-semibold text-prussian-blue">{{ $payout['booking']->room->title }}</td>
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 sm:table-cell">{{ $payout['booking']->date->translatedFormat('j M Y') }} {{ $payout['booking']->timeRange() }}</td>
+                                <td class="px-5 py-3.5 text-right font-semibold text-prussian-blue">{{ $money($payout['amount']) }}</td>
+                                <td class="px-5 py-3.5 text-right">
+                                    @if ($payout['state'] === 'paid')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700"><i class="fa-solid fa-circle-check fa-xs"></i>{{ __('host.revenue.payout_paid', ['date' => $payout['booking']->transferred_at->format('d-m-Y')]) }}</span>
+                                    @elseif ($payout['state'] === 'paused')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-ruby-red/10 px-3 py-1 text-xs font-semibold text-ruby-red"><i class="fa-solid fa-pause fa-xs"></i>{{ __('host.revenue.payout_paused') }}</span>
+                                    @elseif ($payout['state'] === 'scheduled')
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-700"><i class="fa-solid fa-clock fa-xs"></i>{{ __('host.revenue.payout_scheduled', ['date' => $payout['booking']->startsAt()->addHours(24)->format('d-m H:i')]) }}</span>
+                                    @else
+                                        <span class="inline-flex items-center gap-1.5 rounded-full bg-prussian-blue/5 px-3 py-1 text-xs font-semibold text-prussian-blue/70"><i class="fa-solid fa-arrows-rotate fa-xs"></i>{{ __('host.revenue.payout_processing') }}</span>
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </section>
+
+    <section class="mt-8">
         <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.revenue.months_title') }}</h2>
 
         @if ($months->isEmpty())

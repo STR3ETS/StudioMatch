@@ -48,6 +48,8 @@ Route::get('/hoe-werkt-het', function () {
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
+Route::post('/contact', \App\Http\Controllers\ContactController::class)
+    ->middleware('throttle:5,1')->name('contact.store');
 
 Route::get('/faq', function () {
     return view('faq');
@@ -93,6 +95,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/artiest', ArtistOverviewController::class)
         ->middleware('role:artiest')->name('dashboard.artist');
 
+    Route::get('/dashboard/facturen', [\App\Http\Controllers\InvoiceController::class, 'index'])
+        ->middleware('role:artiest')->name('artist.invoices.index');
+    Route::get('/facturen/{booking}/{type}', [\App\Http\Controllers\InvoiceController::class, 'download'])
+        ->name('invoices.download');
+
     Route::middleware('role:artiest')->group(function () {
         Route::get('/studios/{room:slug}/boeken', [BookingController::class, 'create'])->name('studios.book');
         Route::post('/studios/{room:slug}/boeken', [BookingController::class, 'store'])
@@ -137,6 +144,8 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/schade', [DamageController::class, 'index'])->name('host.damage.index');
         Route::post('/schade/{booking}', [DamageController::class, 'store'])->name('host.damage.store');
+
+        Route::get('/facturen', [\App\Http\Controllers\Host\InvoiceController::class, 'index'])->name('host.invoices.index');
 
         Route::get('/uitbetalingen', [HostStripeController::class, 'show'])->name('host.stripe.show');
         Route::post('/uitbetalingen/onboarding', [HostStripeController::class, 'onboard'])->name('host.stripe.onboard');

@@ -76,6 +76,8 @@ return [
         'requested_line' => ':artist wil :room boeken op :date van :time. De betaling is al voldaan.',
         'requested_deadline' => 'Reageer binnen 24 uur. Zonder reactie annuleren we de aanvraag automatisch en krijgt de artiest het volledige bedrag terug.',
         'requested_action' => 'Naar je boekingsinbox',
+        'response_reminder_subject' => 'Herinnering: reageer op de aanvraag voor :room',
+        'response_reminder_line' => 'Je hebt nog niet gereageerd op de aanvraag van :artist voor :room op :date van :time.',
         'received_subject' => 'Je aanvraag voor :room is verstuurd',
         'received_line' => 'Je aanvraag voor :room op :date van :time is betaald en naar de studio gestuurd. Je hoort het zodra de studio heeft gereageerd.',
         'received_refund_note' => 'Reageert de studio niet op tijd of weigert hij, dan krijg je automatisch het volledige bedrag terug.',

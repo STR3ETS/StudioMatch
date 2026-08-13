@@ -47,6 +47,13 @@ return [
         'message_placeholder' => 'Waar kunnen we je mee helpen?',
         'submit' => 'Verstuur bericht',
         'privacy' => 'We gebruiken je gegevens alleen om je bericht te beantwoorden.',
+        'sent' => 'Je bericht is verstuurd. We reageren doorgaans binnen één werkdag.',
+    ],
+
+    'mail' => [
+        'subject' => 'Contactformulier: :subject',
+        'from' => 'Afzender: :name (:email)',
+        'message' => 'Bericht: :message',
     ],
 
     'info' => [

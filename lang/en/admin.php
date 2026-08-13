@@ -103,4 +103,10 @@ return [
         'reject_button' => 'Reject',
         'rejected' => '":room" has been rejected. The host has been emailed with the reason.',
     ],
+
+    'mail' => [
+        'room_submitted_subject' => 'New room submitted: :room',
+        'room_submitted_line' => ':host submitted the room ":room" at :studio. It is waiting in the approval queue.',
+        'room_submitted_action' => 'Review the room',
+    ],
 ];

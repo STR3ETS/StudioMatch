@@ -34,11 +34,22 @@ class StripeWebhookController extends Controller
             $this->handleCheckoutCompleted($event->data->object);
         }
 
+        if ($event->type === 'charge.refunded') {
+            $this->handleChargeRefunded($event->data->object);
+        }
+
         if ($event->type === 'account.updated') {
             $this->handleAccountUpdated($event->data->object);
         }
 
         return response()->noContent();
+    }
+
+    private function handleChargeRefunded(object $charge): void
+    {
+        Booking::where('stripe_payment_intent_id', $charge->payment_intent)->first()?->update([
+            'refunded_cents' => $charge->amount_refunded,
+        ]);
     }
 
     private function handleCheckoutCompleted(object $session): void

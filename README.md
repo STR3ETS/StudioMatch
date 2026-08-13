@@ -67,9 +67,11 @@ Het platform is functioneel compleet, op de onderdelen na die op aanleveringen v
 
 **Admin** — goedkeuringswachtrij, tickets met payout-hold, alle boekingen met handmatige statuswijziging (vangnet), gebruikers, omzet per studio en CSV-exports.
 
-**Betalingen (Stripe-testmode)** — Stripe Checkout met iDEAL en creditcard, automatische refunds bij weigeren/annuleren/tickets (annuleringsstaffel 100/50/0%), Connect Express-onboarding voor verhuurders ("Stripe & uitbetalingen" + checklist-stap), admin kan een ruimte pas live zetten als de verhuurder uitbetalingen heeft geactiveerd, en een webhook-endpoint (`POST /stripe/webhook`). Zonder keys draait alles in simulatiemodus.
+**Betalingen (Stripe-testmode)** — Stripe Checkout met iDEAL en creditcard, automatische refunds bij weigeren/annuleren/tickets (annuleringsstaffel 100/50/0%), Connect Express-onboarding voor verhuurders ("Stripe & uitbetalingen" + checklist-stap), admin kan een ruimte pas live zetten als de verhuurder uitbetalingen heeft geactiveerd, en een webhook-endpoint (`POST /stripe/webhook`, incl. `charge.refunded` voor handmatige refunds via het Stripe-dashboard). Zonder keys draait alles in simulatiemodus.
 
-**Automatisering** — `bookings:maintain` (scheduler, elke 5 min): verlopen betaalblokkades, auto-annulering na 24u zonder reactie, herinneringsmails, afronden van sessies en automatische uitbetaling van de huur aan de verhuurder op starttijd + 24u (Stripe-transfer). Alle mails uit de mailmatrix lopen via notifications en loggen lokaal naar `storage/logs/laravel.log` tot Mailgun is geconfigureerd.
+**Facturatie (§2.6)** — per betaalde boeking een huurfactuur namens de verhuurder (21% btw, of een huurbevestiging/betaalbewijs zonder btw bij niet-btw-plichtige verhuurders) en een servicekostenfactuur van StudioMatch, plus creditnota's bij (gedeeltelijke) terugbetaling. Downloadbaar als PDF onder "Facturen" in beide dashboards. De verhuurder ziet daarnaast een uitbetalingsspecificatie per sessie op de omzetpagina. Moneybird kan later aanhaken.
+
+**Automatisering** — `bookings:maintain` (scheduler, elke 5 min): verlopen betaalblokkades, reactieherinnering aan de verhuurder na 12u, auto-annulering na 24u zonder reactie, herinneringsmails, afronden van sessies en automatische uitbetaling van de huur aan de verhuurder op starttijd + 24u (Stripe-transfer). Het contactformulier werkt en notificeert de admin. Alle mails uit de mailmatrix lopen via notifications en loggen lokaal naar `storage/logs/laravel.log` tot Mailgun is geconfigureerd.
 
 ### Testaccounts (na `php artisan db:seed`)
 
@@ -86,7 +88,7 @@ Het platform is functioneel compleet, op de onderdelen na die op aanleveringen v
 |---|---|
 | Mailgun-gegevens (`MAIL_*`) | Echte mails, e-mailverificatie, contactformulier |
 | Stripe-webhooksecret (`STRIPE_WEBHOOK_SECRET`, na aanmaken endpoint in het Stripe-dashboard) | Webhookverwerking van betalingen en accountstatussen |
-| Moneybird + btw-bevestiging accountant | Facturatie (scope §2.6) |
+| Btw-bevestiging accountant (+ evt. Moneybird) | Definitieve btw-behandeling; PDF-facturen en creditnota's draaien al in het platform |
 | Definitieve juridische teksten | AV, privacy, disclaimer, cookiebeleid *(stubs staan klaar)* |
 | BESLISSING 13 | Blog wel/niet in MVP |
 
@@ -111,7 +113,7 @@ Het platform is functioneel compleet, op de onderdelen na die op aanleveringen v
 | Frontend | Blade-components + Tailwind CSS 4 + Vite 8 |
 | Database | MySQL (`studiomatch`) |
 | Betalingen | Stripe Checkout (iDEAL + creditcard) en Connect Express, met simulatiemodus zonder keys |
-| Facturatie | Moneybird *(gepland)* |
+| Facturatie | Eigen PDF-facturen (dompdf), Moneybird optioneel later |
 | i18n | Laravel-localisatie, NL (standaard) + EN |
 | Iconen | Font Awesome (lokaal, `public/fontawesome/`) |
 

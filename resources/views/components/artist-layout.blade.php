@@ -4,7 +4,7 @@
     $items = [
         ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.artist')],
         ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit')],
-        ['key' => 'invoices', 'icon' => 'fa-file-invoice', 'url' => null],
+        ['key' => 'invoices', 'icon' => 'fa-file-invoice', 'url' => route('artist.invoices.index')],
     ];
 @endphp
 

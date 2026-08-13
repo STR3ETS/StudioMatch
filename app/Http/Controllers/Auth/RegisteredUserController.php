@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\HostWelcome;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,10 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
+
+        if ($user->role === UserRole::Verhuurder) {
+            $user->notify(new HostWelcome);
+        }
 
         Auth::login($user);
 

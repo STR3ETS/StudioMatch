@@ -4,12 +4,17 @@ namespace App\Http\Controllers\Host;
 
 use App\Enums\RoomStatus;
 use App\Enums\RoomType;
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\Studio;
+use App\Models\User;
+use App\Notifications\RoomSubmitted;
+use App\Notifications\RoomSubmittedAdmin;
 use App\Support\ImageProcessor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -37,6 +42,8 @@ class RoomController extends Controller
 
         $this->storePhotos($room, $photos);
 
+        $this->notifySubmitted($request, $room);
+
         return redirect()->route('host.rooms.edit', $room)->with('status', __('host.rooms.created_in_review'));
     }
 
@@ -53,7 +60,9 @@ class RoomController extends Controller
 
         [$validated, $photos] = $this->validateRoom($request, isCreate: false);
 
-        if ($room->status === RoomStatus::Afgekeurd) {
+        $resubmitted = $room->status === RoomStatus::Afgekeurd;
+
+        if ($resubmitted) {
             $validated['status'] = RoomStatus::InReview;
             $validated['rejection_reason'] = null;
         }
@@ -61,6 +70,10 @@ class RoomController extends Controller
         $room->update($validated);
 
         $this->storePhotos($room, $photos);
+
+        if ($resubmitted) {
+            $this->notifySubmitted($request, $room);
+        }
 
         return redirect()->route('host.rooms.edit', $room)->with('status', __('host.rooms.saved'));
     }
@@ -124,6 +137,12 @@ class RoomController extends Controller
 
             $room->photos()->create([...$stored, 'sort_order' => $sort++]);
         }
+    }
+
+    private function notifySubmitted(Request $request, Room $room): void
+    {
+        $request->user()->notify(new RoomSubmitted($room));
+        Notification::send(User::where('role', UserRole::Admin)->get(), new RoomSubmittedAdmin($room));
     }
 
     private function authorizeRoom(Request $request, Room $room): void

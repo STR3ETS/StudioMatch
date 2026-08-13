@@ -47,6 +47,13 @@ return [
         'message_placeholder' => 'What can we help you with?',
         'submit' => 'Send message',
         'privacy' => 'We only use your details to reply to your message.',
+        'sent' => 'Your message has been sent. We usually respond within one business day.',
+    ],
+
+    'mail' => [
+        'subject' => 'Contact form: :subject',
+        'from' => 'Sender: :name (:email)',
+        'message' => 'Message: :message',
     ],
 
     'info' => [

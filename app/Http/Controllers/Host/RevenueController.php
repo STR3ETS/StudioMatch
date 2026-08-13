@@ -13,14 +13,34 @@ class RevenueController extends Controller
 
     public function __invoke(Request $request): View
     {
-        $bookings = Booking::whereIn('room_id', $request->user()->rooms()->select('rooms.id'))
-            ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::Completed, BookingStatus::Disputed])
-            ->with('room')
+        $all = Booking::whereIn('room_id', $request->user()->rooms()->select('rooms.id'))
+            ->whereIn('status', [BookingStatus::Confirmed, BookingStatus::Completed, BookingStatus::Disputed, BookingStatus::Cancelled])
+            ->with(['room.studio', 'user'])
             ->get();
+
+        $bookings = $all->whereIn('status', [BookingStatus::Confirmed, BookingStatus::Completed, BookingStatus::Disputed]);
 
         [$realised, $expected] = $bookings->partition(fn (Booking $booking) => $booking->endsAt()->isPast());
 
         $onHold = $realised->where('status', BookingStatus::Disputed);
+
+        $payouts = $all
+            ->filter(fn (Booking $booking) => $booking->wasPaid()
+                && $booking->hostPayoutCents() > 0
+                && ($booking->status === BookingStatus::Cancelled || $booking->endsAt()->isPast()))
+            ->sortByDesc(fn (Booking $booking) => $booking->startsAt())
+            ->take(25)
+            ->map(fn (Booking $booking) => [
+                'booking' => $booking,
+                'amount' => $booking->hostPayoutCents(),
+                'state' => match (true) {
+                    $booking->status === BookingStatus::Disputed => 'paused',
+                    $booking->transferred_at !== null => 'paid',
+                    $booking->startsAt()->addHours(24)->isFuture() => 'scheduled',
+                    default => 'processing',
+                },
+            ])
+            ->values();
 
         $months = $realised
             ->sortByDesc(fn (Booking $booking) => $booking->date)
@@ -32,6 +52,7 @@ class RevenueController extends Controller
             ]);
 
         return view('host.revenue', [
+            'payouts' => $payouts,
             'months' => $months,
             'realisedTotal' => $realised->sum('rent_cents'),
             'expectedTotal' => $expected->sum('rent_cents'),

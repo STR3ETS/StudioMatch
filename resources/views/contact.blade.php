@@ -43,17 +43,27 @@
     <section class="bg-dots pb-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="grid gap-8 lg:grid-cols-[1fr_380px]">
-                <form action="#" class="rounded-3xl border border-prussian-blue/10 bg-white p-8 shadow-sm">
+                <form method="POST" action="{{ route('contact.store') }}" class="rounded-3xl border border-prussian-blue/10 bg-white p-8 shadow-sm">
+                    @csrf
                     <h2 class="text-2xl font-bold text-prussian-blue">{{ __('contact.form.title') }}</h2>
+
+                    @if (session('status'))
+                        <div class="mt-5 flex items-start gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3">
+                            <i class="fa-solid fa-circle-check mt-0.5 text-emerald-600"></i>
+                            <p class="text-sm text-prussian-blue/80">{{ session('status') }}</p>
+                        </div>
+                    @endif
 
                     <div class="mt-6 grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="contact-name" class="{{ $label }}">{{ __('contact.form.name') }}</label>
-                            <input id="contact-name" type="text" name="name" placeholder="{{ __('contact.form.name_placeholder') }}" class="{{ $field }}">
+                            <input id="contact-name" type="text" name="name" value="{{ old('name') }}" required placeholder="{{ __('contact.form.name_placeholder') }}" class="{{ $field }}">
+                            <x-input-error field="name" />
                         </div>
                         <div>
                             <label for="contact-email" class="{{ $label }}">{{ __('contact.form.email') }}</label>
-                            <input id="contact-email" type="email" name="email" placeholder="{{ __('contact.form.email_placeholder') }}" class="{{ $field }}">
+                            <input id="contact-email" type="email" name="email" value="{{ old('email') }}" required placeholder="{{ __('contact.form.email_placeholder') }}" class="{{ $field }}">
+                            <x-input-error field="email" />
                         </div>
                     </div>
 
@@ -61,14 +71,16 @@
                         <label for="contact-subject" class="{{ $label }}">{{ __('contact.form.subject') }}</label>
                         <select id="contact-subject" name="subject" class="{{ $field }} cursor-pointer">
                             @foreach (__('contact.form.subjects') as $value => $subject)
-                                <option value="{{ $value }}">{{ $subject }}</option>
+                                <option value="{{ $value }}" @selected(old('subject') === $value)>{{ $subject }}</option>
                             @endforeach
                         </select>
+                        <x-input-error field="subject" />
                     </div>
 
                     <div class="mt-5">
                         <label for="contact-message" class="{{ $label }}">{{ __('contact.form.message') }}</label>
-                        <textarea id="contact-message" name="message" rows="6" placeholder="{{ __('contact.form.message_placeholder') }}" class="{{ $field }} resize-y"></textarea>
+                        <textarea id="contact-message" name="message" rows="6" required placeholder="{{ __('contact.form.message_placeholder') }}" class="{{ $field }} resize-y">{{ old('message') }}</textarea>
+                        <x-input-error field="message" />
                     </div>
 
                     <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

@@ -103,4 +103,10 @@ return [
         'reject_button' => 'Afwijzen',
         'rejected' => '":room" is afgekeurd. De verhuurder is gemaild met de reden.',
     ],
+
+    'mail' => [
+        'room_submitted_subject' => 'Nieuwe ruimte aangemeld: :room',
+        'room_submitted_line' => ':host heeft de ruimte ":room" van :studio aangemeld. Hij staat klaar in de goedkeuringswachtrij.',
+        'room_submitted_action' => 'Beoordeel de ruimte',
+    ],
 ];

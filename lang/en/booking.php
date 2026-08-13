@@ -76,6 +76,8 @@ return [
         'requested_line' => ':artist wants to book :room on :date from :time. Payment has already been completed.',
         'requested_deadline' => 'Respond within 24 hours. Without a response we automatically cancel the request and the artist receives a full refund.',
         'requested_action' => 'Go to your booking inbox',
+        'response_reminder_subject' => 'Reminder: respond to the request for :room',
+        'response_reminder_line' => 'You have not yet responded to the request from :artist for :room on :date from :time.',
         'received_subject' => 'Your request for :room has been sent',
         'received_line' => 'Your request for :room on :date from :time has been paid and sent to the studio. You will hear as soon as the studio responds.',
         'received_refund_note' => 'If the studio does not respond in time or declines, you automatically receive a full refund.',
