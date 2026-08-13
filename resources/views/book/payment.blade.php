@@ -20,18 +20,15 @@
                     <p class="shrink-0 text-xl font-bold text-prussian-blue">{{ $money($booking->total_cents) }}</p>
                 </div>
 
-                <div class="mt-5 flex items-center justify-between rounded-xl bg-prussian-blue/[0.03] px-4 py-3">
-                    <span class="text-sm text-prussian-blue/60">{{ __('booking.payment.time_left') }}</span>
-                    <span data-countdown data-expires="{{ $booking->expires_at->timestamp }}" class="text-lg font-bold tabular-nums text-prussian-blue">--:--</span>
+                <div class="mt-5 rounded-xl bg-prussian-blue/[0.03] px-4 py-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-prussian-blue/60">{{ __('booking.payment.time_left') }}</span>
+                        <span data-countdown data-expires="{{ $booking->expires_at->timestamp }}" class="text-lg font-bold tabular-nums text-prussian-blue">--:--</span>
+                    </div>
+                    <p class="mt-1.5 text-xs leading-relaxed text-prussian-blue/50">{{ __('booking.payment.hold_note', ['time' => $booking->expires_at->format('H:i')]) }}</p>
                 </div>
 
-                <x-info-note class="mt-3">{{ __('booking.payment.hold_note', ['time' => $booking->expires_at->format('H:i')]) }}</x-info-note>
-
-                @if ($stripeEnabled)
-                    <div class="mt-5 rounded-xl bg-prussian-blue/[0.03] px-4 py-3 text-xs leading-relaxed text-prussian-blue/60">
-                        <i class="fa-solid fa-lock mr-1 text-prussian-blue/40"></i> {{ __('booking.payment.stripe_note') }}
-                    </div>
-                @else
+                @if (! $stripeEnabled)
                     <div class="mt-5 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-xs leading-relaxed text-prussian-blue/60">
                         <i class="fa-solid fa-flask mr-1 text-amber-500"></i> {{ __('booking.payment.demo_note') }}
                     </div>
@@ -47,6 +44,12 @@
                         <i class="fa-solid fa-lock fa-sm mr-1.5"></i>{{ __('booking.payment.submit', ['amount' => $money($booking->total_cents)]) }}
                     </button>
                 </form>
+
+                @if ($stripeEnabled)
+                    <p class="mt-3 text-center text-xs leading-relaxed text-prussian-blue/50">
+                        <i class="fa-solid fa-lock fa-xs mr-1"></i>{{ __('booking.payment.stripe_note') }}
+                    </p>
+                @endif
             </div>
         </div>
     </div>
