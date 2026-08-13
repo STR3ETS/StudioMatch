@@ -104,11 +104,11 @@
                             </div>
                         </details>
 
-                        <div class="!mt-3 flex items-center gap-2.5 rounded-2xl bg-white/10 p-2.5">
+                        <div class="!mt-3 flex items-center gap-2.5 rounded-2xl bg-prussian-blue p-2.5 shadow-sm">
                             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-ruby-red">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
                             <div class="min-w-0 flex-1">
                                 <p class="truncate text-sm font-semibold text-white">{{ auth()->user()->firstName() }}</p>
-                                <p class="truncate text-[11px] text-white/60">{{ auth()->user()->email }}</p>
+                                <p class="truncate text-[11px] text-white/50">{{ auth()->user()->email }}</p>
                             </div>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
