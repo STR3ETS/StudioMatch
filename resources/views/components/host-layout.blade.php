@@ -2,12 +2,12 @@
 
 @php
     $items = [
-        ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.host')],
+        ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.host'), 'mobile' => true],
         ['key' => 'profile', 'icon' => 'fa-briefcase', 'url' => route('host.profile.edit')],
-        ['key' => 'studios', 'icon' => 'fa-building', 'url' => route('host.studios.index')],
+        ['key' => 'studios', 'icon' => 'fa-building', 'url' => route('host.studios.index'), 'mobile' => true],
         ['key' => 'availability', 'icon' => 'fa-calendar-days', 'url' => route('host.availability.index')],
-        ['key' => 'inbox', 'icon' => 'fa-inbox', 'url' => route('host.bookings.index')],
-        ['key' => 'agenda', 'icon' => 'fa-calendar', 'url' => route('host.agenda')],
+        ['key' => 'inbox', 'icon' => 'fa-inbox', 'url' => route('host.bookings.index'), 'mobile' => true],
+        ['key' => 'agenda', 'icon' => 'fa-calendar', 'url' => route('host.agenda'), 'mobile' => true],
         ['key' => 'revenue', 'icon' => 'fa-chart-line', 'url' => route('host.revenue')],
         ['key' => 'invoices', 'icon' => 'fa-file-invoice', 'url' => route('host.invoices.index')],
         ['key' => 'damage', 'icon' => 'fa-triangle-exclamation', 'url' => route('host.damage.index')],

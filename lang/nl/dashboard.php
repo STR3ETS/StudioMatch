@@ -7,6 +7,7 @@ return [
     'nav' => [
         'to_site' => 'Naar de website',
         'logout' => 'Uitloggen',
+        'more' => 'Meer',
     ],
 
     'confirm' => [

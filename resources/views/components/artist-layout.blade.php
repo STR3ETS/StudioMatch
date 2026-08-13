@@ -2,9 +2,9 @@
 
 @php
     $items = [
-        ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.artist')],
-        ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit')],
-        ['key' => 'invoices', 'icon' => 'fa-file-invoice', 'url' => route('artist.invoices.index')],
+        ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.artist'), 'mobile' => true],
+        ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit'), 'mobile' => true],
+        ['key' => 'invoices', 'icon' => 'fa-file-invoice', 'url' => route('artist.invoices.index'), 'mobile' => true],
     ];
 @endphp
 

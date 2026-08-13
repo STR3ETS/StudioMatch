@@ -7,6 +7,7 @@ return [
     'nav' => [
         'to_site' => 'To the website',
         'logout' => 'Log out',
+        'more' => 'More',
     ],
 
     'confirm' => [

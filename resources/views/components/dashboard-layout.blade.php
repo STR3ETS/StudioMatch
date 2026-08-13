@@ -1,4 +1,8 @@
 @props(['title', 'nav' => [], 'active' => null, 'langPrefix' => null])
+
+@php
+    $mobileItems = array_values(array_filter($nav, fn ($item) => ($item['mobile'] ?? false) && $item['url']));
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -125,19 +129,37 @@
 
             <div class="min-w-0 flex-1">
                 <header class="sticky top-0 z-[1200] border-b border-prussian-blue/10 bg-white lg:hidden [view-transition-name:dash-topbar]">
-                    <div class="flex items-center justify-between px-5 py-3.5">
+                    <div class="flex items-center justify-center px-5 py-3.5">
                         <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-8 w-auto"></a>
-                        <button type="button" data-sidebar-open aria-label="Menu" class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red transition hover:bg-ruby-red/15">
-                            <i class="fa-solid fa-bars"></i>
-                        </button>
                     </div>
                 </header>
 
-                <main class="mx-auto w-full max-w-6xl px-5 py-6 sm:px-6 lg:px-10 lg:py-10 [view-transition-name:dash-content]">
+                <main class="mx-auto w-full max-w-6xl px-5 py-6 pb-28 sm:px-6 lg:px-10 lg:py-10 lg:pb-10 [view-transition-name:dash-content]">
                     {{ $slot }}
                 </main>
             </div>
         </div>
+
+        @if ($mobileItems !== [])
+            <nav class="fixed inset-x-4 bottom-4 z-[1200] flex items-center rounded-3xl bg-ruby-red px-2 py-1.5 shadow-xl shadow-ruby-red/30 lg:hidden [view-transition-name:dash-tabbar]">
+                @foreach ($mobileItems as $item)
+                    <a href="{{ $item['url'] }}" title="{{ __($langPrefix . $item['key']) }}" class="flex flex-1 items-center justify-center py-1">
+                        <span @class([
+                            'flex h-10 w-10 items-center justify-center rounded-full transition',
+                            'bg-white text-ruby-red shadow-sm' => $active === $item['key'],
+                            'text-white/70' => $active !== $item['key'],
+                        ])>
+                            <i class="fa-solid {{ $item['icon'] }}"></i>
+                        </span>
+                    </a>
+                @endforeach
+                <button type="button" data-sidebar-open title="{{ __('dashboard.nav.more') }}" class="flex flex-1 cursor-pointer items-center justify-center py-1">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white">
+                        <i class="fa-solid fa-ellipsis"></i>
+                    </span>
+                </button>
+            </nav>
+        @endif
 
         <script>
             (() => {
@@ -208,7 +230,7 @@
         </script>
 
         @if (session('status') || $errors->any())
-            <div data-toast role="status" class="fixed bottom-5 right-5 z-[1400] flex w-[calc(100%-2.5rem)] max-w-sm items-start gap-3 rounded-2xl border border-prussian-blue/10 bg-white p-4 shadow-xl shadow-prussian-blue/15 transition duration-300">
+            <div data-toast role="status" class="fixed bottom-24 right-5 z-[1400] flex w-[calc(100%-2.5rem)] max-w-sm items-start gap-3 rounded-2xl border border-prussian-blue/10 bg-white p-4 shadow-xl shadow-prussian-blue/15 transition duration-300 lg:bottom-5">
                 @if (session('status'))
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"><i class="fa-solid fa-circle-check fa-sm"></i></span>
                     <div class="min-w-0 flex-1">
