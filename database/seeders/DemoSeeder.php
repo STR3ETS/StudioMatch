@@ -187,7 +187,15 @@ class DemoSeeder extends Seeder
         $this->seedBooking($rooms['liveA'], $sam, today()->addDays(8), 12, 14, BookingStatus::Declined, ['refund' => 100]);
         $this->seedBooking($rooms['mix'], $artist, today(), 20, 22, BookingStatus::Expired, ['expires_at' => now()->subHours(3)]);
 
-        $this->command->info('Demodata aangemaakt: 3 verhuurders, 10 studio\'s, 13 ruimtes en 16 boekingen in alle statussen.');
+        if (now()->hour >= 4) {
+            $this->seedBooking($rooms['liveA'], $artist, today(), now()->hour - 3, now()->hour - 1, BookingStatus::Completed);
+        } else {
+            $this->seedBooking($rooms['liveA'], $artist, today()->subDay(), 20, 22, BookingStatus::Completed);
+        }
+
+        $this->seedBooking($rooms['domstad'], $artist, today()->addDay(), 20, 22, BookingStatus::Confirmed);
+
+        $this->command->info('Demodata aangemaakt: 3 verhuurders, 10 studio\'s, 13 ruimtes en 18 boekingen in alle statussen.');
     }
 
     private function host(string $name, string $email, string $company, string $phone, string $kvk, string $vat): User
