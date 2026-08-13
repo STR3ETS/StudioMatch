@@ -42,7 +42,7 @@
                 @foreach ($studio->rooms as $room)
                     <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-4 sm:flex-nowrap">
                         @if ($room->photos->isNotEmpty())
-                            <img src="{{ $room->photos->first()->url() }}" alt="{{ $room->title }}" class="h-20 w-28 shrink-0 rounded-xl object-cover">
+                            <img src="{{ $room->photos->first()->thumbUrl() }}" alt="{{ $room->title }}" class="h-20 w-28 shrink-0 rounded-xl object-cover">
                         @else
                             <span class="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-prussian-blue/5 text-prussian-blue/30"><i class="fa-solid fa-image"></i></span>
                         @endif

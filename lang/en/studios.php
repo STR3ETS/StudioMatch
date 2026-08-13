@@ -17,6 +17,8 @@ return [
         'location' => 'Location',
         'location_placeholder' => 'City or address',
         'near_me' => 'Use my location',
+        'location_active' => 'Location active, detect again',
+        'near_me_error' => 'Location unavailable, allow location access',
         'distance' => 'Distance',
         'datetime' => 'Date & time',
         'price' => 'Price per hour',

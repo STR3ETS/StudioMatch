@@ -17,6 +17,8 @@ return [
         'location' => 'Locatie',
         'location_placeholder' => 'Plaats of adres',
         'near_me' => 'Gebruik mijn locatie',
+        'location_active' => 'Locatie actief, opnieuw bepalen',
+        'near_me_error' => 'Locatie niet beschikbaar, sta locatietoegang toe',
         'distance' => 'Afstand',
         'datetime' => 'Datum & tijd',
         'price' => 'Prijs per uur',

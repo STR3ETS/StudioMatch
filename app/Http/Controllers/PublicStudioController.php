@@ -57,7 +57,10 @@ class PublicStudioController extends Controller
             'date' => ['nullable', 'date'],
             'start' => ['nullable', 'integer', 'between:0,23'],
             'end' => ['nullable', 'integer', 'between:1,24'],
-            'sort' => ['nullable', 'in:relevance,price_asc,price_desc'],
+            'lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'radius' => ['nullable', 'integer', 'between:1,100'],
+            'sort' => ['nullable', 'in:relevance,distance,price_asc,price_desc'],
         ]);
 
         // De homepage-zoekbalk stuurt één type (o.a. oude waarden recording/mix/master).
@@ -113,13 +116,37 @@ class PublicStudioController extends Controller
             $query->whereJsonContains('facilities', $facility);
         }
 
-        match ($filters['sort'] ?? 'relevance') {
+        $sort = $filters['sort'] ?? 'relevance';
+
+        match ($sort) {
             'price_asc' => $query->orderBy('hourly_rate_cents'),
             'price_desc' => $query->orderByDesc('hourly_rate_cents'),
             default => $query->latest(),
         };
 
         $rooms = $query->get();
+
+        // "In de buurt van mij" (scope §2.3): afstand berekenen, filteren op
+        // straal en (standaard) sorteren op afstand.
+        $hasLocation = isset($filters['lat'], $filters['lng']);
+        if ($hasLocation) {
+            $lat = (float) $filters['lat'];
+            $lng = (float) $filters['lng'];
+            $radius = (int) ($filters['radius'] ?? 25);
+
+            $rooms = $rooms
+                ->each(function (Room $room) use ($lat, $lng) {
+                    $room->distance_km = $room->studio->lat !== null
+                        ? $this->distanceKm($lat, $lng, $room->studio->lat, $room->studio->lng)
+                        : null;
+                })
+                ->filter(fn (Room $room) => $room->distance_km !== null && $room->distance_km <= $radius)
+                ->values();
+
+            if ($sort === 'distance' || $sort === 'relevance') {
+                $rooms = $rooms->sortBy('distance_km')->values();
+            }
+        }
 
         // Datum/tijd-filter op basis van weekschema, uitzonderingen en blokkades (§2.4).
         if (! empty($filters['date'])) {
@@ -184,7 +211,7 @@ class PublicStudioController extends Controller
                     'name' => $room->studio->name . ' - ' . $room->title,
                     'city' => $room->studio->city,
                     'price' => (int) round($room->hourlyRateEuros()),
-                    'photos' => $room->photos->map->url()->all(),
+                    'photos' => $room->photos->map->thumbUrl()->all(),
                     'url' => route('studios.show', $room),
                     'lat' => $lat,
                     'lng' => $lng,
@@ -201,13 +228,29 @@ class PublicStudioController extends Controller
      */
     public function cardData(Room $room): array
     {
-        return [
+        return array_filter([
             'name' => $room->studio->name . ' - ' . $room->title,
             'city' => $room->studio->city,
             'price' => (int) round($room->hourlyRateEuros()),
             'type' => $room->typeLabel(),
-            'photos' => $room->photos->map->url()->all(),
+            'photos' => $room->photos->map->thumbUrl()->all(),
             'url' => route('studios.show', $room),
-        ];
+            'distance' => isset($room->distance_km) ? number_format($room->distance_km, 1, ',', '.') : null,
+        ], fn ($value) => $value !== null);
+    }
+
+    /**
+     * Afstand in kilometers tussen twee coördinaten (haversine).
+     */
+    private function distanceKm(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) ** 2
+            + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
+
+        return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
     }
 }

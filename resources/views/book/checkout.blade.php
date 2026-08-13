@@ -24,7 +24,7 @@
                 {{-- Samenvatting --}}
                 <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-5 sm:flex-nowrap">
                     @if ($room->photos->isNotEmpty())
-                        <img src="{{ $room->photos->first()->url() }}" alt="{{ $room->title }}" class="h-20 w-28 shrink-0 rounded-xl object-cover">
+                        <img src="{{ $room->photos->first()->thumbUrl() }}" alt="{{ $room->title }}" class="h-20 w-28 shrink-0 rounded-xl object-cover">
                     @endif
                     <div class="min-w-0 flex-1">
                         <h2 class="font-bold text-prussian-blue">{{ $room->title }}</h2>

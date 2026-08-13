@@ -112,6 +112,30 @@ class PublicSiteTest extends TestCase
         $this->get('/studios/' . $room->slug)->assertOk()->assertSee('+2');
     }
 
+    public function test_search_filters_and_sorts_by_distance(): void
+    {
+        // Amsterdam (dichtbij, ~3 km) en Utrecht (~35 km, buiten de straal van 25).
+        $near = $this->liveRoom(null, ['title' => 'Ruimte Amsterdam-Noord']);
+        $near->studio->update(['lat' => 52.40, 'lng' => 4.90]);
+
+        $farStudio = $this->studio(['name' => 'Domklank', 'city' => 'Utrecht', 'street' => 'Oudegracht 12']);
+        $farStudio->update(['lat' => 52.0907, 'lng' => 5.1214]);
+        $this->liveRoom($farStudio, ['title' => 'Ruimte Utrecht']);
+
+        // Zoeken vanuit Amsterdam-centrum met straal 25 km.
+        $this->get('/studios?lat=52.37&lng=4.90&radius=25')
+            ->assertOk()
+            ->assertSee('Ruimte Amsterdam-Noord')
+            ->assertSee('km)')
+            ->assertDontSee('Ruimte Utrecht');
+
+        // Met een grotere straal doet Utrecht wel mee.
+        $this->get('/studios?lat=52.37&lng=4.90&radius=60')
+            ->assertOk()
+            ->assertSee('Ruimte Amsterdam-Noord')
+            ->assertSee('Ruimte Utrecht');
+    }
+
     public function test_detail_page_renders_live_room_by_slug(): void
     {
         $room = $this->liveRoom();

@@ -59,6 +59,7 @@ return [
     ],
 
     'payment' => [
+        'time_left' => 'Slot vervalt over',
         'title' => 'Betalen',
         'subtitle' => 'Je tijdslot is gereserveerd. Rond de betaling af om je aanvraag naar de studio te sturen.',
         'hold_note' => 'Dit tijdslot staat tot :time voor je vast. Betaal je niet op tijd, dan komt het automatisch weer vrij.',

@@ -31,7 +31,7 @@
                     <div class="rounded-2xl border border-prussian-blue/10 bg-white p-5">
                         <div class="flex flex-wrap items-center gap-4 lg:flex-nowrap">
                             @if ($booking->room->photos->isNotEmpty())
-                                <img src="{{ $booking->room->photos->first()->url() }}" alt="{{ $booking->room->title }}" class="h-16 w-24 shrink-0 rounded-xl object-cover">
+                                <img src="{{ $booking->room->photos->first()->thumbUrl() }}" alt="{{ $booking->room->title }}" class="h-16 w-24 shrink-0 rounded-xl object-cover">
                             @endif
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">

@@ -28,9 +28,26 @@
                             <a href="{{ route('studios') }}" class="text-xs font-semibold text-ruby-red hover:underline">{{ __('studios.filters.clear') }}</a>
                         </div>
 
-                        {{-- Locatie --}}
+                        {{-- Locatie & afstand (scope §2.3: "in de buurt van mij" + straal) --}}
                         <x-filter-group :title="__('studios.filters.groups.location')">
                             <input type="text" name="location" value="{{ request('location') }}" placeholder="{{ __('studios.filters.location_placeholder') }}" class="{{ $field }}">
+                            <input type="hidden" name="lat" value="{{ request('lat') }}">
+                            <input type="hidden" name="lng" value="{{ request('lng') }}">
+                            <button type="button" data-near-me class="mt-2 flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ruby-red hover:underline">
+                                <i class="fa-solid fa-location-crosshairs"></i>
+                                <span>{{ request('lat') ? __('studios.filters.location_active') : __('studios.filters.near_me') }}</span>
+                            </button>
+                            @if (request('lat'))
+                                <div class="mt-4">
+                                    <div class="flex items-center justify-between">
+                                        <span class="{{ $subLabel }}">{{ __('studios.filters.distance') }}</span>
+                                        <span class="text-xs font-semibold text-prussian-blue" data-distance-value>{{ (int) request('radius', 25) }} km</span>
+                                    </div>
+                                    <input type="range" name="radius" min="1" max="100" value="{{ (int) request('radius', 25) }}" class="mt-2 w-full accent-ruby-red"
+                                           oninput="this.closest('div').querySelector('[data-distance-value]').textContent = this.value + ' km'"
+                                           onchange="this.form.requestSubmit()">
+                                </div>
+                            @endif
                         </x-filter-group>
 
                         {{-- Prijs --}}
@@ -136,6 +153,9 @@
                             <span class="hidden text-prussian-blue/50 sm:inline">{{ __('studios.sort.label') }}</span>
                             <select name="sort" form="studio-filters" onchange="document.getElementById('studio-filters').requestSubmit()" class="cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm font-medium text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
                                 <option value="relevance" @selected(request('sort', 'relevance') === 'relevance')>{{ __('studios.sort.relevance') }}</option>
+                                @if (request('lat'))
+                                    <option value="distance" @selected(request('sort') === 'distance')>{{ __('studios.sort.distance') }}</option>
+                                @endif
                                 <option value="price_asc" @selected(request('sort') === 'price_asc')>{{ __('studios.sort.price_asc') }}</option>
                                 <option value="price_desc" @selected(request('sort') === 'price_desc')>{{ __('studios.sort.price_desc') }}</option>
                             </select>
@@ -176,4 +196,24 @@
             @endif
         </div>
     </div>
+
+    {{-- "In de buurt van mij": browser-geolocatie → verborgen lat/lng → submit --}}
+    <script>
+        (() => {
+            const button = document.querySelector('[data-near-me]');
+            if (! button || ! navigator.geolocation) return;
+            button.addEventListener('click', () => {
+                button.classList.add('opacity-50');
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const form = button.closest('form');
+                    form.querySelector('input[name=lat]').value = position.coords.latitude.toFixed(5);
+                    form.querySelector('input[name=lng]').value = position.coords.longitude.toFixed(5);
+                    form.requestSubmit();
+                }, () => {
+                    button.classList.remove('opacity-50');
+                    button.querySelector('span').textContent = @json(__('studios.filters.near_me_error'));
+                });
+            });
+        })();
+    </script>
 </x-layout>

@@ -7,6 +7,7 @@ use App\Enums\RoomType;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\Studio;
+use App\Support\ImageProcessor;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -130,10 +131,12 @@ class RoomController extends Controller
         $sort = ($room->photos()->max('sort_order') ?? -1) + 1;
 
         foreach ($photos as $photo) {
-            $room->photos()->create([
-                'path' => $photo->store('rooms/' . $room->id, 'public'),
-                'sort_order' => $sort++,
-            ]);
+            // Verkleinen + comprimeren + thumbnail (scope §2.11); bij een
+            // onleesbaar beeld valt de upload terug op het origineel.
+            $stored = ImageProcessor::store($photo->get(), 'rooms/' . $room->id)
+                ?? ['path' => $photo->store('rooms/' . $room->id, 'public'), 'thumb_path' => null];
+
+            $room->photos()->create([...$stored, 'sort_order' => $sort++]);
         }
     }
 

@@ -20,7 +20,13 @@
                     <p class="shrink-0 text-xl font-bold text-prussian-blue">{{ $money($booking->total_cents) }}</p>
                 </div>
 
-                <x-info-note class="mt-5">{{ __('booking.payment.hold_note', ['time' => $booking->expires_at->format('H:i')]) }}</x-info-note>
+                {{-- Zichtbare aftelklok van de 15-minutenblokkade --}}
+                <div class="mt-5 flex items-center justify-between rounded-xl bg-prussian-blue/[0.03] px-4 py-3">
+                    <span class="text-sm text-prussian-blue/60">{{ __('booking.payment.time_left') }}</span>
+                    <span data-countdown data-expires="{{ $booking->expires_at->timestamp }}" class="text-lg font-bold tabular-nums text-prussian-blue">--:--</span>
+                </div>
+
+                <x-info-note class="mt-3">{{ __('booking.payment.hold_note', ['time' => $booking->expires_at->format('H:i')]) }}</x-info-note>
 
                 {{-- Gesimuleerde betaling; Stripe (iDEAL + kaart) volgt in de betaalfase --}}
                 <div class="mt-5 rounded-xl border border-dashed border-amber-500/40 bg-amber-500/5 px-4 py-3 text-xs leading-relaxed text-prussian-blue/60">
@@ -36,4 +42,24 @@
             </div>
         </div>
     </div>
+
+    {{-- Aftellen naar het vrijvallen van het slot; daarna herladen (server markeert verlopen) --}}
+    <script>
+        (() => {
+            const el = document.querySelector('[data-countdown]');
+            if (! el) return;
+            const expires = parseInt(el.dataset.expires, 10) * 1000;
+            const tick = () => {
+                const secondsLeft = Math.max(0, Math.floor((expires - Date.now()) / 1000));
+                el.textContent = String(Math.floor(secondsLeft / 60)).padStart(2, '0') + ':' + String(secondsLeft % 60).padStart(2, '0');
+                if (secondsLeft <= 0) {
+                    clearInterval(timer);
+                    window.location.reload();
+                }
+                if (secondsLeft <= 120) el.classList.add('text-ruby-red');
+            };
+            const timer = setInterval(tick, 1000);
+            tick();
+        })();
+    </script>
 </x-layout>

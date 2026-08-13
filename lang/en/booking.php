@@ -59,6 +59,7 @@ return [
     ],
 
     'payment' => [
+        'time_left' => 'Slot expires in',
         'title' => 'Payment',
         'subtitle' => 'Your time slot is reserved. Complete the payment to send your request to the studio.',
         'hold_note' => 'This time slot is held for you until :time. If you do not pay in time, it is automatically released.',

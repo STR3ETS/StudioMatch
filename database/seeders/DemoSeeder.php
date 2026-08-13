@@ -144,10 +144,15 @@ class DemoSeeder extends Seeder
                 continue;
             }
 
-            $path = 'rooms/' . $room->id . '/demo-' . ($index + 1) . '.' . pathinfo($photo, PATHINFO_EXTENSION);
-            Storage::disk('public')->put($path, File::get($source));
+            $stored = \App\Support\ImageProcessor::store(File::get($source), 'rooms/' . $room->id);
 
-            $room->photos()->create(['path' => $path, 'sort_order' => $index]);
+            if ($stored === null) {
+                $path = 'rooms/' . $room->id . '/demo-' . ($index + 1) . '.' . pathinfo($photo, PATHINFO_EXTENSION);
+                Storage::disk('public')->put($path, File::get($source));
+                $stored = ['path' => $path, 'thumb_path' => null];
+            }
+
+            $room->photos()->create([...$stored, 'sort_order' => $index]);
         }
     }
 
