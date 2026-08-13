@@ -18,9 +18,32 @@
         @fonts
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            @view-transition { navigation: auto; }
+
+            @media (prefers-reduced-motion: no-preference) {
+                ::view-transition-old(dash-content) { animation: 120ms ease both dash-leave; }
+                ::view-transition-new(dash-content) { animation: 220ms ease 60ms both dash-enter; }
+
+                @keyframes dash-enter {
+                    from { opacity: 0; transform: translateY(10px); }
+                }
+
+                @keyframes dash-leave {
+                    to { opacity: 0; }
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                ::view-transition-group(*),
+                ::view-transition-old(*),
+                ::view-transition-new(*) { animation: none !important; }
+            }
+        </style>
     </head>
     <body class="min-h-screen bg-prussian-blue/[0.04]">
-        <header class="border-b border-prussian-blue/10 bg-white">
+        <header class="border-b border-prussian-blue/10 bg-white [view-transition-name:dash-topbar]">
             <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
                 <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-9 w-auto"></a>
 

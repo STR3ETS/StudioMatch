@@ -14,7 +14,7 @@
 
 <x-dashboard-layout :title="$title">
     <div class="flex flex-col gap-8 lg:flex-row lg:gap-10">
-        <aside class="lg:w-64 lg:shrink-0">
+        <aside class="lg:w-64 lg:shrink-0 [view-transition-name:dash-sidebar]">
             <nav class="flex gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:sticky lg:top-10 lg:flex-col lg:pb-0">
                 @foreach ($items as $item)
                     @if ($item['url'])
@@ -35,7 +35,7 @@
             </nav>
         </aside>
 
-        <div class="min-w-0 flex-1">
+        <div class="min-w-0 flex-1 [view-transition-name:dash-content]">
             {{ $slot }}
         </div>
     </div>
