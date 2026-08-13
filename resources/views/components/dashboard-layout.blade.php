@@ -1,4 +1,4 @@
-@props(['title'])
+@props(['title', 'nav' => [], 'active' => null, 'langPrefix' => null])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
@@ -43,60 +43,123 @@
         </style>
     </head>
     <body class="min-h-screen bg-prussian-blue/[0.04]">
-        <header class="border-b border-prussian-blue/10 bg-white [view-transition-name:dash-topbar]">
-            <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-6 py-4">
-                <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-9 w-auto"></a>
-
-                <div class="flex items-center gap-1.5 sm:gap-2">
-                    <a href="{{ route('home') }}" class="flex h-9 items-center gap-2 rounded-full px-3 text-sm font-semibold text-prussian-blue/60 transition hover:bg-prussian-blue/5 hover:text-prussian-blue">
-                        <i class="fa-solid fa-arrow-up-right-from-square fa-xs"></i>
-                        <span class="max-sm:hidden">{{ __('dashboard.nav.to_site') }}</span>
-                    </a>
-
-                    <details data-dropdown class="group relative">
-                        <summary class="list-none [&::-webkit-details-marker]:hidden flex h-9 cursor-pointer select-none items-center gap-2 rounded-full px-3 text-sm font-semibold text-prussian-blue/60 transition hover:bg-prussian-blue/5 hover:text-prussian-blue">
-                            <i class="fa-solid fa-globe fa-sm"></i>
-                            <span class="uppercase">{{ app()->getLocale() }}</span>
-                            <i class="fa-solid fa-chevron-down fa-2xs text-prussian-blue/40 transition group-open:rotate-180"></i>
-                        </summary>
-                        <div class="absolute right-0 z-50 mt-2 flex w-44 flex-col gap-1 rounded-2xl border border-prussian-blue/10 bg-white p-1.5 shadow-lg">
-                            @foreach (config('localization.supported') as $code => $localeLabel)
-                                <a href="{{ route('language.switch', $code) }}"
-                                   @class([
-                                       'flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm transition',
-                                       'bg-prussian-blue/5 font-semibold text-prussian-blue' => app()->getLocale() === $code,
-                                       'font-medium text-prussian-blue/70 hover:bg-prussian-blue/5 hover:text-prussian-blue' => app()->getLocale() !== $code,
-                                   ])>
-                                    <span class="flex items-center gap-2.5">
-                                        <span class="w-5 text-xs font-bold uppercase text-prussian-blue/40">{{ $code }}</span>
-                                        {{ $localeLabel }}
-                                    </span>
-                                    @if (app()->getLocale() === $code)
-                                        <i class="fa-solid fa-check fa-sm text-ruby-red"></i>
-                                    @endif
-                                </a>
-                            @endforeach
-                        </div>
-                    </details>
-
-                    <div class="flex items-center gap-2 rounded-full bg-prussian-blue/5 py-1 pl-1 pr-3">
-                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-prussian-blue text-xs font-bold text-white">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
-                        <span class="max-w-32 truncate text-sm font-semibold text-prussian-blue max-sm:hidden">{{ auth()->user()->firstName() }}</span>
+        <div class="lg:flex">
+            <aside data-sidebar class="fixed inset-y-0 left-0 z-[1300] w-72 -translate-x-full transition-transform duration-300 lg:sticky lg:top-4 lg:ml-4 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0 lg:transition-none [view-transition-name:dash-sidebar]">
+                <div class="flex h-full flex-col rounded-r-3xl bg-ruby-red shadow-xl shadow-ruby-red/25 lg:rounded-3xl">
+                    <div class="flex items-center justify-between px-6 pb-2 pt-6">
+                        <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-wit.png" alt="StudioMatch" class="h-8 w-auto"></a>
+                        <button type="button" data-sidebar-close aria-label="{{ __('dashboard.confirm.cancel') }}" class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-white/70 transition hover:bg-white/10 hover:text-white lg:hidden">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
                     </div>
 
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" title="{{ __('dashboard.nav.logout') }}" class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-prussian-blue/60 transition hover:bg-ruby-red/10 hover:text-ruby-red">
-                            <i class="fa-solid fa-arrow-right-from-bracket fa-sm"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </header>
+                    <nav class="mt-4 flex-1 space-y-1 overflow-y-auto px-4 pb-2 [scrollbar-width:thin]">
+                        @foreach ($nav as $item)
+                            @if ($item['url'])
+                                <a href="{{ $item['url'] }}"
+                                   @class([
+                                       'flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition',
+                                       'bg-white text-ruby-red shadow-sm' => $active === $item['key'],
+                                       'text-white/75 hover:bg-white/10 hover:text-white' => $active !== $item['key'],
+                                   ])>
+                                    <i class="fa-solid {{ $item['icon'] }} fa-sm w-4 text-center"></i> {{ __($langPrefix . $item['key']) }}
+                                </a>
+                            @else
+                                <span class="flex cursor-default items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-white/30">
+                                    <i class="fa-solid {{ $item['icon'] }} fa-sm w-4 text-center"></i> {{ __($langPrefix . $item['key']) }}
+                                </span>
+                            @endif
+                        @endforeach
+                    </nav>
 
-        <main class="mx-auto w-full max-w-7xl px-6 py-10">
-            {{ $slot }}
-        </main>
+                    <div class="space-y-1 border-t border-white/15 px-4 py-4">
+                        <a href="{{ route('home') }}" class="flex items-center gap-3 rounded-xl px-4 py-2 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white">
+                            <i class="fa-solid fa-arrow-up-right-from-square fa-sm w-4 text-center"></i> {{ __('dashboard.nav.to_site') }}
+                        </a>
+
+                        <details data-dropdown class="group relative">
+                            <summary class="flex cursor-pointer select-none list-none items-center justify-between gap-3 rounded-xl px-4 py-2 text-sm font-semibold text-white/70 transition hover:bg-white/10 hover:text-white [&::-webkit-details-marker]:hidden">
+                                <span class="flex items-center gap-3">
+                                    <i class="fa-solid fa-globe fa-sm w-4 text-center"></i> {{ config('localization.supported')[app()->getLocale()] ?? strtoupper(app()->getLocale()) }}
+                                </span>
+                                <i class="fa-solid fa-chevron-down fa-2xs text-white/40 transition group-open:rotate-180"></i>
+                            </summary>
+                            <div class="absolute bottom-full left-0 z-50 mb-2 flex w-full flex-col gap-1 rounded-2xl border border-prussian-blue/10 bg-white p-1.5 shadow-lg">
+                                @foreach (config('localization.supported') as $code => $localeLabel)
+                                    <a href="{{ route('language.switch', $code) }}"
+                                       @class([
+                                           'flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm transition',
+                                           'bg-prussian-blue/5 font-semibold text-prussian-blue' => app()->getLocale() === $code,
+                                           'font-medium text-prussian-blue/70 hover:bg-prussian-blue/5 hover:text-prussian-blue' => app()->getLocale() !== $code,
+                                       ])>
+                                        <span class="flex items-center gap-2.5">
+                                            <span class="w-5 text-xs font-bold uppercase text-prussian-blue/40">{{ $code }}</span>
+                                            {{ $localeLabel }}
+                                        </span>
+                                        @if (app()->getLocale() === $code)
+                                            <i class="fa-solid fa-check fa-sm text-ruby-red"></i>
+                                        @endif
+                                    </a>
+                                @endforeach
+                            </div>
+                        </details>
+
+                        <div class="!mt-3 flex items-center gap-2.5 rounded-2xl bg-white/10 p-2.5">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-ruby-red">{{ strtoupper(mb_substr(auth()->user()->name, 0, 1)) }}</span>
+                            <div class="min-w-0 flex-1">
+                                <p class="truncate text-sm font-semibold text-white">{{ auth()->user()->firstName() }}</p>
+                                <p class="truncate text-[11px] text-white/60">{{ auth()->user()->email }}</p>
+                            </div>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button type="submit" title="{{ __('dashboard.nav.logout') }}" class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-white/60 transition hover:bg-white/15 hover:text-white">
+                                    <i class="fa-solid fa-arrow-right-from-bracket fa-sm"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <div data-sidebar-backdrop class="fixed inset-0 z-[1250] hidden bg-prussian-blue/60 backdrop-blur-sm lg:hidden"></div>
+
+            <div class="min-w-0 flex-1">
+                <header class="sticky top-0 z-[1200] border-b border-prussian-blue/10 bg-white lg:hidden [view-transition-name:dash-topbar]">
+                    <div class="flex items-center justify-between px-5 py-3.5">
+                        <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-8 w-auto"></a>
+                        <button type="button" data-sidebar-open aria-label="Menu" class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red transition hover:bg-ruby-red/15">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                    </div>
+                </header>
+
+                <main class="mx-auto w-full max-w-6xl px-5 py-6 sm:px-6 lg:px-10 lg:py-10 [view-transition-name:dash-content]">
+                    {{ $slot }}
+                </main>
+            </div>
+        </div>
+
+        <script>
+            (() => {
+                const sidebar = document.querySelector('[data-sidebar]');
+                const backdrop = document.querySelector('[data-sidebar-backdrop]');
+                if (! sidebar || ! backdrop) return;
+                const open = () => {
+                    sidebar.classList.remove('-translate-x-full');
+                    backdrop.classList.remove('hidden');
+                };
+                const close = () => {
+                    sidebar.classList.add('-translate-x-full');
+                    backdrop.classList.add('hidden');
+                };
+                document.querySelectorAll('[data-sidebar-open]').forEach((button) => button.addEventListener('click', open));
+                document.querySelectorAll('[data-sidebar-close]').forEach((button) => button.addEventListener('click', close));
+                backdrop.addEventListener('click', close);
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape') close();
+                });
+            })();
+        </script>
 
         <div data-confirm-modal class="fixed inset-0 z-[1500] hidden items-center justify-center bg-prussian-blue/50 p-6">
             <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
