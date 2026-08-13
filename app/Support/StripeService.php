@@ -138,11 +138,15 @@ class StripeService
         try {
             if ($profile->stripe_account_id === null) {
                 $account = self::client()->accounts->create([
-                    'type' => 'express',
                     'country' => 'NL',
                     'email' => $profile->user->email,
                     'business_type' => $profile->owner_type->value === 'ondernemer' ? 'company' : 'individual',
                     'capabilities' => ['transfers' => ['requested' => true]],
+                    'controller' => [
+                        'stripe_dashboard' => ['type' => 'express'],
+                        'fees' => ['payer' => 'application'],
+                        'losses' => ['payments' => 'application'],
+                    ],
                 ]);
 
                 $profile->update(['stripe_account_id' => $account->id]);
