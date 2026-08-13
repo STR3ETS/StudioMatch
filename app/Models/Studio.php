@@ -7,15 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-// De locatie-laag: een verhuurder kan meerdere studio's hebben, elk met eigen adres.
 #[Fillable(['name', 'phone', 'street', 'postal_code', 'city', 'lat', 'lng'])]
 class Studio extends Model
 {
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+
     protected function casts(): array
     {
         return [

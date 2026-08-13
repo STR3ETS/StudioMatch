@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Artist;
 
+use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
@@ -9,9 +10,7 @@ use Illuminate\View\View;
 
 class OverviewController extends Controller
 {
-    /**
-     * Artiestendashboard (scope §2.9): komende en eerdere boekingen.
-     */
+
     public function __invoke(Request $request): View
     {
         $bookings = $request->user()->bookings()
@@ -24,9 +23,18 @@ class OverviewController extends Controller
             fn (Booking $booking) => $booking->endsAt()->isFuture() && $booking->isActive(),
         );
 
+        $statusPriority = fn (Booking $booking) => match ($booking->effectiveStatus()) {
+            BookingStatus::Completed, BookingStatus::PendingPayment => 0,
+            BookingStatus::PendingConfirmation => 1,
+            default => 2,
+        };
+
         return view('dashboard.artist', [
             'upcoming' => $upcoming->values(),
-            'past' => $past->sortByDesc(fn (Booking $booking) => $booking->startsAt())->values(),
+            'past' => $past
+                ->sortByDesc(fn (Booking $booking) => $booking->startsAt())
+                ->sortBy($statusPriority)
+                ->values(),
         ]);
     }
 }

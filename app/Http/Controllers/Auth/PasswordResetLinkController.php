@@ -9,9 +9,7 @@ use Illuminate\Support\Facades\Password;
 
 class PasswordResetLinkController extends Controller
 {
-    /**
-     * Verstuur de wachtwoord-herstellink.
-     */
+
     public function store(Request $request): RedirectResponse
     {
         $request->validate([

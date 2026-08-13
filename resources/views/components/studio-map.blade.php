@@ -1,6 +1,5 @@
 @props(['studios'])
 
-{{-- Interactieve studio-kaart; de bijbehorende logica staat in app.js (#studio-map). --}}
 <div id="studio-map"
      data-studios='@json($studios)'
      data-per-hour="{{ __('home.studios.per_hour') }}"

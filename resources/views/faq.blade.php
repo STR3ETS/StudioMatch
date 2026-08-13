@@ -8,17 +8,14 @@
         ];
     @endphp
 
-    {{-- ===== Hero ===== --}}
     <x-hero compact>
         <h1 class="text-4xl font-bold text-white sm:text-5xl">{{ __('faq.hero.heading') }}</h1>
         <p class="mx-auto mt-4 max-w-2xl text-white/60">{{ __('faq.hero.subtitle') }}</p>
     </x-hero>
 
-    {{-- ===== Categorieën ===== --}}
     <section class="py-16">
         <div class="mx-auto max-w-7xl px-6">
             <div class="flex flex-col gap-10 lg:flex-row">
-                {{-- Categorie-navigatie --}}
                 <aside class="lg:w-64 lg:shrink-0">
                     <nav class="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:sticky lg:top-28 lg:flex-col lg:overflow-visible lg:pb-0">
                         @foreach (__('faq.categories') as $key => $category)
@@ -30,7 +27,6 @@
                     </nav>
                 </aside>
 
-                {{-- Vragen per categorie --}}
                 <div class="min-w-0 flex-1 space-y-12">
                     @foreach (__('faq.categories') as $key => $category)
                         <div id="faq-{{ $key }}" class="scroll-mt-28">
@@ -56,7 +52,6 @@
         </div>
     </section>
 
-    {{-- ===== Contact-CTA ===== --}}
     <section class="pb-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-[2.5rem] bg-prussian-blue px-8 py-14 text-center lg:px-14">

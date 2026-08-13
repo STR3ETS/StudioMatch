@@ -7,16 +7,12 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-// Mailmatrix (scope §2.10): "Nieuwe betaalde aanvraag - actie vereist" → verhuurder.
 class BookingRequested extends Notification
 {
     use Queueable;
 
     public function __construct(public Booking $booking) {}
 
-    /**
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return ['mail'];

@@ -79,7 +79,7 @@ class HostDashboardTest extends TestCase
 
     public function test_host_can_create_multiple_studios_including_same_address(): void
     {
-        Http::fake(); // geen echte geocoding-requests
+        Http::fake();
         $host = $this->host();
 
         foreach (['Redlight A', 'Redlight B'] as $name) {

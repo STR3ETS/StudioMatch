@@ -7,13 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Een verhuurder kan meerdere studio's (locaties) hebben. De zakelijke gegevens
-     * (voor facturatie en Stripe) verhuizen naar een eigen bedrijfsprofiel; de
-     * studio wordt puur de locatie-laag met naam en adres.
-     */
+
     public function up(): void
     {
         Schema::create('host_profiles', function (Blueprint $table) {
@@ -28,7 +22,6 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Bestaande studio-rijen bevatten nog beide lagen: kopieer het zakelijke deel.
         foreach (DB::table('studios')->get() as $studio) {
             DB::table('host_profiles')->insert([
                 'user_id' => $studio->user_id,
@@ -51,9 +44,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('studios', function (Blueprint $table) {

@@ -20,7 +20,6 @@
         </a>
     </div>
 
-    {{-- Ruimtes van deze studio --}}
     <section class="mt-10">
         <div class="flex flex-wrap items-center justify-between gap-4">
             <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.studios.rooms_title') }}</h2>

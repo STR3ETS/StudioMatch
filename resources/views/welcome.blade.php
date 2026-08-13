@@ -3,7 +3,6 @@
         <p class="text-sm font-semibold uppercase tracking-wider text-white/60">{{ __('home.tagline') }}</p>
         <h1 class="mt-3 text-4xl sm:text-5xl font-bold text-white">{{ __('home.heading') }}</h1>
 
-        {{-- Mobiel: één zoekbalk die de zoek-modal opent --}}
         <button type="button" data-search-open class="mt-10 flex w-full cursor-pointer items-center gap-4 rounded-full bg-white p-2 pl-6 text-left shadow-xl sm:hidden">
             <span class="flex-1">
                 <span class="block text-sm font-bold text-prussian-blue">{{ __('home.search.mobile_placeholder') }}</span>
@@ -38,7 +37,6 @@
             </button>
         </form>
 
-        {{-- Twee duidelijke CTA's boven de vouw --}}
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
             <a href="{{ route('studios') }}" class="rounded-full bg-white px-6 py-3 text-sm font-semibold text-ruby-red shadow-sm transition hover:bg-white/90">
                 <i class="fa-solid fa-magnifying-glass fa-sm mr-1.5"></i>{{ __('home.cta_book') }}
@@ -49,7 +47,6 @@
         </div>
     </x-hero>
 
-    {{-- Mobiele zoek-modal --}}
     <div data-search-modal class="fixed inset-0 z-[1200] hidden bg-white sm:hidden">
         <div class="flex h-full flex-col">
             <div class="flex items-center justify-between border-b border-prussian-blue/10 px-6 py-4">
@@ -95,12 +92,10 @@
         </div>
     </div>
 
-    {{-- Uitgelichte studio's (live ruimtes uit de database) --}}
     @if ($featured->isNotEmpty())
         <x-studio-slider :title="__('home.studios.title')" :studios="$featured" :first="true" />
     @endif
 
-    {{-- Waarom StudioMatch (zelfde stijl als de Voor studio's-pagina) --}}
     <section class="py-16">
         <div class="mx-auto max-w-7xl px-6">
             <div class="max-w-2xl">
@@ -136,7 +131,6 @@
         </div>
     </section>
 
-    {{-- Studio locaties op de kaart --}}
     @if (count($mapStudios) > 0)
         <section class="py-16">
             <div class="mx-auto max-w-7xl px-6">
@@ -145,7 +139,6 @@
         </section>
     @endif
 
-    {{-- CTA voor studioverhuurders --}}
     <section class="py-16">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-[2.5rem] bg-prussian-blue px-8 py-14 text-center lg:px-14">

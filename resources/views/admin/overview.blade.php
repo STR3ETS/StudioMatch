@@ -4,8 +4,7 @@
         <h1 class="mt-3 text-3xl font-bold text-prussian-blue">{{ __('dashboard.greeting', ['name' => auth()->user()->firstName()]) }}</h1>
         <p class="mt-2 text-prussian-blue/60">{{ __('admin.overview.subtitle') }}</p>
     </div>
-    
-    {{-- Platformcijfers --}}
+
     <section data-reveal style="--reveal-delay: .1s" class="mt-10">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
@@ -31,7 +30,6 @@
         </div>
     </section>
 
-    {{-- Open tickets: het meest urgent, uitbetalingen staan gepauzeerd --}}
     @if ($openTickets > 0)
         <section data-reveal style="--reveal-delay: .05s" class="mt-10">
             <a href="{{ route('admin.tickets.index') }}" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-ruby-red p-6 text-white shadow-xl shadow-ruby-red/25 transition hover:-translate-y-0.5 sm:flex-nowrap">
@@ -50,7 +48,6 @@
         </section>
     @endif
 
-    {{-- Snel naar de wachtrij --}}
     <section data-reveal style="--reveal-delay: .2s" class="mt-10">
         <a href="{{ route('admin.queue.index') }}" @class([
             'flex flex-wrap items-center justify-between gap-4 rounded-2xl p-6 transition hover:-translate-y-0.5 sm:flex-nowrap',

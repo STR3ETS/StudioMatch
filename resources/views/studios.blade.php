@@ -20,7 +20,6 @@
     <div class="py-16">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col gap-8 lg:flex-row">
-                {{-- Sticky filter card met inklapbare groepen --}}
                 <aside data-reveal class="lg:w-72 lg:shrink-0">
                     <form id="studio-filters" method="GET" action="{{ route('studios') }}" class="custom-scrollbar rounded-2xl border border-prussian-blue/10 bg-white p-5 shadow-sm lg:sticky lg:top-24 lg:max-h-[85vh] lg:overflow-y-auto lg:overflow-x-hidden">
                         <div class="flex items-center justify-between pb-4">
@@ -28,13 +27,12 @@
                             <a href="{{ route('studios') }}" class="text-xs font-semibold text-ruby-red hover:underline">{{ __('studios.filters.clear') }}</a>
                         </div>
 
-                        {{-- Locatie & afstand (scope §2.3: "in de buurt van mij" + straal) --}}
                         <x-filter-group :title="__('studios.filters.groups.location')">
                             <input type="text" name="location" value="{{ request('location') }}" placeholder="{{ __('studios.filters.location_placeholder') }}" class="{{ $field }}">
                             <input type="hidden" name="lat" value="{{ request('lat') }}">
                             <input type="hidden" name="lng" value="{{ request('lng') }}">
-                            <button type="button" data-near-me class="mt-2 flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-ruby-red hover:underline">
-                                <i class="fa-solid fa-location-crosshairs"></i>
+                            <button type="button" data-near-me class="mt-2 flex cursor-pointer items-start gap-1.5 text-left text-xs font-semibold text-ruby-red hover:underline">
+                                <i class="fa-solid fa-location-crosshairs mt-0.5"></i>
                                 <span>{{ request('lat') ? __('studios.filters.location_active') : __('studios.filters.near_me') }}</span>
                             </button>
                             @if (request('lat'))
@@ -50,7 +48,6 @@
                             @endif
                         </x-filter-group>
 
-                        {{-- Prijs --}}
                         <x-filter-group :title="__('studios.filters.groups.price')">
                             <div class="flex items-center gap-2">
                                 <input type="number" name="price_min" value="{{ request('price_min') }}" min="0" placeholder="&euro; 0" class="{{ $field }}">
@@ -59,7 +56,6 @@
                             </div>
                         </x-filter-group>
 
-                        {{-- Beschikbaarheid: datum + tijdvak (slotraster van 1 uur) --}}
                         <x-filter-group :title="__('studios.filters.groups.availability')">
                             <input type="date" name="date" value="{{ request('date') }}" min="{{ today()->toDateString() }}" class="{{ $field }} min-w-0">
                             <div class="mt-2 grid grid-cols-2 gap-2">
@@ -84,7 +80,6 @@
                             </div>
                         </x-filter-group>
 
-                        {{-- Studio: type, capaciteit, engineer --}}
                         <x-filter-group :title="__('studios.filters.groups.studio')">
                             <div>
                                 <span class="{{ $subLabel }}">{{ __('studios.filters.type') }}</span>
@@ -114,7 +109,6 @@
                             </div>
                         </x-filter-group>
 
-                        {{-- Apparatuur --}}
                         <x-filter-group :title="__('studios.filters.groups.equipment')">
                             <div class="space-y-2">
                                 @foreach (config('studio.equipment') as $item)
@@ -123,7 +117,6 @@
                             </div>
                         </x-filter-group>
 
-                        {{-- DAW's --}}
                         <x-filter-group :title="__('studios.filters.groups.daw')">
                             <div class="space-y-2">
                                 @foreach (config('studio.daws') as $daw)
@@ -132,7 +125,6 @@
                             </div>
                         </x-filter-group>
 
-                        {{-- Voorzieningen --}}
                         <x-filter-group :title="__('studios.filters.groups.facilities')">
                             <div class="space-y-2">
                                 @foreach (config('studio.facilities') as $facility)
@@ -145,7 +137,6 @@
                     </form>
                 </aside>
 
-                {{-- Results --}}
                 <div data-reveal style="--reveal-delay: .1s" class="flex-1">
                     <div class="mb-5 flex items-center justify-between gap-4">
                         <p class="text-sm font-medium text-prussian-blue/60">{{ __('studios.results', ['count' => $cards->count()]) }}</p>
@@ -188,7 +179,6 @@
                 </div>
             </div>
 
-            {{-- Kaart onder de lijst --}}
             @if (count($mapStudios) > 0)
                 <div data-reveal class="mt-16">
                     <x-studio-map :studios="$mapStudios" class="aspect-[2/1] rounded-[2.5rem] border border-prussian-blue/10" />
@@ -197,7 +187,6 @@
         </div>
     </div>
 
-    {{-- "In de buurt van mij": browser-geolocatie → verborgen lat/lng → submit --}}
     <script>
         (() => {
             const button = document.querySelector('[data-near-me]');

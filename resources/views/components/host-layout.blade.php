@@ -1,7 +1,6 @@
 @props(['title', 'active' => null])
 
 @php
-    // Navigatie volgt scope §2.9 (verhuurder); onderdelen zonder route volgen in latere sprints.
     $items = [
         ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.host')],
         ['key' => 'profile', 'icon' => 'fa-briefcase', 'url' => route('host.profile.edit')],
@@ -19,7 +18,6 @@
 
 <x-dashboard-layout :title="$title">
     <div class="flex flex-col gap-8 lg:flex-row lg:gap-10">
-        {{-- Sidebar (horizontaal scrollbaar op mobiel) --}}
         <aside class="lg:w-64 lg:shrink-0">
             <nav class="flex gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden lg:sticky lg:top-10 lg:flex-col lg:pb-0">
                 @foreach ($items as $item)

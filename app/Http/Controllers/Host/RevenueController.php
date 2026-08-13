@@ -10,10 +10,7 @@ use Illuminate\View\View;
 
 class RevenueController extends Controller
 {
-    /**
-     * Omzetoverzicht (scope §2.9). De verhuurder ontvangt 100% van zijn huur;
-     * servicekosten liggen bij de artiest, dus omzet = huurbedrag.
-     */
+
     public function __invoke(Request $request): View
     {
         $bookings = Booking::whereIn('room_id', $request->user()->rooms()->select('rooms.id'))
@@ -21,7 +18,6 @@ class RevenueController extends Controller
             ->with('room')
             ->get();
 
-        // Gerealiseerd = sessie voorbij (uitbetaling volgt via Stripe); verwacht = nog komend.
         [$realised, $expected] = $bookings->partition(fn (Booking $booking) => $booking->endsAt()->isPast());
 
         $onHold = $realised->where('status', BookingStatus::Disputed);

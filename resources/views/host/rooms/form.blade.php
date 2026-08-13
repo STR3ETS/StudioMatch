@@ -20,7 +20,6 @@
         @endif
     </div>
 
-    {{-- Reviewstatus duidelijk in beeld (scope §2.2) --}}
     @if ($room->exists && $room->status === \App\Enums\RoomStatus::InReview)
         <div class="mt-6 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-5 py-4">
             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-600"><i class="fa-solid fa-hourglass-half fa-sm"></i></span>
@@ -50,7 +49,6 @@
             @method('PUT')
         @endif
 
-        {{-- Basis --}}
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_general') }}</h2>
             <div class="mt-5 space-y-5">
@@ -84,7 +82,6 @@
             </div>
         </div>
 
-        {{-- Prijs & capaciteit --}}
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_pricing') }}</h2>
             <div class="mt-5 grid gap-5 sm:grid-cols-3">
@@ -121,7 +118,6 @@
             <x-info-note class="mt-5">{{ __('host.rooms.pricing_note') }}</x-info-note>
         </div>
 
-        {{-- Foto's (minimaal 1 om live te kunnen, scope §2.2) --}}
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_photos') }}</h2>
             <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.rooms.photos_hint') }}</p>
@@ -151,7 +147,6 @@
             <x-input-error field="photos.*" />
         </div>
 
-        {{-- Apparatuur & software --}}
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_equipment') }}</h2>
             <div class="mt-5 grid gap-2 sm:grid-cols-2">
@@ -179,7 +174,6 @@
             </div>
         </div>
 
-        {{-- Voorzieningen & huisregels --}}
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_extras') }}</h2>
             <div class="mt-5 grid gap-2 sm:grid-cols-2">
@@ -208,7 +202,6 @@
         </div>
     </form>
 
-    {{-- Losse delete-formulieren per foto (buiten het hoofdformulier, geen geneste forms) --}}
     @if ($room->exists)
         @foreach ($room->photos as $photo)
             <form id="delete-photo-{{ $photo->id }}" method="POST" action="{{ route('host.rooms.photos.destroy', [$room, $photo]) }}">

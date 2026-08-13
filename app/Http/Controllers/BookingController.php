@@ -22,9 +22,7 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    /**
-     * Checkout: overzicht met prijsopbouw en akkoord op huisregels + AV (scope §2.5).
-     */
+
     public function create(Request $request, Room $room): View|RedirectResponse
     {
         abort_unless($room->isPubliclyVisible(), 404);
@@ -40,10 +38,6 @@ class BookingController extends Controller
         ]);
     }
 
-    /**
-     * Reserveer het slot: boeking in pending_payment met een 15-minutenblokkade,
-     * beschermd met een database-lock tegen dubbele boekingen (scope §2.5).
-     */
     public function store(Request $request, Room $room): RedirectResponse
     {
         abort_unless($room->isPubliclyVisible(), 404);
@@ -82,10 +76,6 @@ class BookingController extends Controller
         return redirect()->route('bookings.payment', $booking);
     }
 
-    /**
-     * Betaalpagina. De echte Stripe-betaling volgt in de volgende fase;
-     * tot die tijd is dit een duidelijk gemarkeerde simulatie.
-     */
     public function payment(Request $request, Booking $booking): View|RedirectResponse
     {
         $this->authorizeBooking($request, $booking);
@@ -105,9 +95,6 @@ class BookingController extends Controller
         return view('book.payment', ['booking' => $booking->load('room.studio')]);
     }
 
-    /**
-     * Simuleer een geslaagde betaling: pending_payment → pending_confirmation.
-     */
     public function pay(Request $request, Booking $booking): RedirectResponse
     {
         $this->authorizeBooking($request, $booking);
@@ -130,9 +117,6 @@ class BookingController extends Controller
         return redirect()->route('dashboard.artist')->with('status', __('booking.paid'));
     }
 
-    /**
-     * Annuleren door de artiest, met de restitutiestaffel uit scope §2.8.
-     */
     public function cancel(Request $request, Booking $booking): RedirectResponse
     {
         $this->authorizeBooking($request, $booking);
@@ -144,7 +128,7 @@ class BookingController extends Controller
         );
 
         $refundPercent = $booking->status === BookingStatus::PendingConfirmation
-            ? 100 // nog niet geaccepteerd door de studio: alles terug
+            ? 100
             : $booking->refundPercentForCancellationNow();
 
         $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'artist']);
@@ -155,10 +139,6 @@ class BookingController extends Controller
         return redirect()->route('dashboard.artist')->with('status', __('booking.cancelled'));
     }
 
-    /**
-     * Verzetten (BESLISSING 9): eenmalig, tot 48 uur voor start, zelfde ruimte
-     * en duur, alleen naar een vrij slot. Gaat opnieuw langs de verhuurder.
-     */
     public function reschedule(Request $request, Booking $booking): View|RedirectResponse
     {
         $this->authorizeBooking($request, $booking);
@@ -217,10 +197,6 @@ class BookingController extends Controller
         return redirect()->route('dashboard.artist')->with('status', __('booking.rescheduled'));
     }
 
-    /**
-     * "Meld een probleem" (scope §2.5): tot 24 uur na de starttijd. Zet de
-     * uitbetaling op hold en maakt een ticket aan voor de admin.
-     */
     public function reportProblem(Request $request, Booking $booking): RedirectResponse
     {
         $this->authorizeBooking($request, $booking);
@@ -233,7 +209,6 @@ class BookingController extends Controller
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
-        // Bewijsfoto's voor een betere beoordeling door de admin.
         $photos = collect($validated['photos'] ?? [])
             ->map(fn ($photo) => $photo->store('disputes/' . $booking->id, 'public'))
             ->all();
@@ -251,11 +226,6 @@ class BookingController extends Controller
         return redirect()->route('dashboard.artist')->with('status', __('booking.problem_reported'));
     }
 
-    /**
-     * Valideer datum en tijdvak tegen het slotraster en de echte beschikbaarheid.
-     *
-     * @return array{0: Carbon, 1: int, 2: int}
-     */
     private function validateSlot(Request $request, Room $room): array
     {
         $validated = $request->validate([
@@ -283,12 +253,6 @@ class BookingController extends Controller
         return [$date, $startHour, $endHour];
     }
 
-    /**
-     * Prijsopbouw: huur + servicekosten voor de artiest + btw over de servicekosten.
-     * De verhuurder ontvangt zijn volledige uurtarief (klantkeuze bij BESLISSING 2).
-     *
-     * @return array<string, int>
-     */
     private function prices(Room $room, int $hours): array
     {
         $rent = $room->hourly_rate_cents * $hours;

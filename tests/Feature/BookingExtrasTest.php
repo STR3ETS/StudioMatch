@@ -73,7 +73,7 @@ class BookingExtrasTest extends TestCase
     {
         Notification::fake();
         $booking = $this->booking(['date' => today()->addDays(10)->next('monday')]);
-        $newDate = $booking->date->copy()->addDay(); // dinsdag, open volgens schema
+        $newDate = $booking->date->copy()->addDay();
 
         $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/verzetten', [
             'date' => $newDate->toDateString(),
@@ -83,7 +83,7 @@ class BookingExtrasTest extends TestCase
         $booking->refresh();
         $this->assertSame($newDate->toDateString(), $booking->date->toDateString());
         $this->assertSame(14, (int) $booking->start_hour);
-        $this->assertSame(17, (int) $booking->end_hour); // zelfde duur (3 uur)
+        $this->assertSame(17, (int) $booking->end_hour);
         $this->assertSame('pending_confirmation', $booking->status->value);
         $this->assertNotNull($booking->rescheduled_at);
         Notification::assertSentTo($this->artist, BookingRescheduled::class);
@@ -146,7 +146,6 @@ class BookingExtrasTest extends TestCase
         Notification::assertSentTo($this->host, ProblemReported::class);
         Notification::assertSentTo($admin, ProblemReported::class);
 
-        // De admin ziet de bewijsfoto's bij het ticket.
         $this->actingAs($admin)->get('/dashboard/admin/tickets')
             ->assertOk()
             ->assertSee(__('admin.tickets.photos'))
@@ -178,12 +177,10 @@ class BookingExtrasTest extends TestCase
             'dispute_reason' => 'De mixer was kapot.',
         ]);
 
-        // De artiest ziet dat zijn melding is afgehandeld...
         $this->actingAs($this->artist)->get('/dashboard/artiest')
             ->assertOk()
             ->assertSee(__('booking.problem.dismissed', ['date' => $booking->disputed_at->translatedFormat('j F')]));
 
-        // ...en kan niet nogmaals melden op dezelfde boeking.
         $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/probleem', [
             'dispute_reason' => 'Ik probeer het gewoon nog een keer.',
         ])->assertNotFound();
@@ -287,8 +284,8 @@ class BookingExtrasTest extends TestCase
 
     public function test_host_revenue_page_shows_totals(): void
     {
-        $this->booking(['date' => today()->subDays(7), 'status' => 'completed']); // gerealiseerd € 150
-        $this->booking(['date' => today()->addDays(7)]); // verwacht € 150
+        $this->booking(['date' => today()->subDays(7), 'status' => 'completed']);
+        $this->booking(['date' => today()->addDays(7)]);
 
         $this->actingAs($this->host)->get('/dashboard/verhuurder/omzet')
             ->assertOk()
@@ -316,7 +313,6 @@ class BookingExtrasTest extends TestCase
         $this->assertCount(1, $booking->damage_photos);
         Notification::assertSentTo($admin, \App\Notifications\DamageReported::class);
 
-        // Historie zichtbaar en niet nogmaals te melden.
         $this->actingAs($this->host)->get('/dashboard/verhuurder/schade')
             ->assertSee('De condensatormicrofoon is beschadigd achtergelaten.');
         $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/' . $booking->id, [

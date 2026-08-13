@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class ProfileController extends Controller
 {
-    /**
-     * Bedrijfsgegevens van de verhuurder (scope §2.2) - voor facturatie en Stripe.
-     */
+
     public function edit(Request $request): View
     {
         return view('host.profile', [
@@ -22,9 +20,6 @@ class ProfileController extends Controller
         ]);
     }
 
-    /**
-     * Sla de bedrijfsgegevens op (aanmaken of bijwerken).
-     */
     public function update(Request $request): RedirectResponse
     {
         $validated = $request->validate([

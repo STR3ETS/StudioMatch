@@ -16,7 +16,6 @@
     </div>
     <x-info-note class="mt-4">{{ __('host.availability.edit_subtitle') }}</x-info-note>
 
-    {{-- Vakantiemodus (scope §2.4: ruimte tijdelijk onzichtbaar) --}}
     <section class="mt-8 rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
         <div class="flex items-start justify-between gap-4">
             <div>
@@ -40,7 +39,6 @@
         <x-input-error field="vacation_until" />
     </section>
 
-    {{-- Wekelijks schema (slotraster van 1 uur, geen buffer - scope §2.4) --}}
     <section class="mt-8 rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
         <h2 class="font-bold text-prussian-blue"><i class="fa-solid fa-calendar-week mr-2 text-ruby-red"></i>{{ __('host.availability.schedule_title') }}</h2>
         <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.availability.schedule_text') }}</p>
@@ -80,7 +78,6 @@
         </form>
     </section>
 
-    {{-- Agenda-koppeling: iCal-feed voor de eigen agenda (advies BESLISSING 6) --}}
     <section class="mt-8 rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
         <h2 class="font-bold text-prussian-blue"><i class="fa-solid fa-link mr-2 text-ruby-red"></i>{{ __('host.availability.ical_title') }}</h2>
         <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.availability.ical_text') }}</p>
@@ -95,7 +92,6 @@
         </div>
     </section>
 
-    {{-- Uitzonderingen & blokkades (scope §2.4) --}}
     <section class="mt-8 rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
         <h2 class="font-bold text-prussian-blue"><i class="fa-solid fa-calendar-xmark mr-2 text-ruby-red"></i>{{ __('host.availability.exceptions_title') }}</h2>
         <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.availability.exceptions_text') }}</p>

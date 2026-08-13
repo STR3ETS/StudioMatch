@@ -10,11 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[Fillable(['name', 'phone', 'owner_type', 'btw_plichtig', 'kvk_number', 'vat_number'])]
 class HostProfile extends Model
 {
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
+
     protected function casts(): array
     {
         return [

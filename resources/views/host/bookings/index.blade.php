@@ -6,7 +6,6 @@
     <h1 class="text-2xl font-bold text-prussian-blue">{{ __('host.bookings.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('host.bookings.subtitle') }}</p>
 
-    {{-- Nieuwe aanvragen --}}
     <section class="mt-8">
         <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.bookings.requests_title') }}</h2>
 
@@ -48,7 +47,6 @@
         @endif
     </section>
 
-    {{-- Probleemmeldingen: gemeld door de artiest, bemiddeld door StudioMatch --}}
     @if ($disputes->isNotEmpty())
         <section class="mt-10">
             <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.bookings.disputes_title') }}</h2>
@@ -85,7 +83,6 @@
         </section>
     @endif
 
-    {{-- Komende bevestigde sessies --}}
     <section class="mt-10">
         <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.bookings.upcoming_title') }}</h2>
 

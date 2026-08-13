@@ -10,11 +10,6 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 
-/**
- * Demodata voor presentaties en staging: studio's met live ruimtes,
- * beschikbaarheid en boekingen in verschillende statussen.
- * Idempotent: draait alleen als de demodata nog niet bestaat.
- */
 class DemoSeeder extends Seeder
 {
     private const DEMO_PHOTOS = [
@@ -33,7 +28,6 @@ class DemoSeeder extends Seeder
             return;
         }
 
-        // Vaste testaccounts (bestaan mogelijk al in lokale omgevingen).
         User::firstOrCreate(['email' => 'admin@studiomatch.test'], [
             'name' => 'Test Admin', 'password' => 'wachtwoord123', 'role' => 'admin',
         ]);
@@ -44,7 +38,6 @@ class DemoSeeder extends Seeder
             'name' => 'Test Artiest', 'password' => 'wachtwoord123', 'role' => 'artiest',
         ]);
 
-        // Demo-verhuurder met bedrijfsprofiel en drie studio's.
         $host = User::create([
             'name' => 'Demi Demeester',
             'email' => 'demo-verhuurder@studiomatch.test',
@@ -125,7 +118,6 @@ class DemoSeeder extends Seeder
             }
         }
 
-        // Boekingen in verschillende statussen voor de demo.
         $this->seedBooking($liveRooms[0], $artist, today()->addDays(3), 14, 17, BookingStatus::PendingConfirmation);
         $this->seedBooking($liveRooms[0], $artists[0], today()->addDays(5), 10, 13, BookingStatus::Confirmed);
         $this->seedBooking($liveRooms[1], $artists[1], today()->addDays(7), 12, 16, BookingStatus::Confirmed);

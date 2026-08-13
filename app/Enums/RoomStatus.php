@@ -4,16 +4,13 @@ namespace App\Enums;
 
 enum RoomStatus: string
 {
-    // Statussen listing (scope §2.2): concept → in review → live / afgekeurd → vakantiemodus.
+
     case Concept = 'concept';
     case InReview = 'in_review';
     case Live = 'live';
     case Afgekeurd = 'afgekeurd';
     case Vakantie = 'vakantie';
 
-    /**
-     * Badge-kleuren per status voor het dashboard.
-     */
     public function badgeClasses(): string
     {
         return match ($this) {

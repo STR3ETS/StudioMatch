@@ -22,7 +22,7 @@ class Room extends Model
 {
     protected static function booted(): void
     {
-        // Slug voor de publieke, indexeerbare URL (scope §2.1 SEO). Blijft daarna stabiel.
+
         static::creating(function (Room $room) {
             if ($room->slug === null) {
                 $base = Str::slug($room->studio->name . ' ' . $room->title);
@@ -36,11 +36,6 @@ class Room extends Model
         });
     }
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -55,9 +50,6 @@ class Room extends Model
         ];
     }
 
-    /**
-     * Alleen ruimtes die publiek zichtbaar zijn: live en niet in vakantiemodus.
-     */
     public function scopePubliclyVisible(Builder $query): Builder
     {
         return $query
@@ -105,18 +97,12 @@ class Room extends Model
         return $this->hasMany(RoomException::class)->orderBy('date');
     }
 
-    /**
-     * Vakantiemodus actief? Loopt automatisch af op de einddatum.
-     */
     public function isOnVacation(): bool
     {
         return $this->on_vacation
             && ($this->vacation_until === null || $this->vacation_until->endOfDay()->isFuture());
     }
 
-    /**
-     * Status voor weergave: een live ruimte in vakantiemodus toont "vakantie" (scope §2.2).
-     */
     public function effectiveStatus(): RoomStatus
     {
         if ($this->status === RoomStatus::Live && $this->isOnVacation()) {
@@ -126,11 +112,6 @@ class Room extends Model
         return $this->status;
     }
 
-    /**
-     * Open op deze datum (en optioneel binnen dit tijdvak)? Kijkt naar het
-     * weekschema, uitzonderingen en blokkades (scope §2.4). Verwacht dat de
-     * relaties hours en exceptions geladen zijn.
-     */
     public function isAvailableOn(CarbonInterface $date, ?int $startHour = null, ?int $endHour = null): bool
     {
         $dayExceptions = $this->exceptions->filter(fn ($exception) => $exception->date->isSameDay($date));
@@ -139,7 +120,6 @@ class Room extends Model
             return false;
         }
 
-        // Open vensters: het weekschema plus eventuele extra-open-uitzonderingen.
         $windows = collect();
         $weekly = $this->hours->firstWhere('weekday', $date->isoWeekday());
         if ($weekly?->is_open) {
@@ -167,13 +147,6 @@ class Room extends Model
             ->contains(fn ($exception) => $exception->start_hour < $endHour && $exception->end_hour > $startHour);
     }
 
-    /**
-     * De vrije uren op een datum: open vensters minus blokkades, actieve
-     * boekingen en (voor vandaag) verstreken uren. Verwacht geladen relaties.
-     *
-     * @param  \Illuminate\Support\Collection<int, Booking>|null  $dayBookings
-     * @return array<int, int>
-     */
     public function freeHoursOn(CarbonInterface $date, $dayBookings = null): array
     {
         $dayExceptions = $this->exceptions->filter(fn ($exception) => $exception->date->isSameDay($date));
@@ -221,11 +194,6 @@ class Room extends Model
         return $hours;
     }
 
-    /**
-     * Vrije uren per dag voor de boekingskalender, vanaf vandaag.
-     *
-     * @return array<string, array<int, int>>
-     */
     public function freeHoursByDate(int $days = 84): array
     {
         $this->loadMissing(['hours', 'exceptions']);
@@ -247,10 +215,6 @@ class Room extends Model
         return $result;
     }
 
-    /**
-     * Is dit tijdvak echt boekbaar? Schema en uitzonderingen (§2.4) plus
-     * bestaande actieve boekingen: geboekte slots zijn niet meer beschikbaar.
-     */
     public function isBookableFor(CarbonInterface $date, int $startHour, int $endHour): bool
     {
         if (! $this->isAvailableOn($date, $startHour, $endHour)) {
@@ -265,9 +229,6 @@ class Room extends Model
             ->exists();
     }
 
-    /**
-     * Zet een standaard weekschema klaar: ma t/m vr open van 09:00-21:00.
-     */
     public function seedDefaultHours(): void
     {
         for ($weekday = 1; $weekday <= 7; $weekday++) {
@@ -278,9 +239,6 @@ class Room extends Model
         }
     }
 
-    /**
-     * Uurtarief in euro's voor weergave en formulieren.
-     */
     public function hourlyRateEuros(): float
     {
         return $this->hourly_rate_cents / 100;

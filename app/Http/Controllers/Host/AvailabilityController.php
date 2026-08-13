@@ -13,9 +13,7 @@ use Illuminate\View\View;
 
 class AvailabilityController extends Controller
 {
-    /**
-     * Kies een ruimte om de beschikbaarheid van te beheren.
-     */
+
     public function index(Request $request): View
     {
         return view('host.availability.index', [
@@ -24,14 +22,10 @@ class AvailabilityController extends Controller
         ]);
     }
 
-    /**
-     * Weekschema, uitzonderingen en vakantiemodus van één ruimte (scope §2.4).
-     */
     public function edit(Request $request, Room $room): View
     {
         $this->authorizeRoom($request, $room);
 
-        // Oudere ruimtes zonder schema krijgen hier alsnog de standaardrijen.
         $room->seedDefaultHours();
 
         return view('host.availability.edit', [
@@ -40,9 +34,6 @@ class AvailabilityController extends Controller
         ]);
     }
 
-    /**
-     * Sla het wekelijkse schema op.
-     */
     public function updateSchedule(Request $request, Room $room): RedirectResponse
     {
         $this->authorizeRoom($request, $room);
@@ -67,9 +58,6 @@ class AvailabilityController extends Controller
         return redirect()->route('host.availability.edit', $room)->with('status', __('host.availability.schedule_saved'));
     }
 
-    /**
-     * Zet de vakantiemodus aan of uit (ruimte tijdelijk onzichtbaar).
-     */
     public function updateVacation(Request $request, Room $room): RedirectResponse
     {
         $this->authorizeRoom($request, $room);
@@ -91,9 +79,6 @@ class AvailabilityController extends Controller
         return redirect()->route('host.availability.edit', $room)->with('status', __('host.availability.vacation_saved'));
     }
 
-    /**
-     * Voeg een uitzondering (extra open/dicht) of blokkade toe.
-     */
     public function storeException(Request $request, Room $room): RedirectResponse
     {
         $this->authorizeRoom($request, $room);
@@ -121,9 +106,6 @@ class AvailabilityController extends Controller
         return redirect()->route('host.availability.edit', $room)->with('status', __('host.availability.exception_saved'));
     }
 
-    /**
-     * Verwijder een uitzondering of blokkade.
-     */
     public function destroyException(Request $request, Room $room, RoomException $exception): RedirectResponse
     {
         $this->authorizeRoom($request, $room);

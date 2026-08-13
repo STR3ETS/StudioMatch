@@ -11,7 +11,6 @@
         @csrf
         @method('PUT')
 
-        {{-- Algemeen --}}
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.profile.section_general') }}</h2>
             <div class="mt-5 space-y-5">
@@ -28,7 +27,6 @@
             </div>
         </div>
 
-        {{-- Zakelijk (scope §2.2 + BESLISSING 3: btw-plichtig los van particulier/ondernemer) --}}
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.profile.section_business') }}</h2>
             <div class="mt-5 space-y-5">

@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Throwable;
 
-/**
- * Beeldverwerking (scope §2.11): uploads verkleinen en comprimeren, plus een
- * thumbnail-variant voor kaartjes en lijsten. Gebruikt PHP's ingebouwde GD,
- * geen externe dienst nodig. WebP waar beschikbaar, anders JPEG.
- */
 class ImageProcessor
 {
     private const MAX_MAIN = 1600;
@@ -20,9 +15,6 @@ class ImageProcessor
 
     private const QUALITY = 82;
 
-    /**
-     * @return array{path: string, thumb_path: string}|null null als GD het beeld niet kan lezen
-     */
     public static function store(string $bytes, string $directory): ?array
     {
         try {

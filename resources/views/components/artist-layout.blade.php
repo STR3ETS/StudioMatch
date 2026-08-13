@@ -1,7 +1,6 @@
 @props(['title', 'active' => null])
 
 @php
-    // Navigatie volgt scope §2.9 (artiest); facturen volgen met de Moneybird-fase.
     $items = [
         ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.artist')],
         ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit')],

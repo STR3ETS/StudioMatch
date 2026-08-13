@@ -11,7 +11,6 @@
         <p class="mt-2 text-prussian-blue/60">{{ __('dashboard.artist.subtitle') }}</p>
     </div>
 
-    {{-- Komende boekingen --}}
     <section data-reveal style="--reveal-delay: .1s" class="mt-10">
         <h2 class="text-lg font-bold text-prussian-blue">{{ __('dashboard.artist.bookings_title') }}</h2>
 
@@ -44,7 +43,6 @@
                                     <span><i class="fa-solid fa-euro-sign fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
                                 </p>
                                 @if ($status === BookingStatus::Confirmed)
-                                    {{-- Adres + contact pas na bevestiging (scope §2.5) --}}
                                     <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
                                         <span><i class="fa-solid fa-location-dot fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->room->studio->fullAddress() }}</span>
                                         @if ($booking->room->studio->phone)
@@ -105,7 +103,6 @@
         @endif
     </section>
 
-    {{-- Eerdere boekingen --}}
     @if ($past->isNotEmpty())
         <section data-reveal style="--reveal-delay: .2s" class="mt-10">
             <h2 class="text-lg font-bold text-prussian-blue">{{ __('dashboard.artist.history_title') }}</h2>

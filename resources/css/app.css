@@ -13,7 +13,6 @@
     --color-white: #ffffff;
 }
 
-/* Zwevende hero-icoontjes: van onder naar boven, in- en uitfadend. */
 @keyframes float-up {
     0% {
         transform: translateY(40px) rotate(-8deg);
@@ -45,7 +44,6 @@
     }
 }
 
-/* Zwevende UI-kaartjes: zachte dobber-animatie. */
 @keyframes bob {
     0%, 100% {
         transform: translateY(0);
@@ -65,7 +63,6 @@
     }
 }
 
-/* Scroll-reveal: blokken faden en schuiven in beeld zodra ze de viewport raken. */
 .reveal {
     opacity: 0;
     transform: translateY(24px);
@@ -88,7 +85,6 @@
     }
 }
 
-/* Studio-kaart: donkere ondergrond, geen UI-chrome, prijs-pins en hover-cards. */
 .leaflet-container {
     font-family: inherit;
     background-color: #0b0f1e;
@@ -146,7 +142,6 @@
     line-height: 1.4;
 }
 
-/* Geen puntje onder de card. */
 .leaflet-popup-tip-container {
     display: none;
 }
@@ -217,21 +212,16 @@
     color: rgb(16 21 41 / 0.5);
 }
 
-/* Subtiel stippenpatroon voor sectie-achtergronden. */
 .bg-dots {
     background-image: radial-gradient(circle, rgb(16 21 41 / 0.08) 1px, transparent 1px);
     background-size: 18px 18px;
 }
 
-/* Gigantische outline-tekst als decoratie op donkere vlakken. */
 .text-outline-white {
     -webkit-text-stroke: 2px rgb(255 255 255 / 0.12);
     color: transparent;
 }
 
-/* iOS Safari: datum-/tijdvelden respecteren hun breedte niet en krijgen
-   afwijkende native styling. appearance uitschakelen laat ze zich als
-   gewone tekstvelden gedragen binnen grid/flex. */
 input[type='date'],
 input[type='time'] {
     -webkit-appearance: none;
@@ -245,7 +235,6 @@ input[type='time']::-webkit-date-and-time-value {
     text-align: left;
 }
 
-/* Dunne, subtiele scrollbar (prussian-blue) voor scrollbare panelen. */
 .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(16, 21, 41, 0.2) transparent;

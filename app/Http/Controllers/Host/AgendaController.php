@@ -12,10 +12,7 @@ use Illuminate\View\View;
 
 class AgendaController extends Controller
 {
-    /**
-     * Agendaweergave (scope §2.9): bevestigde sessies, aanvragen en blokkades
-     * van de komende vier weken, gegroepeerd per dag.
-     */
+
     public function __invoke(Request $request): View
     {
         $roomIds = $request->user()->rooms()->select('rooms.id');
@@ -34,7 +31,6 @@ class AgendaController extends Controller
             ->with('room.studio')
             ->get();
 
-        // Eén lijst per dag: boekingen en blokkades door elkaar, op tijd gesorteerd.
         $days = $bookings->map(fn (Booking $booking) => [
             'date' => $booking->date->toDateString(),
             'sort' => (int) $booking->start_hour,

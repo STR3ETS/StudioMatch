@@ -6,12 +6,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Kolommen voor "meld een probleem" (§2.5), verzetten (BESLISSING 9),
-     * de herinneringsmail (§2.10) en de 24-uurs reactietermijn na verzetten.
-     */
+
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table) {
@@ -23,9 +18,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('bookings', function (Blueprint $table) {

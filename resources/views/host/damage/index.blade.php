@@ -4,7 +4,6 @@
 
     <x-info-note class="mt-4">{{ __('host.damage.note') }}</x-info-note>
 
-    {{-- Recente sessies waarvoor schade gemeld kan worden --}}
     <section class="mt-8">
         <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.damage.eligible_title') }}</h2>
 
@@ -45,7 +44,6 @@
         @endif
     </section>
 
-    {{-- Historie van gemelde schades --}}
     @if ($reported->isNotEmpty())
         <section class="mt-10">
             <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.damage.reported_title') }}</h2>

@@ -1,5 +1,4 @@
 <x-layout :title="__('how.meta_title')" :description="__('how.meta_description')">
-    {{-- ===== Hero ===== --}}
     <x-hero compact>
         <h1 class="text-4xl font-bold text-white sm:text-5xl">{{ __('how.hero.heading') }}</h1>
         <p class="mx-auto mt-4 max-w-2xl text-white/60">{{ __('how.hero.subtitle') }}</p>
@@ -9,7 +8,6 @@
         </a>
     </x-hero>
 
-    {{-- ===== Stap 01: Zoek & vergelijk (stippenpatroon) ===== --}}
     <section class="bg-dots py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="flex flex-col items-center gap-12 lg:flex-row lg:gap-24">
@@ -33,7 +31,6 @@
         </div>
     </section>
 
-    {{-- ===== Stap 02: Boek & betaal (donker full-bleed) ===== --}}
     <section class="relative overflow-hidden bg-prussian-blue py-20">
         <div class="relative z-10 mx-auto max-w-7xl px-6">
             <div class="flex flex-col items-center gap-12 lg:flex-row-reverse lg:gap-24">
@@ -64,7 +61,6 @@
         </div>
     </section>
 
-    {{-- ===== Stap 03: Bevestiging & sessie (stippenpatroon) ===== --}}
     <section class="bg-dots py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="flex flex-col items-center gap-12 lg:flex-row lg:gap-24">
@@ -95,7 +91,6 @@
         </div>
     </section>
 
-    {{-- ===== Prijsopbouw: donker paneel met bonnetje ===== --}}
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-3xl bg-prussian-blue px-8 py-14 lg:px-14">
@@ -131,7 +126,6 @@
         </div>
     </section>
 
-    {{-- ===== Annuleren & verzetten (grijs) ===== --}}
     <section class="bg-prussian-blue/5 py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="max-w-2xl">
@@ -176,7 +170,6 @@
         </div>
     </section>
 
-    {{-- ===== Vertrouwen (wit) ===== --}}
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <h2 class="text-3xl font-bold text-prussian-blue">{{ __('how.trust.title') }}</h2>
@@ -194,7 +187,6 @@
         </div>
     </section>
 
-    {{-- ===== FAQ (grijs) ===== --}}
     <section class="bg-prussian-blue/5 py-20">
         <div class="mx-auto max-w-3xl px-6">
             <h2 class="text-center text-3xl font-bold text-prussian-blue">{{ __('how.faq.title') }}</h2>
@@ -212,7 +204,6 @@
         </div>
     </section>
 
-    {{-- ===== Slot-CTA ===== --}}
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-[2.5rem] bg-prussian-blue px-8 py-14 text-center lg:px-14">

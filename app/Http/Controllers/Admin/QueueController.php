@@ -13,9 +13,7 @@ use Illuminate\View\View;
 
 class QueueController extends Controller
 {
-    /**
-     * Goedkeuringswachtrij: alle ruimtes die in review staan (scope §2.9 admin).
-     */
+
     public function index(): View
     {
         return view('admin.queue.index', [
@@ -26,9 +24,6 @@ class QueueController extends Controller
         ]);
     }
 
-    /**
-     * Detail van een in te beoordelen ruimte, met goedkeuren/afwijzen.
-     */
     public function show(Room $room): View
     {
         return view('admin.queue.show', [
@@ -36,9 +31,6 @@ class QueueController extends Controller
         ]);
     }
 
-    /**
-     * Goedkeuren: in review → live + mail naar de verhuurder.
-     */
     public function approve(Room $room): RedirectResponse
     {
         abort_unless($room->status === RoomStatus::InReview, 404);
@@ -50,9 +42,6 @@ class QueueController extends Controller
         return redirect()->route('admin.queue.index')->with('status', __('admin.queue.approved', ['room' => $room->title]));
     }
 
-    /**
-     * Afwijzen met reden: in review → afgekeurd + mail naar de verhuurder.
-     */
     public function reject(Request $request, Room $room): RedirectResponse
     {
         abort_unless($room->status === RoomStatus::InReview, 404);

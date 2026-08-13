@@ -59,7 +59,6 @@ return [
         'submit' => 'Wachtwoord opslaan',
     ],
 
-    // Door Laravel gebruikte sleutels bij inloggen.
     'failed' => 'De combinatie van e-mailadres en wachtwoord klopt niet.',
     'password' => 'Het opgegeven wachtwoord is onjuist.',
     'throttle' => 'Te veel inlogpogingen. Probeer het over :seconds seconden opnieuw.',

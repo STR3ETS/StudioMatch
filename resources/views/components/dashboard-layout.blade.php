@@ -30,7 +30,6 @@
                         <span class="max-sm:hidden">{{ __('dashboard.nav.to_site') }}</span>
                     </a>
 
-                    {{-- Taal-dropdown --}}
                     <details data-dropdown class="group relative">
                         <summary class="list-none [&::-webkit-details-marker]:hidden flex h-9 cursor-pointer select-none items-center gap-2 rounded-full px-3 text-sm font-semibold text-prussian-blue/60 transition hover:bg-prussian-blue/5 hover:text-prussian-blue">
                             <i class="fa-solid fa-globe fa-sm"></i>
@@ -76,7 +75,6 @@
             {{ $slot }}
         </main>
 
-        {{-- Bevestigingsmodal voor formulieren met data-confirm="..." --}}
         <div data-confirm-modal class="fixed inset-0 z-[1500] hidden items-center justify-center bg-prussian-blue/50 p-6">
             <div class="w-full max-w-sm rounded-2xl bg-white p-6 text-center shadow-2xl">
                 <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-triangle-exclamation"></i></span>
@@ -123,7 +121,6 @@
             })();
         </script>
 
-        {{-- Toastmelding voor succes (session status) en validatiefouten --}}
         @if (session('status') || $errors->any())
             <div data-toast role="status" class="fixed bottom-5 right-5 z-[1400] flex w-[calc(100%-2.5rem)] max-w-sm items-start gap-3 rounded-2xl border border-prussian-blue/10 bg-white p-4 shadow-xl shadow-prussian-blue/15 transition duration-300">
                 @if (session('status'))

@@ -8,18 +8,13 @@ use Illuminate\Support\Str;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * Publieke, indexeerbare studiopagina's (scope §2.1 SEO) krijgen een slug-URL.
-     */
+
     public function up(): void
     {
         Schema::table('rooms', function (Blueprint $table) {
             $table->string('slug')->nullable()->after('studio_id');
         });
 
-        // Bestaande ruimtes een slug geven op basis van studionaam + titel.
         $rooms = DB::table('rooms')
             ->join('studios', 'studios.id', '=', 'rooms.studio_id')
             ->select('rooms.id', 'rooms.title', 'studios.name as studio_name')
@@ -36,9 +31,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('rooms', function (Blueprint $table) {

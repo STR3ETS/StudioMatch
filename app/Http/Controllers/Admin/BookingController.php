@@ -14,9 +14,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BookingController extends Controller
 {
-    /**
-     * Alle boekingen met statussen (scope §2.9 admin).
-     */
+
     public function index(Request $request): View
     {
         $status = $request->validate([
@@ -33,10 +31,6 @@ class BookingController extends Controller
         ]);
     }
 
-    /**
-     * Handmatige statuswijziging: het admin-vangnet voor randgevallen
-     * (scope-principe "edge cases via de admin, niet via code").
-     */
     public function updateStatus(Request $request, Booking $booking): RedirectResponse
     {
         $validated = $request->validate([
@@ -50,7 +44,6 @@ class BookingController extends Controller
             'cancelled_by' => $newStatus === BookingStatus::Cancelled ? 'admin' : $booking->cancelled_by,
         ]);
 
-        // Bij handmatige annulering mailt het platform beide partijen (scope §2.8).
         if ($newStatus === BookingStatus::Cancelled) {
             $booking->user->notify(new BookingCancelled($booking, 100));
             $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
@@ -60,16 +53,13 @@ class BookingController extends Controller
             ->with('status', __('admin.bookings.updated'));
     }
 
-    /**
-     * Export naar CSV (scope §2.9 admin), gescheiden met ; voor Excel.
-     */
     public function export(): StreamedResponse
     {
         $bookings = Booking::with(['room.studio', 'user'])->latest()->get();
 
         return response()->streamDownload(function () use ($bookings) {
             $handle = fopen('php://output', 'w');
-            fwrite($handle, "\xEF\xBB\xBF"); // BOM zodat Excel UTF-8 herkent
+            fwrite($handle, "\xEF\xBB\xBF");
 
             fputcsv($handle, ['ID', 'Datum', 'Tijd', 'Studio', 'Ruimte', 'Artiest', 'E-mail', 'Status', 'Huur', 'Servicekosten', 'Btw', 'Totaal', 'Aangemaakt'], ';');
 

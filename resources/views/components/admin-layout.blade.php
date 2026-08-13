@@ -1,7 +1,6 @@
 @props(['title', 'active' => null])
 
 @php
-    // Navigatie volgt scope §2.9 (admin); onderdelen zonder route volgen zodra de boekflow er is.
     $items = [
         ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.admin')],
         ['key' => 'queue', 'icon' => 'fa-clipboard-check', 'url' => route('admin.queue.index')],

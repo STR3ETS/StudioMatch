@@ -17,13 +17,11 @@
         ];
     @endphp
 
-    {{-- ===== Hero ===== --}}
     <x-hero compact>
         <h1 class="text-4xl font-bold text-white sm:text-5xl">{{ __('contact.hero.heading') }}</h1>
         <p class="mx-auto mt-4 max-w-2xl text-white/60">{{ __('contact.hero.subtitle') }}</p>
     </x-hero>
 
-    {{-- ===== Snelle hulp ===== --}}
     <section class="py-16">
         <div class="mx-auto max-w-7xl px-6">
             <div class="grid gap-4 sm:grid-cols-3">
@@ -42,11 +40,9 @@
         </div>
     </section>
 
-    {{-- ===== Formulier + contactinfo ===== --}}
     <section class="bg-dots pb-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="grid gap-8 lg:grid-cols-[1fr_380px]">
-                {{-- Formulier --}}
                 <form action="#" class="rounded-3xl border border-prussian-blue/10 bg-white p-8 shadow-sm">
                     <h2 class="text-2xl font-bold text-prussian-blue">{{ __('contact.form.title') }}</h2>
 
@@ -81,7 +77,6 @@
                     </div>
                 </form>
 
-                {{-- Contactinfo --}}
                 <div class="relative overflow-hidden rounded-3xl bg-prussian-blue p-8 text-white">
                     <x-floating-icons />
                     <div class="relative z-10 flex h-full flex-col">

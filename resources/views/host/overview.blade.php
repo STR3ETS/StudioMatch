@@ -5,7 +5,6 @@
         <p class="mt-2 text-prussian-blue/60">{{ __('dashboard.host.subtitle') }}</p>
     </div>
 
-    {{-- Onboardingchecklist (scope §2.9) - status komt uit de database --}}
     <section data-reveal style="--reveal-delay: .1s" class="mt-10">
         <div class="rounded-2xl bg-prussian-blue p-6 text-white sm:p-8">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -46,7 +45,6 @@
         </div>
     </section>
 
-    {{-- Nieuwe boekingsaanvragen: opvallend, want er geldt een reactietermijn van 24 uur --}}
     @if ($pendingRequests > 0)
         <section data-reveal style="--reveal-delay: .05s" class="mt-10">
             <a href="{{ route('host.bookings.index') }}" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-prussian-blue p-6 text-white shadow-xl shadow-prussian-blue/20 transition hover:-translate-y-0.5 sm:flex-nowrap">
@@ -65,7 +63,6 @@
         </section>
     @endif
 
-    {{-- Status van je ruimtes: alleen tonen als er iets speelt (afgekeurd of in review) --}}
     @if ($rejectedRooms->isNotEmpty() || $inReviewRooms->isNotEmpty())
         <section data-reveal style="--reveal-delay: .15s" class="mt-10">
             <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.overview.status_title') }}</h2>
@@ -100,7 +97,6 @@
         </section>
     @endif
 
-    {{-- Snel naar --}}
     <section data-reveal style="--reveal-delay: .2s" class="mt-10">
         <div class="grid gap-4 sm:grid-cols-2">
             <a href="{{ route('host.profile.edit') }}" class="group rounded-2xl border border-prussian-blue/10 bg-white p-6 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-prussian-blue/5">

@@ -8,7 +8,6 @@
     <div data-carousel class="relative aspect-[1] overflow-hidden rounded-2xl bg-prussian-blue/5">
         <div data-carousel-track class="flex h-full snap-x snap-mandatory overflow-x-auto scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             @foreach ($photos as $photo)
-                {{-- Eigen wrapper met overflow-hidden, zodat de hoverzoom niet de buurfoto in beeld duwt --}}
                 <div class="h-full w-full shrink-0 snap-start overflow-hidden">
                     <img src="{{ $photo }}" alt="{{ $studio['name'] }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]" @if (! $loop->first) loading="lazy" @endif>
                 </div>

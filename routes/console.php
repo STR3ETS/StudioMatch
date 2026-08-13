@@ -8,5 +8,4 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Boekingsonderhoud: verlopen blokkades, auto-annulering (BESLISSING 7) en afronden.
 Schedule::command('bookings:maintain')->everyFiveMinutes();

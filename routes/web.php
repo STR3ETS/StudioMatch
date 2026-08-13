@@ -83,7 +83,6 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
-    // Account (scope §2.9): gegevens, wachtwoord en verwijderen, voor elke rol.
     Route::get('/dashboard/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/dashboard/account/profiel', [AccountController::class, 'updateProfile'])->name('account.profile.update');
     Route::put('/dashboard/account/wachtwoord', [AccountController::class, 'updatePassword'])->name('account.password.update');
@@ -92,7 +91,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/artiest', ArtistOverviewController::class)
         ->middleware('role:artiest')->name('dashboard.artist');
 
-    // Boekflow (scope §2.5): account verplicht, alleen artiesten boeken (BESLISSING 10).
     Route::middleware('role:artiest')->group(function () {
         Route::get('/studios/{room:slug}/boeken', [BookingController::class, 'create'])->name('studios.book');
         Route::post('/studios/{room:slug}/boeken', [BookingController::class, 'store'])
@@ -105,7 +103,6 @@ Route::middleware('auth')->group(function () {
         Route::post('/boekingen/{booking}/probleem', [BookingController::class, 'reportProblem'])->name('bookings.problem');
     });
 
-    // Verhuurdersdashboard (scope §2.9)
     Route::middleware('role:verhuurder')->prefix('dashboard/verhuurder')->group(function () {
         Route::get('/', OverviewController::class)->name('dashboard.host');
 
@@ -146,7 +143,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/beschikbaarheid/{room}/uitzonderingen/{exception}', [AvailabilityController::class, 'destroyException'])->name('host.availability.exceptions.destroy');
     });
 
-    // Admin-dashboard (scope §2.9)
     Route::middleware('role:admin')->prefix('dashboard/admin')->group(function () {
         Route::get('/', AdminOverviewController::class)->name('dashboard.admin');
         Route::get('/wachtrij', [QueueController::class, 'index'])->name('admin.queue.index');
@@ -171,12 +167,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/uitloggen', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
-// iCal-feed (BESLISSING 6): ondertekende URL, agenda-apps kunnen niet inloggen.
 Route::get('/ical/ruimte/{room}', IcalController::class)->middleware('signed')->name('ical.room');
 
 Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
 
-// Juridische pagina's: stubs totdat de definitieve teksten zijn aangeleverd (scope §6).
 foreach (['voorwaarden' => 'terms', 'privacy' => 'privacy', 'disclaimer' => 'disclaimer', 'cookiebeleid' => 'cookies'] as $uri => $key) {
     Route::get('/' . $uri, fn () => view('legal', ['title' => __('legal.' . $key)]))->name('legal.' . $key);
 }

@@ -8,9 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class EnsureUserHasRole
 {
-    /**
-     * Laat alleen gebruikers met de gegeven rol door; admins mogen overal bij.
-     */
+
     public function handle(Request $request, Closure $next, string $role): Response
     {
         $user = $request->user();

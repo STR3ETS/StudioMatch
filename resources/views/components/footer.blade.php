@@ -10,7 +10,6 @@
 <footer class="bg-ruby-red text-white">
     <div class="mx-auto max-w-7xl px-6 py-16">
         <div class="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-5">
-            {{-- Brand --}}
             <div class="col-span-2 sm:col-span-3 lg:col-span-2">
                 <img src="/logos/sm-primary-logo-wit.png" alt="StudioMatch" class="h-10 w-auto">
                 <p class="mt-4 text-sm font-semibold italic text-white">{{ __('footer.tagline') }}</p>
@@ -25,7 +24,6 @@
                 </div>
             </div>
 
-            {{-- Ontdekken --}}
             <div>
                 <h3 class="text-sm font-bold">{{ __('footer.discover.title') }}</h3>
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
@@ -35,7 +33,6 @@
                 </ul>
             </div>
 
-            {{-- Voor studio's --}}
             <div>
                 <h3 class="text-sm font-bold">{{ __('footer.hosts.title') }}</h3>
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
@@ -44,7 +41,6 @@
                 </ul>
             </div>
 
-            {{-- Bedrijf --}}
             <div>
                 <h3 class="text-sm font-bold">{{ __('footer.company.title') }}</h3>
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
@@ -55,7 +51,6 @@
         </div>
     </div>
 
-    {{-- Subfooter --}}
     <div class="border-t border-white/10">
         <div class="mx-auto flex max-w-7xl flex-col gap-4 px-6 py-6 lg:items-center lg:justify-between">
             <div class="w-full flex flex-wrap items-center justify-between gap-y-3 text-xs text-white/50">

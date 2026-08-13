@@ -14,9 +14,7 @@ use Illuminate\View\View;
 
 class DamageController extends Controller
 {
-    /**
-     * Schade melden (scope §2.8): recente sessies om te melden plus de historie.
-     */
+
     public function index(Request $request): View
     {
         $bookings = Booking::whereIn('room_id', $request->user()->rooms()->select('rooms.id'))
@@ -31,10 +29,6 @@ class DamageController extends Controller
         ]);
     }
 
-    /**
-     * Meld schade met bewijs → alertmail naar de admin, die bemiddelt en de
-     * gegevens deelt. De afhandeling zelf gebeurt buiten het platform.
-     */
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         abort_unless($booking->room->studio->user_id === $request->user()->id, 403);

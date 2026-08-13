@@ -176,7 +176,6 @@ class HostAvailabilityTest extends TestCase
         $this->assertTrue($room->on_vacation);
         $this->assertSame(RoomStatus::Vakantie, $room->effectiveStatus());
 
-        // Uitzetten maakt de velden weer leeg.
         $this->actingAs($host)->put('/dashboard/verhuurder/beschikbaarheid/' . $room->id . '/vakantie', []);
 
         $room->refresh();

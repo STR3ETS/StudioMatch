@@ -7,9 +7,7 @@ use Illuminate\View\View;
 
 class HomeController extends Controller
 {
-    /**
-     * Homepage: uitgelichte (live) studio's en de kaart op echte data.
-     */
+
     public function __invoke(PublicStudioController $studios): View
     {
         $rooms = Room::query()

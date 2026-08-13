@@ -3,7 +3,6 @@
         $label = 'block text-xs font-bold uppercase tracking-wide text-prussian-blue/50';
         $field = 'mt-2 w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none';
 
-        // Rol vooraf selecteren via bijv. /registreren?rol=verhuurder (Voor studio's-pagina).
         $role = old('role', request('rol') === 'verhuurder' ? 'verhuurder' : 'artiest');
     @endphp
 
@@ -13,7 +12,6 @@
     <form method="POST" action="{{ route('register.store') }}" class="mt-8 space-y-5">
         @csrf
 
-        {{-- Rolkeuze (scope W1 stap 1) --}}
         <div>
             <span class="{{ $label }}">{{ __('auth.register.role') }}</span>
             <div class="mt-2 grid grid-cols-2 gap-2">

@@ -5,16 +5,9 @@ namespace App\Support;
 use Illuminate\Support\Facades\Http;
 use Throwable;
 
-/**
- * Adres → coördinaten via de PDOK Locatieserver (gratis geocoding van de
- * Nederlandse overheid, geen API-key nodig). Faalt stil: zonder resultaat
- * vallen de kaarten terug op een pin op stadsniveau.
- */
 class Geocoder
 {
-    /**
-     * @return array{lat: float, lng: float}|null
-     */
+
     public static function geocode(string $street, string $postalCode, string $city): ?array
     {
         try {

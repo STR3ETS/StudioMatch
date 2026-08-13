@@ -9,10 +9,7 @@ use Illuminate\View\View;
 
 class RevenueController extends Controller
 {
-    /**
-     * Omzet en platforminkomsten per studio (scope §2.9 admin).
-     * Huur gaat naar de verhuurder; servicekosten + btw zijn voor het platform.
-     */
+
     public function __invoke(): View
     {
         $bookings = Booking::whereIn('status', [BookingStatus::Confirmed, BookingStatus::Completed, BookingStatus::Disputed])

@@ -13,7 +13,6 @@
         </a>
     </div>
 
-    {{-- Statusfilter --}}
     <form method="GET" action="{{ route('admin.bookings.index') }}" class="mt-6">
         <select name="status" onchange="this.form.requestSubmit()" class="cursor-pointer rounded-xl border border-prussian-blue/15 bg-white px-3 py-2 text-sm font-medium text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
             <option value="">{{ __('admin.bookings.all_statuses') }}</option>
@@ -41,7 +40,6 @@
                         </p>
                     </div>
 
-                    {{-- Handmatige statuswijziging (vangnet) --}}
                     <form method="POST" action="{{ route('admin.bookings.status', $booking) }}" data-confirm="{{ __('admin.bookings.change_confirm') }}" class="flex shrink-0 items-center gap-2">
                         @csrf
                         @method('PATCH')

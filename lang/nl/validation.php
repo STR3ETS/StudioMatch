@@ -1,7 +1,7 @@
 <?php
 
 return [
-    // Alleen de regels die de site gebruikt; de rest valt terug op het Engels van het framework.
+
     'accepted' => 'Je moet akkoord gaan met :attribute.',
     'array' => ':attribute moet een lijst zijn.',
     'boolean' => ':attribute moet ja of nee zijn.',

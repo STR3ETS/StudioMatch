@@ -12,9 +12,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UserController extends Controller
 {
-    /**
-     * Gebruikersoverzicht (scope §2.9 admin).
-     */
+
     public function index(Request $request): View
     {
         $role = $request->validate([
@@ -32,9 +30,6 @@ class UserController extends Controller
         ]);
     }
 
-    /**
-     * Export naar CSV (scope §2.9 admin).
-     */
     public function export(): StreamedResponse
     {
         $users = User::where('role', '!=', UserRole::Admin)->withCount(['bookings', 'studios'])->latest()->get();

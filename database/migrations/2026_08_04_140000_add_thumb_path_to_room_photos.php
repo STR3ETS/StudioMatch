@@ -6,20 +6,15 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
         Schema::table('room_photos', function (Blueprint $table) {
-            // Thumbnail-variant voor kaartjes en lijsten (scope §2.11 beeldverwerking).
+
             $table->string('thumb_path')->nullable()->after('path');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::table('room_photos', function (Blueprint $table) {

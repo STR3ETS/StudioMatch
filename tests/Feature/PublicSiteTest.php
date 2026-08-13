@@ -89,7 +89,7 @@ class PublicSiteTest extends TestCase
 
     public function test_search_filters_on_availability_date(): void
     {
-        // Standaardschema: ma t/m vr open 09:00-21:00, weekend dicht.
+
         $this->liveRoom();
 
         $monday = today()->next('monday');
@@ -108,13 +108,12 @@ class PublicSiteTest extends TestCase
             $room->photos()->create(['path' => "rooms/{$room->id}/foto{$i}.jpg", 'sort_order' => $i]);
         }
 
-        // 7 foto's, 5 in de galerij → "+2" op de laatste tegel.
         $this->get('/studios/' . $room->slug)->assertOk()->assertSee('+2');
     }
 
     public function test_search_filters_and_sorts_by_distance(): void
     {
-        // Amsterdam (dichtbij, ~3 km) en Utrecht (~35 km, buiten de straal van 25).
+
         $near = $this->liveRoom(null, ['title' => 'Ruimte Amsterdam-Noord']);
         $near->studio->update(['lat' => 52.40, 'lng' => 4.90]);
 
@@ -122,14 +121,12 @@ class PublicSiteTest extends TestCase
         $farStudio->update(['lat' => 52.0907, 'lng' => 5.1214]);
         $this->liveRoom($farStudio, ['title' => 'Ruimte Utrecht']);
 
-        // Zoeken vanuit Amsterdam-centrum met straal 25 km.
         $this->get('/studios?lat=52.37&lng=4.90&radius=25')
             ->assertOk()
             ->assertSee('Ruimte Amsterdam-Noord')
             ->assertSee('km)')
             ->assertDontSee('Ruimte Utrecht');
 
-        // Met een grotere straal doet Utrecht wel mee.
         $this->get('/studios?lat=52.37&lng=4.90&radius=60')
             ->assertOk()
             ->assertSee('Ruimte Amsterdam-Noord')

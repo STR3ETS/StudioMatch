@@ -6,7 +6,6 @@
     <h1 class="text-2xl font-bold text-prussian-blue">{{ __('admin.revenue_page.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('admin.revenue_page.subtitle') }}</p>
 
-    {{-- Totalen --}}
     <div class="mt-8 grid gap-4 sm:grid-cols-3">
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
             <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-prussian-blue/5 text-prussian-blue"><i class="fa-solid fa-calendar-check"></i></span>
@@ -25,7 +24,6 @@
         </div>
     </div>
 
-    {{-- Per studio --}}
     <section class="mt-8">
         <h2 class="text-lg font-bold text-prussian-blue">{{ __('admin.revenue_page.per_studio') }}</h2>
 

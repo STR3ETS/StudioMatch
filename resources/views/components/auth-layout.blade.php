@@ -21,7 +21,6 @@
     </head>
     <body>
         <div class="flex min-h-screen">
-            {{-- Formulier --}}
             <div class="flex w-full flex-col px-6 py-8 sm:px-12 lg:w-1/2 xl:w-[45%]">
                 <div class="flex items-center justify-between">
                     <a href="{{ route('home') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-9 w-auto"></a>
@@ -49,7 +48,6 @@
                 </div>
             </div>
 
-            {{-- Merkpaneel --}}
             <div class="relative hidden overflow-hidden bg-ruby-red lg:flex lg:w-1/2 xl:w-[55%]">
                 <x-floating-icons />
                 <div class="relative z-10 m-auto max-w-md px-10 text-center">

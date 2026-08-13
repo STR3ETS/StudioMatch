@@ -14,9 +14,7 @@ use Illuminate\Validation\Rules\Password;
 
 class RegisteredUserController extends Controller
 {
-    /**
-     * Maak het account aan en log de gebruiker direct in.
-     */
+
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -40,7 +38,6 @@ class RegisteredUserController extends Controller
 
         $request->session()->regenerate();
 
-        // Registreren mag ín de boekflow (scope §2.5): keer terug naar de beoogde pagina.
         return redirect()->intended(route($user->role->dashboardRoute()));
     }
 }

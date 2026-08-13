@@ -13,9 +13,7 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    /**
-     * Boekingsinbox (scope §2.9): nieuwe aanvragen plus komende bevestigde sessies.
-     */
+
     public function index(Request $request): View
     {
         $bookings = Booking::query()
@@ -34,10 +32,6 @@ class BookingController extends Controller
         ]);
     }
 
-    /**
-     * Accepteren: pending_confirmation → confirmed, beide partijen krijgen
-     * de bevestiging met adres en contactgegevens (scope §2.10).
-     */
     public function accept(Request $request, Booking $booking): RedirectResponse
     {
         $this->authorizeBooking($request, $booking);
@@ -50,9 +44,6 @@ class BookingController extends Controller
         return redirect()->route('host.bookings.index')->with('status', __('host.bookings.accepted'));
     }
 
-    /**
-     * Weigeren: automatisch 100% terug naar de artiest (scope §2.8).
-     */
     public function decline(Request $request, Booking $booking): RedirectResponse
     {
         $this->authorizeBooking($request, $booking);

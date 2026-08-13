@@ -14,9 +14,7 @@ use Illuminate\View\View;
 
 class OverviewController extends Controller
 {
-    /**
-     * Admin-overzicht: platformcijfers en snelkoppeling naar de wachtrij.
-     */
+
     public function __invoke(): View
     {
         return view('admin.overview', [

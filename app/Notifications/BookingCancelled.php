@@ -7,16 +7,12 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-// Mailmatrix (scope §2.10): annulerings-/auto-annuleringsbevestiging → beide.
 class BookingCancelled extends Notification
 {
     use Queueable;
 
     public function __construct(public Booking $booking, public int $refundPercent) {}
 
-    /**
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return ['mail'];
@@ -35,8 +31,6 @@ class BookingCancelled extends Notification
                 'time' => $this->booking->timeRange(),
             ]));
 
-        // Restitutie is alleen relevant voor de artiest (scope §2.8 + BESLISSING 5:
-        // servicekosten volledig terug, behalve bij annulering binnen 24 uur).
         if ($notifiable->id === $this->booking->user_id) {
             $refund = (int) round($this->booking->rent_cents * $this->refundPercent / 100);
             if ($this->refundPercent > 0) {

@@ -1,5 +1,3 @@
-{{-- Cookiebanner + consent (scope §2.1). Keuze wordt lokaal bewaard; er draaien
-     nog geen niet-noodzakelijke cookies, de keuze stuurt toekomstige scripts aan. --}}
 <div data-cookie-banner class="fixed inset-x-4 bottom-4 z-[1250] mx-auto hidden max-w-xl rounded-2xl border border-prussian-blue/10 bg-white p-5 shadow-2xl shadow-prussian-blue/20">
     <div class="flex items-start gap-3">
         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-cookie-bite fa-sm"></i></span>

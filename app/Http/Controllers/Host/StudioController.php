@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class StudioController extends Controller
 {
-    /**
-     * Alle studio's (locaties) van deze verhuurder.
-     */
+
     public function index(Request $request): View
     {
         return view('host.studios.index', [
@@ -45,9 +43,6 @@ class StudioController extends Controller
         return redirect()->route('host.studios.show', $studio)->with('status', __('host.studios.saved'));
     }
 
-    /**
-     * Studiodetail: gegevens + de ruimtes van deze locatie.
-     */
     public function show(Request $request, Studio $studio): View
     {
         $this->authorizeStudio($request, $studio);
@@ -70,7 +65,6 @@ class StudioController extends Controller
 
         $validated = $this->validateStudio($request);
 
-        // Bij een adreswijziging (of ontbrekende pin) opnieuw geocoden.
         $addressChanged = $validated['street'] !== $studio->street
             || $validated['postal_code'] !== $studio->postal_code
             || $validated['city'] !== $studio->city;
@@ -90,16 +84,12 @@ class StudioController extends Controller
     {
         $this->authorizeStudio($request, $studio);
 
-        // Fotobestanden van alle onderliggende ruimtes mee verwijderen.
         $studio->rooms()->with('photos')->get()->each(fn ($room) => $room->photos->each->delete());
         $studio->delete();
 
         return redirect()->route('host.studios.index')->with('status', __('host.studios.deleted'));
     }
 
-    /**
-     * @return array<string, mixed>
-     */
     private function validateStudio(Request $request): array
     {
         return $request->validate([

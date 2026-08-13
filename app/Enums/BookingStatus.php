@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum BookingStatus: string
 {
-    // Statusmachine boeking (scope §2.5).
+
     case PendingPayment = 'pending_payment';
     case PendingConfirmation = 'pending_confirmation';
     case Confirmed = 'confirmed';
@@ -14,9 +14,6 @@ enum BookingStatus: string
     case Expired = 'expired';
     case Disputed = 'disputed';
 
-    /**
-     * Badge-kleuren per status voor de dashboards.
-     */
     public function badgeClasses(): string
     {
         return match ($this) {

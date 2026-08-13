@@ -11,14 +11,11 @@ use Illuminate\View\View;
 
 class OverviewController extends Controller
 {
-    /**
-     * Dashboardoverzicht met de onboardingchecklist (scope §2.9).
-     */
+
     public function __invoke(Request $request): View
     {
         $user = $request->user();
 
-        // Laatste stap (Stripe-onboarding) volgt zodra de betaalflow gebouwd wordt.
         $checklist = [
             ['key' => 'account', 'done' => true, 'url' => null],
             ['key' => 'profile', 'done' => $user->hostProfile !== null, 'url' => route('host.profile.edit')],

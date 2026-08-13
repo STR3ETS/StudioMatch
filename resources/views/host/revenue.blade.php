@@ -6,7 +6,6 @@
     <h1 class="text-2xl font-bold text-prussian-blue">{{ __('host.revenue.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('host.revenue.subtitle') }}</p>
 
-    {{-- Kerncijfers --}}
     <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-{{ $onHoldTotal > 0 ? 4 : 3 }}">
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
             <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-euro-sign"></i></span>
@@ -34,7 +33,6 @@
 
     <x-info-note class="mt-6">{{ __('host.revenue.payout_note') }}</x-info-note>
 
-    {{-- Per maand --}}
     <section class="mt-8">
         <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.revenue.months_title') }}</h2>
 

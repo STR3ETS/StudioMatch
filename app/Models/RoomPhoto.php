@@ -12,7 +12,7 @@ class RoomPhoto extends Model
 {
     protected static function booted(): void
     {
-        // Verwijder de bestanden mee zodra de databaserij verdwijnt.
+
         static::deleted(function (RoomPhoto $photo) {
             Storage::disk('public')->delete(array_filter([$photo->path, $photo->thumb_path]));
         });
@@ -28,10 +28,6 @@ class RoomPhoto extends Model
         return Storage::disk('public')->url($this->path);
     }
 
-    /**
-     * Thumbnail voor kaartjes en lijsten; oudere foto's zonder thumb
-     * vallen terug op het origineel.
-     */
     public function thumbUrl(): string
     {
         return Storage::disk('public')->url($this->thumb_path ?? $this->path);

@@ -151,8 +151,8 @@ class AdminPanelTest extends TestCase
         $this->actingAs($this->admin)->get('/dashboard/admin/omzet')
             ->assertOk()
             ->assertSee('Redlight Recordings')
-            ->assertSee('€ 300,00')   // 2 × € 150 huur
-            ->assertSee('€ 32,68');   // 2 × (€ 13,50 + € 2,84) platforminkomsten
+            ->assertSee('€ 300,00')
+            ->assertSee('€ 32,68');
     }
 
     public function test_overview_shows_open_tickets_notice(): void

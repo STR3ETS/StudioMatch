@@ -9,11 +9,7 @@ use Illuminate\Http\Response;
 
 class IcalController extends Controller
 {
-    /**
-     * iCal-feed per ruimte (advies bij BESLISSING 6): bevestigde boekingen en
-     * blokkades in de eigen agenda van de verhuurder. De URL is ondertekend,
-     * zodat hij zonder inloggen maar niet te raden is.
-     */
+
     public function __invoke(Room $room): Response
     {
         $room->load('studio');

@@ -23,7 +23,6 @@
         </div>
     </div>
 
-    {{-- Acties --}}
     <div class="mt-6 grid gap-4">
         <form method="POST" action="{{ route('admin.queue.approve', $room) }}" class="flex items-center justify-between gap-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-5">
             @csrf
@@ -49,7 +48,6 @@
         </form>
     </div>
 
-    {{-- Foto's --}}
     @if ($room->photos->isNotEmpty())
         <section class="mt-8">
             <h2 class="{{ $label }}">{{ __('host.rooms.section_photos') }}</h2>
@@ -61,7 +59,6 @@
         </section>
     @endif
 
-    {{-- Gegevens --}}
     <section class="mt-8 rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
         <div class="grid gap-6 sm:grid-cols-3">
             <div>

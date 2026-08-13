@@ -31,7 +31,6 @@
         ],
     ];
 
-    // Paginaspecifieke structured data (bijv. LocalBusiness op studiopagina's).
     if ($schema !== null) {
         $structuredData[] = $schema;
     }
@@ -48,7 +47,6 @@
         <meta name="description" content="{{ $metaDescription }}">
         <link rel="canonical" href="{{ $currentUrl }}">
 
-        {{-- Open Graph --}}
         <meta property="og:type" content="website">
         <meta property="og:site_name" content="{{ $siteName }}">
         <meta property="og:title" content="{{ $pageTitle }}">
@@ -57,13 +55,11 @@
         <meta property="og:image" content="{{ $ogImage }}">
         <meta property="og:locale" content="{{ $ogLocale }}">
 
-        {{-- Twitter --}}
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" content="{{ $pageTitle }}">
         <meta name="twitter:description" content="{{ $metaDescription }}">
         <meta name="twitter:image" content="{{ $ogImage }}">
 
-        {{-- Favicon --}}
         <link rel="icon" type="image/png" href="/logos/sm-sub-mark-logo-blauw.png">
         <link rel="apple-touch-icon" href="/logos/sm-sub-mark-logo-blauw.png">
 

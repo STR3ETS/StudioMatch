@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class PublicStudioController extends Controller
 {
-    /**
-     * Coördinaten per stad voor de kaart, totdat echte geocoding er is (BESLISSING 14).
-     */
+
     private const CITY_COORDS = [
         'amsterdam' => [52.3676, 4.9041],
         'rotterdam' => [51.9244, 4.4777],
@@ -33,9 +31,6 @@ class PublicStudioController extends Controller
         'zwolle' => [52.5168, 6.0830],
     ];
 
-    /**
-     * Zoekresultaten: alle live ruimtes, gefilterd conform scope §2.3.
-     */
     public function index(Request $request): View
     {
         $filters = $request->validate([
@@ -63,7 +58,6 @@ class PublicStudioController extends Controller
             'sort' => ['nullable', 'in:relevance,distance,price_asc,price_desc'],
         ]);
 
-        // De homepage-zoekbalk stuurt één type (o.a. oude waarden recording/mix/master).
         $types = $filters['types'] ?? [];
         if (! empty($filters['type'])) {
             $types[] = match ($filters['type']) {
@@ -100,7 +94,6 @@ class PublicStudioController extends Controller
             $query->where('capacity', '>=', (int) $filters['capacity']);
         }
 
-        // Engineer: alleen filteren als er precies één optie is aangevinkt.
         $engineer = $filters['engineer'] ?? [];
         if (count($engineer) === 1) {
             $query->where('engineer_included', (bool) $engineer[array_key_first($engineer)]);
@@ -126,8 +119,6 @@ class PublicStudioController extends Controller
 
         $rooms = $query->get();
 
-        // "In de buurt van mij" (scope §2.3): afstand berekenen, filteren op
-        // straal en (standaard) sorteren op afstand.
         $hasLocation = isset($filters['lat'], $filters['lng']);
         if ($hasLocation) {
             $lat = (float) $filters['lat'];
@@ -148,7 +139,6 @@ class PublicStudioController extends Controller
             }
         }
 
-        // Datum/tijd-filter op basis van weekschema, uitzonderingen en blokkades (§2.4).
         if (! empty($filters['date'])) {
             $date = Carbon::parse($filters['date']);
             $start = isset($filters['start']) ? (int) $filters['start'] : null;
@@ -158,7 +148,7 @@ class PublicStudioController extends Controller
                 $start = null;
             }
             $rooms = $rooms->filter(function (Room $room) use ($date, $start, $end) {
-                // Met een concreet tijdvak tellen bestaande boekingen ook mee.
+
                 if ($start !== null && $end !== null) {
                     return $room->isBookableFor($date, $start, $end);
                 }
@@ -174,9 +164,6 @@ class PublicStudioController extends Controller
         ]);
     }
 
-    /**
-     * Publieke detailpagina van een ruimte (server-side gerenderd, scope §2.1 SEO).
-     */
     public function show(Room $room): View
     {
         abort_unless($room->isPubliclyVisible(), 404);
@@ -190,19 +177,13 @@ class PublicStudioController extends Controller
         ]);
     }
 
-    /**
-     * Kaartgegevens per ruimte, met een pin op stadsniveau.
-     *
-     * @param  Collection<int, Room>  $rooms
-     * @return array<int, array<string, mixed>>
-     */
     public function mapData(Collection $rooms): array
     {
         return $rooms
             ->filter(fn (Room $room) => $room->studio->lat !== null
                 || isset(self::CITY_COORDS[mb_strtolower($room->studio->city)]))
             ->map(function (Room $room) {
-                // Exacte pin via geocoding; anders een pin op stadsniveau.
+
                 [$lat, $lng] = $room->studio->lat !== null
                     ? [$room->studio->lat, $room->studio->lng]
                     : self::CITY_COORDS[mb_strtolower($room->studio->city)];
@@ -221,11 +202,6 @@ class PublicStudioController extends Controller
             ->all();
     }
 
-    /**
-     * De gegevens die de studio-card-component verwacht.
-     *
-     * @return array<string, mixed>
-     */
     public function cardData(Room $room): array
     {
         return array_filter([
@@ -239,9 +215,6 @@ class PublicStudioController extends Controller
         ], fn ($value) => $value !== null);
     }
 
-    /**
-     * Afstand in kilometers tussen twee coördinaten (haversine).
-     */
     private function distanceKm(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         $earthRadius = 6371;

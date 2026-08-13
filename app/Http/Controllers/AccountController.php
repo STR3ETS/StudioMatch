@@ -12,9 +12,7 @@ use Illuminate\View\View;
 
 class AccountController extends Controller
 {
-    /**
-     * Accountpagina (scope §2.9): gegevens, wachtwoord en account verwijderen.
-     */
+
     public function edit(): View
     {
         return view('account.edit');
@@ -44,9 +42,6 @@ class AccountController extends Controller
         return redirect()->route('account.edit')->with('status', __('account.password.saved'));
     }
 
-    /**
-     * Account verwijderen conform de AVG (scope §2.9).
-     */
     public function destroy(Request $request): RedirectResponse
     {
         $request->validate([
@@ -55,7 +50,6 @@ class AccountController extends Controller
 
         $user = $request->user();
 
-        // Fotobestanden van eventuele ruimtes mee opruimen (databaserijen cascaden).
         $user->rooms()->with('photos')->get()->each(fn ($room) => $room->photos->each->delete());
 
         Auth::logout();

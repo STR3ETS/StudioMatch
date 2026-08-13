@@ -20,7 +20,6 @@
     $hours = $room->min_hours;
     $rent = $room->hourlyRateEuros() * $hours;
 
-    // Structured data voor zoekmachines (scope §2.1 SEO-basis).
     $schemaData = array_filter([
         '@context' => 'https://schema.org',
         '@type' => 'LocalBusiness',
@@ -48,7 +47,6 @@
 
     <div class="pt-28 pb-32 lg:pb-16">
         <div class="max-w-7xl mx-auto px-6">
-            {{-- Breadcrumb + titel --}}
             <nav data-reveal class="text-sm text-prussian-blue/50">
                 <a href="{{ route('studios') }}" class="hover:text-prussian-blue">{{ __('studio.breadcrumb') }}</a>
                 <span class="px-1">/</span>
@@ -65,7 +63,6 @@
                 </div>
             </div>
 
-            {{-- Fotogalerij: 1 grote + 4 kleine; bij meer foto's een "+N" op de laatste tegel --}}
             @php $extraPhotos = count($photos) - 5; @endphp
             @if (count($photos) > 0)
                 <div data-reveal style="--reveal-delay: .1s" class="mt-5 grid gap-2 overflow-hidden rounded-2xl sm:h-[440px] sm:grid-cols-4 sm:grid-rows-2">
@@ -85,7 +82,6 @@
                         @endif
                     @endforeach
 
-                    {{-- Extra foto's draaien wel mee in de lightbox --}}
                     @foreach (array_slice($photos, 5) as $photo)
                         <span class="hidden" data-lightbox-src="{{ $photo }}"></span>
                     @endforeach
@@ -96,23 +92,19 @@
                 </div>
             @endif
 
-            {{-- Content: hoofdkolom + boekwidget --}}
             <div class="mt-10 flex flex-col gap-10 lg:flex-row">
                 <div class="min-w-0 flex-1">
-                    {{-- Kernfeiten --}}
                     <div class="flex flex-wrap gap-x-8 gap-y-3 border-b border-prussian-blue/10 pb-6 text-sm text-prussian-blue">
                         <span class="flex items-center gap-2"><i class="fa-solid fa-users text-ruby-red"></i> {{ __('studio.facts.capacity', ['count' => $room->capacity]) }}</span>
                         <span class="flex items-center gap-2"><i class="fa-solid fa-clock text-ruby-red"></i> {{ __('studio.facts.min_duration', ['count' => $room->min_hours]) }}</span>
                         <span class="flex items-center gap-2"><i class="fa-solid fa-headphones text-ruby-red"></i> {{ $room->engineer_included ? __('studio.facts.engineer_yes') : __('studio.facts.engineer_no') }}</span>
                     </div>
 
-                    {{-- Over deze studio --}}
                     <section class="border-b border-prussian-blue/10 py-6">
                         <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.about') }}</h2>
                         <p class="mt-3 whitespace-pre-line leading-relaxed text-prussian-blue/70">{{ $room->description }}</p>
                     </section>
 
-                    {{-- Apparatuur --}}
                     @if ($room->equipment || $room->equipment_extra)
                         <section class="border-b border-prussian-blue/10 py-6">
                             <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.equipment') }}</h2>
@@ -127,7 +119,6 @@
                         </section>
                     @endif
 
-                    {{-- DAW's --}}
                     @if ($room->daws)
                         <section class="border-b border-prussian-blue/10 py-6">
                             <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.daw') }}</h2>
@@ -139,7 +130,6 @@
                         </section>
                     @endif
 
-                    {{-- Voorzieningen --}}
                     @if ($room->facilities)
                         <section class="border-b border-prussian-blue/10 py-6">
                             <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.facilities') }}</h2>
@@ -151,7 +141,6 @@
                         </section>
                     @endif
 
-                    {{-- Huisregels --}}
                     @if ($houseRules->isNotEmpty())
                         <section class="border-b border-prussian-blue/10 py-6">
                             <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.rules') }}</h2>
@@ -163,7 +152,6 @@
                         </section>
                     @endif
 
-                    {{-- Locatie --}}
                     <section class="pt-6">
                         <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.location') }}</h2>
                         <p class="mt-2 text-sm text-prussian-blue/70">{{ $studio->fullAddress() }}</p>
@@ -177,7 +165,6 @@
                     </section>
                 </div>
 
-                {{-- Boekwidget: kalender + tijdvak op basis van echte beschikbaarheid --}}
                 <div data-reveal style="--reveal-delay: .15s" class="lg:w-[360px] lg:shrink-0">
                     <form method="GET" action="{{ route('studios.book', $room) }}" id="boeken"
                           data-availability='@json($freeHours)'
@@ -196,7 +183,6 @@
                             <p class="mt-4 rounded-xl bg-ruby-red/10 px-4 py-3 text-sm font-semibold text-ruby-red">{{ $errors->first('slot') }}</p>
                         @endif
 
-                        {{-- Kalender --}}
                         <div class="mt-4">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.date') }}</span>
@@ -209,7 +195,6 @@
                             <div data-cal-grid class="mt-2 grid grid-cols-7 gap-1"></div>
                         </div>
 
-                        {{-- Aantal uur (plus/min-stepper) --}}
                         @php $initialHours = min(8, max($room->min_hours, (int) old('hours', request('hours', $hours)))); @endphp
                         <div class="mt-4">
                             <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.duration') }}</span>
@@ -223,7 +208,6 @@
                             <input type="hidden" name="hours" value="{{ $initialHours }}">
                         </div>
 
-                        {{-- Starttijden --}}
                         <div class="mt-4">
                             <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.time') }}</span>
                             <p data-slots-hint class="mt-2 rounded-xl bg-prussian-blue/[0.03] px-3 py-2.5 text-sm text-prussian-blue/50">{{ __('studio.booking.pick_date_first') }}</p>
@@ -250,7 +234,6 @@
         </div>
     </div>
 
-    {{-- Sticky boekbalk op mobiel: vanaf-prijs + directe CTA naar de kalender (klantfeedback) --}}
     <div class="fixed inset-x-0 bottom-0 z-[1100] flex items-center justify-between gap-4 border-t border-prussian-blue/10 bg-white px-5 py-3 shadow-[0_-8px_30px_rgba(16,43,63,0.12)] lg:hidden">
         <p class="text-prussian-blue">
             <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.from') }}</span>
@@ -260,7 +243,6 @@
         <a href="#boeken" class="shrink-0 rounded-full bg-ruby-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('studio.booking.book') }}</a>
     </div>
 
-    {{-- Lightbox voor de fotogalerij --}}
     <div data-lightbox class="fixed inset-0 z-[1300] hidden bg-prussian-blue/95 p-4">
         <button type="button" data-lightbox-close aria-label="{{ __('home.search.close') }}" class="absolute right-5 top-5 z-10 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-white/10 text-white transition hover:bg-white/20">
             <i class="fa-solid fa-xmark"></i>
@@ -276,7 +258,6 @@
         </div>
     </div>
 
-    {{-- Boekingskalender: datum → aantal uur → starttijd, op echte beschikbaarheid --}}
     <script>
         (() => {
             const form = document.getElementById('boeken');
@@ -319,7 +300,6 @@
 
             const duration = () => parseInt(hoursInput.value, 10);
 
-            // Starttijden waarvoor de hele duur aaneengesloten vrij is (raster van 1 uur).
             const startsFor = (k) => {
                 const free = AVAIL[k];
                 if (! free || ! free.length) return [];

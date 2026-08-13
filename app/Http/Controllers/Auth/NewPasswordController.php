@@ -13,17 +13,12 @@ use Illuminate\View\View;
 
 class NewPasswordController extends Controller
 {
-    /**
-     * Toon het formulier voor een nieuw wachtwoord.
-     */
+
     public function create(Request $request): View
     {
         return view('auth.reset-password', ['request' => $request]);
     }
 
-    /**
-     * Stel het nieuwe wachtwoord in.
-     */
     public function store(Request $request): RedirectResponse
     {
         $request->validate([

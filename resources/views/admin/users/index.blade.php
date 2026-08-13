@@ -9,7 +9,6 @@
         </a>
     </div>
 
-    {{-- Rolfilter --}}
     <form method="GET" action="{{ route('admin.users.index') }}" class="mt-6">
         <select name="role" onchange="this.form.requestSubmit()" class="cursor-pointer rounded-xl border border-prussian-blue/15 bg-white px-3 py-2 text-sm font-medium text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
             <option value="">{{ __('admin.users.all_roles') }}</option>

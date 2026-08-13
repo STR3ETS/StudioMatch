@@ -7,10 +7,7 @@ use Illuminate\Http\Response;
 
 class SitemapController extends Controller
 {
-    /**
-     * Sitemap voor zoekmachines (scope §2.1 SEO-basis): vaste pagina's plus
-     * alle live studiopagina's.
-     */
+
     public function __invoke(): Response
     {
         $urls = collect([

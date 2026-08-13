@@ -11,7 +11,6 @@
     <p class="mt-2 text-prussian-blue/60">{{ __('account.subtitle') }}</p>
 
     <div class="mt-8 space-y-8">
-        {{-- Gegevens --}}
         <form method="POST" action="{{ route('account.profile.update') }}" class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             @csrf
             @method('PUT')
@@ -33,7 +32,6 @@
             </button>
         </form>
 
-        {{-- Wachtwoord wijzigen --}}
         <form method="POST" action="{{ route('account.password.update') }}" class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             @csrf
             @method('PUT')
@@ -62,7 +60,6 @@
             </button>
         </form>
 
-        {{-- Account verwijderen (AVG) --}}
         <form method="POST" action="{{ route('account.destroy') }}" data-confirm="{{ __('account.delete.confirm') }}" class="rounded-2xl border border-ruby-red/30 bg-ruby-red/5 p-6 sm:p-8">
             @csrf
             @method('DELETE')

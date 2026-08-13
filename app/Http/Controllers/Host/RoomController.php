@@ -15,9 +15,7 @@ use Illuminate\View\View;
 
 class RoomController extends Controller
 {
-    /**
-     * Nieuwe ruimte binnen een studio (locatie); de ruimte erft het adres van de studio.
-     */
+
     public function create(Request $request, Studio $studio): View
     {
         $this->authorizeStudio($request, $studio);
@@ -31,7 +29,6 @@ class RoomController extends Controller
 
         [$validated, $photos] = $this->validateRoom($request, isCreate: true);
 
-        // Nieuwe ruimtes gaan direct in review (scope §2.2); foto is daarom verplicht.
         $validated['status'] = RoomStatus::InReview;
 
         $room = $studio->rooms()->create($validated);
@@ -56,7 +53,6 @@ class RoomController extends Controller
 
         [$validated, $photos] = $this->validateRoom($request, isCreate: false);
 
-        // Een afgekeurde ruimte gaat na aanpassing automatisch opnieuw in review.
         if ($room->status === RoomStatus::Afgekeurd) {
             $validated['status'] = RoomStatus::InReview;
             $validated['rejection_reason'] = null;
@@ -75,18 +71,12 @@ class RoomController extends Controller
 
         $studio = $room->studio;
 
-        // Fotorijen verwijderen via het model, zodat de bestanden meegaan.
         $room->photos->each->delete();
         $room->delete();
 
         return redirect()->route('host.studios.show', $studio)->with('status', __('host.rooms.deleted'));
     }
 
-    /**
-     * Gedeelde validatie voor aanmaken en bijwerken.
-     *
-     * @return array{0: array<string, mixed>, 1: array<int, \Illuminate\Http\UploadedFile>}
-     */
     private function validateRoom(Request $request, bool $isCreate): array
     {
         $validated = $request->validate([
@@ -123,16 +113,12 @@ class RoomController extends Controller
         return [$validated, $photos];
     }
 
-    /**
-     * @param  array<int, \Illuminate\Http\UploadedFile>  $photos
-     */
     private function storePhotos(Room $room, array $photos): void
     {
         $sort = ($room->photos()->max('sort_order') ?? -1) + 1;
 
         foreach ($photos as $photo) {
-            // Verkleinen + comprimeren + thumbnail (scope §2.11); bij een
-            // onleesbaar beeld valt de upload terug op het origineel.
+
             $stored = ImageProcessor::store($photo->get(), 'rooms/' . $room->id)
                 ?? ['path' => $photo->store('rooms/' . $room->id, 'public'), 'thumb_path' => null];
 

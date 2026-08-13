@@ -7,17 +7,12 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-// Mailmatrix (scope §2.10): "Schade gemeld" → admin. De admin deelt de gegevens
-// van de artiest met de verhuurder; afhandeling gebeurt buiten het platform.
 class DamageReported extends Notification
 {
     use Queueable;
 
     public function __construct(public Booking $booking) {}
 
-    /**
-     * @return array<int, string>
-     */
     public function via(object $notifiable): array
     {
         return ['mail'];

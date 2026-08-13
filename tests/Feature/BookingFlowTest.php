@@ -49,7 +49,6 @@ class BookingFlowTest extends TestCase
             'status' => 'live',
         ]);
 
-        // Ma t/m vr open 09:00-21:00.
         $this->room->seedDefaultHours();
     }
 
@@ -81,10 +80,10 @@ class BookingFlowTest extends TestCase
         $this->actingAs($this->artist)
             ->get('/studios/' . $this->room->slug . '/boeken?' . http_build_query($slot))
             ->assertOk()
-            ->assertSee('€ 150,00')  // huur 3 × € 50
-            ->assertSee('€ 13,50')   // servicekosten 9%
-            ->assertSee('€ 2,84')    // btw 21% over servicekosten
-            ->assertSee('€ 166,34')  // totaal
+            ->assertSee('€ 150,00')
+            ->assertSee('€ 13,50')
+            ->assertSee('€ 2,84')
+            ->assertSee('€ 166,34')
             ->assertSee('Niet roken');
     }
 
@@ -227,7 +226,6 @@ class BookingFlowTest extends TestCase
             ->assertDontSee('Live room A')
             ->assertSee('Live room B');
 
-        // Buiten het geboekte tijdvak is de ruimte gewoon beschikbaar.
         $this->get('/studios?date=' . $slot['date'] . '&start=14&end=16')
             ->assertSee('Live room A');
     }
@@ -292,6 +290,6 @@ class BookingFlowTest extends TestCase
         $this->actingAs($this->artist)->get('/dashboard/artiest')
             ->assertOk()
             ->assertSee('Live room A')
-            ->assertSee('Prinsengracht 263'); // adres zichtbaar na bevestiging
+            ->assertSee('Prinsengracht 263');
     }
 }

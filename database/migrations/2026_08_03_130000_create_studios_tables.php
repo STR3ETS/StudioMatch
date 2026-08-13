@@ -6,12 +6,10 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
     public function up(): void
     {
-        // Studioprofiel per verhuurder (scope §2.2). IBAN + identiteit lopen via Stripe.
+
         Schema::create('studios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
@@ -27,23 +25,22 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // Ruimtes: apart boekbaar, één studio kan er meerdere hebben (scope §2.2).
         Schema::create('rooms', function (Blueprint $table) {
             $table->id();
             $table->foreignId('studio_id')->constrained()->cascadeOnDelete();
             $table->string('title');
             $table->text('description');
-            $table->string('type', 20); // opname / mix_master (BESLISSING 11)
+            $table->string('type', 20);
             $table->unsignedInteger('hourly_rate_cents');
-            $table->unsignedTinyInteger('min_hours')->default(2); // BESLISSING 1
+            $table->unsignedTinyInteger('min_hours')->default(2);
             $table->unsignedTinyInteger('capacity');
             $table->boolean('engineer_included')->default(false);
             $table->text('house_rules')->nullable();
             $table->json('equipment')->nullable();
-            $table->string('equipment_extra')->nullable(); // vrij veld naast de vaste lijst
+            $table->string('equipment_extra')->nullable();
             $table->json('daws')->nullable();
             $table->json('facilities')->nullable();
-            $table->string('status', 20)->default('concept')->index(); // concept → in_review → live / afgekeurd → vakantie
+            $table->string('status', 20)->default('concept')->index();
             $table->timestamps();
         });
 
@@ -56,9 +53,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('room_photos');

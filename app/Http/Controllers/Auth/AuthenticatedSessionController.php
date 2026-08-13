@@ -10,9 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Log de gebruiker in en stuur door naar het dashboard van zijn rol.
-     */
+
     public function store(Request $request): RedirectResponse
     {
         $credentials = $request->validate([
@@ -31,9 +29,6 @@ class AuthenticatedSessionController extends Controller
         return redirect()->intended(route($request->user()->role->dashboardRoute()));
     }
 
-    /**
-     * Log de gebruiker uit.
-     */
     public function destroy(Request $request): RedirectResponse
     {
         Auth::guard('web')->logout();

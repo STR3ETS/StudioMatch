@@ -16,14 +16,11 @@ class MaintainBookings extends Command
 
     public function handle(): int
     {
-        // 1. Checkout-blokkade van 15 minuten verlopen → slot komt vrij (scope §2.5).
+
         $expired = Booking::where('status', BookingStatus::PendingPayment)
             ->where('expires_at', '<', now())
             ->update(['status' => BookingStatus::Expired]);
 
-        // 2. Geen reactie van de verhuurder binnen 24 uur, of de start is dichtbij:
-        //    automatisch annuleren + 100% terug + mail naar beide partijen (BESLISSING 7).
-        //    De termijn telt vanaf de (laatste) aanvraag, dus ook na verzetten.
         $stale = Booking::where('status', BookingStatus::PendingConfirmation)
             ->with(['room.studio.user', 'user'])
             ->get()
@@ -36,7 +33,6 @@ class MaintainBookings extends Command
             $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
         }
 
-        // 3. Herinnering 24 uur vóór de sessie naar beide partijen (mailmatrix §2.10).
         $reminders = Booking::where('status', BookingStatus::Confirmed)
             ->whereNull('reminder_sent_at')
             ->with(['room.studio.user', 'user'])
@@ -50,7 +46,6 @@ class MaintainBookings extends Command
             $booking->room->studio->user->notify(new SessionReminder($booking));
         }
 
-        // 4. Bevestigde sessies waarvan de eindtijd voorbij is → voltooid.
         $completed = Booking::where('status', BookingStatus::Confirmed)
             ->get()
             ->filter(fn (Booking $booking) => $booking->endsAt()->isPast())

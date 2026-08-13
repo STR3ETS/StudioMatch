@@ -8,7 +8,6 @@
         ];
     @endphp
 
-    {{-- ===== Split-hero met mockup en zwevende UI-kaartjes ===== --}}
     <div class="relative w-full overflow-hidden bg-ruby-red pt-38 pb-20">
         <x-floating-icons />
 
@@ -23,7 +22,6 @@
                         <a href="#hoe-werkt-het" class="rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">{{ __('hosts.hero.secondary') }}</a>
                     </div>
 
-                    {{-- Stats --}}
                     <div class="mt-10 flex gap-10 border-t border-white/10 pt-8">
                         @foreach (__('hosts.hero.stats') as $stat)
                             <div class="text-center lg:text-left">
@@ -34,7 +32,6 @@
                     </div>
                 </div>
 
-                {{-- Mockup + zwevende kaartjes --}}
                 <div data-reveal style="--reveal-delay: .15s" class="relative mx-auto w-fit max-lg:hidden">
                     <x-phone-mockup class="rotate-2" :label="__('hosts.hero.mock')" />
 
@@ -58,7 +55,6 @@
         </div>
     </div>
 
-    {{-- ===== Statement: de afknappers, groot uitgeschreven ===== --}}
     <section class="bg-dots py-20">
         <div class="mx-auto max-w-7xl px-6 text-center">
             <div class="space-y-1">
@@ -70,7 +66,6 @@
         </div>
     </section>
 
-    {{-- ===== Waarom StudioMatch ===== --}}
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="max-w-2xl">
@@ -97,7 +92,6 @@
         </div>
     </section>
 
-    {{-- ===== Feature 1: Dashboard (wit, mockup rechts) ===== --}}
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="flex flex-col items-center gap-12 lg:flex-row lg:gap-20">
@@ -125,7 +119,6 @@
         </div>
     </section>
 
-    {{-- ===== Feature 2: Beschikbaarheid (donker full-bleed, mockup links) ===== --}}
     <section class="relative overflow-hidden bg-prussian-blue py-20">
         <x-floating-icons />
         <div class="relative z-10 mx-auto max-w-7xl px-6">
@@ -154,7 +147,6 @@
         </div>
     </section>
 
-    {{-- ===== Feature 3: Boekingen & uitbetaling (wit met dots, bonnetje i.p.v. mockup) ===== --}}
     <section class="bg-dots py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="flex flex-col items-center gap-12 lg:flex-row lg:gap-20">
@@ -169,7 +161,6 @@
                     </ul>
                 </div>
 
-                {{-- Uitbetalings-bonnetje --}}
                 <div class="relative w-full max-w-sm flex-1">
                     <div class="absolute inset-0 -rotate-3 rounded-3xl bg-prussian-blue/5"></div>
                     <div class="relative rotate-1 rounded-3xl border border-prussian-blue/10 bg-white p-6 shadow-2xl shadow-prussian-blue/10 transition-transform duration-300 hover:rotate-0">
@@ -197,7 +188,6 @@
         </div>
     </section>
 
-    {{-- ===== Bento: alles in je dashboard ===== --}}
     <section class="bg-prussian-blue/5 py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="max-w-2xl">
@@ -206,7 +196,6 @@
             </div>
 
             <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {{-- Grote tegel: boekingsinbox met mini-preview --}}
                 <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-prussian-blue/5 lg:col-span-2">
                     <div class="flex items-center justify-between gap-6">
                         <div>
@@ -238,7 +227,6 @@
                     </div>
                 @endforeach
 
-                {{-- Brede tegel: Stripe --}}
                 <div class="flex items-center gap-5 rounded-2xl bg-prussian-blue p-6 text-white lg:col-span-3">
                     <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10"><i class="fa-solid fa-shield-halved"></i></span>
                     <div>
@@ -250,7 +238,6 @@
         </div>
     </section>
 
-    {{-- ===== Tijdlijn: live in vier stappen ===== --}}
     <section id="hoe-werkt-het" class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="max-w-2xl">
@@ -273,7 +260,6 @@
         </div>
     </section>
 
-    {{-- ===== Uitbetalingsband: 100% jouw uurtarief ===== --}}
     <section class="pb-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-3xl bg-prussian-blue px-8 py-14 lg:px-14">
@@ -294,7 +280,6 @@
         </div>
     </section>
 
-    {{-- ===== FAQ ===== --}}
     <section class="bg-prussian-blue/5 py-20">
         <div class="mx-auto max-w-3xl px-6">
             <h2 class="text-center text-3xl font-bold text-prussian-blue">{{ __('hosts.faq.title') }}</h2>
@@ -312,7 +297,6 @@
         </div>
     </section>
 
-    {{-- ===== Slot-CTA met geklipte mockup ===== --}}
     <section id="aanmelden" class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-[2.5rem] bg-prussian-blue px-8 py-14 lg:px-14">

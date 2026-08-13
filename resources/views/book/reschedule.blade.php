@@ -31,7 +31,6 @@
                     <p class="mb-4 rounded-xl bg-ruby-red/10 px-4 py-3 text-sm font-semibold text-ruby-red">{{ $errors->first('slot') }}</p>
                 @endif
 
-                {{-- Kalender --}}
                 <div>
                     <div class="flex items-center justify-between">
                         <span class="text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.date') }}</span>
@@ -44,7 +43,6 @@
                     <div data-cal-grid class="mt-2 grid grid-cols-7 gap-1"></div>
                 </div>
 
-                {{-- Starttijden --}}
                 <div class="mt-4">
                     <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.time') }}</span>
                     <p data-slots-hint class="mt-2 rounded-xl bg-prussian-blue/[0.03] px-3 py-2.5 text-sm text-prussian-blue/50">{{ __('studio.booking.pick_date_first') }}</p>
@@ -68,7 +66,6 @@
         </div>
     </div>
 
-    {{-- Zelfde kalenderlogica als de boekwidget, maar met vaste duur --}}
     <script>
         (() => {
             const form = document.getElementById('verzetten');

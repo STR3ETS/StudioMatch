@@ -21,7 +21,6 @@
                 <input type="hidden" name="start" value="{{ request('start') }}">
                 <input type="hidden" name="hours" value="{{ request('hours') }}">
 
-                {{-- Samenvatting --}}
                 <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-5 sm:flex-nowrap">
                     @if ($room->photos->isNotEmpty())
                         <img src="{{ $room->photos->first()->thumbUrl() }}" alt="{{ $room->title }}" class="h-20 w-28 shrink-0 rounded-xl object-cover">
@@ -36,7 +35,6 @@
                     </div>
                 </div>
 
-                {{-- Prijsopbouw vóór betaling (scope §2.5) --}}
                 <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
                     <h2 class="font-bold text-prussian-blue">{{ __('booking.checkout.price_title') }}</h2>
                     <div class="mt-4 space-y-3 text-sm">
@@ -59,7 +57,6 @@
                     </div>
                 </div>
 
-                {{-- Huisregels + akkoord (scope §2.5: verplicht en gelogd) --}}
                 <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
                     <h2 class="font-bold text-prussian-blue">{{ __('booking.checkout.rules_title') }}</h2>
                     @if ($houseRules->isNotEmpty())

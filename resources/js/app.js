@@ -1,16 +1,11 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-// Studio map (#studio-map): dark grayscale tiles without the default UI
-// (no zoom buttons), locked onto the Netherlands. Everything outside NL is
-// dimmed via a mask polygon so NL reads lighter. Price pins open a mini
-// studio card on hover/tap.
 const mapEl = document.getElementById('studio-map');
 if (mapEl) {
     const studios = JSON.parse(mapEl.dataset.studios || '[]');
     const perHour = mapEl.dataset.perHour || '/uur';
 
-    // Optioneel inzoomen (bijv. de studiopagina): data-zoom + centreren op de eerste pin.
     const zoom = parseInt(mapEl.dataset.zoom || '7', 10);
     const center = zoom > 7 && studios.length ? [studios[0].lat, studios[0].lng] : [52.2, 5.4];
 
@@ -31,9 +26,6 @@ if (mapEl) {
         maxZoom: 19,
     }).addTo(map);
 
-    // NL-highlight: dim alles buiten de landsgrens en licht NL zelf op.
-    // De ringen komen uit een accurate GeoJSON; de fallback is een
-    // vereenvoudigde polygoon voor als die request faalt.
     const nlFallback = [
         [3.38, 51.37], [3.44, 51.53], [4.12, 51.98], [4.28, 52.10], [4.60, 52.46],
         [4.75, 52.96], [5.42, 53.17], [6.20, 53.40], [6.83, 53.45], [7.20, 53.33],
@@ -57,7 +49,6 @@ if (mapEl) {
         }).addTo(map);
     };
 
-    // Accurate landsgrens (CBS via cartomap, 4 landsdelen incl. eilanden).
     fetch('https://cartomap.github.io/nl/wgs84/landsdeel_2023.geojson')
         .then((response) => response.json())
         .then((geo) => {
@@ -95,9 +86,6 @@ if (mapEl) {
             { closeButton: false, offset: [0, -16], maxWidth: 200 }
         ).getPopup();
 
-        // Hover opent de card; weghoveren sluit 'm (met korte gratieperiode zodat
-        // je naar de card kunt bewegen). Klik op de pin zet 'm vast tot je
-        // ergens anders klikt of een andere pin opent.
         let pinned = false;
         let closeTimer = null;
         const cancelClose = () => clearTimeout(closeTimer);
@@ -125,10 +113,6 @@ if (mapEl) {
     });
 }
 
-// Scroll-reveal: all sections, the footer and [data-reveal] blocks fade/slide
-// in when they enter the viewport (above-the-fold reveals right on load).
-// Progressive enhancement: without JS no .reveal class is added, so content
-// stays visible.
 const revealEls = document.querySelectorAll('section, footer, [data-reveal]');
 if (revealEls.length && 'IntersectionObserver' in window) {
     const revealObserver = new IntersectionObserver((entries) => {
@@ -146,7 +130,6 @@ if (revealEls.length && 'IntersectionObserver' in window) {
     });
 }
 
-// Shrink the header padding once the page is scrolled past 20px.
 const header = document.querySelector('[data-header]');
 if (header) {
     const onHeaderScroll = () => {
@@ -158,9 +141,6 @@ if (header) {
     onHeaderScroll();
 }
 
-// "Load more" grids: [data-loadmore] wraps a [data-loadmore-grid] and a
-// [data-loadmore-btn]. Shows data-loadmore-initial items, reveals
-// data-loadmore-step more per click, hides the button when all are shown.
 document.querySelectorAll('[data-loadmore]').forEach((container) => {
     const grid = container.querySelector('[data-loadmore-grid]');
     const btn = container.querySelector('[data-loadmore-btn]');
@@ -183,9 +163,6 @@ document.querySelectorAll('[data-loadmore]').forEach((container) => {
     apply();
 });
 
-// Mobile menu: toggle the fullscreen [data-mobile-menu] via [data-menu-toggle].
-// One icon is swapped between bars/xmark (two stacked icons fight with the
-// async-loaded Font Awesome CSS), and body scroll is locked while open.
 const menuToggle = document.querySelector('[data-menu-toggle]');
 const mobileMenu = document.querySelector('[data-mobile-menu]');
 if (menuToggle && mobileMenu) {
@@ -199,8 +176,6 @@ if (menuToggle && mobileMenu) {
     });
 }
 
-// Mobile search modal: open via [data-search-open], close via [data-search-close]
-// or Escape. Locks body scroll while open.
 const searchModal = document.querySelector('[data-search-modal]');
 if (searchModal) {
     const setSearchModal = (open) => {
@@ -220,9 +195,6 @@ if (searchModal) {
     });
 }
 
-// Card photo carousels: [data-carousel] with a snap-scroll [data-carousel-track],
-// optional prev/next buttons and dots. Arrows must not trigger the parent link.
-// Also used for cards injected later (map popups), hence the ready-guard.
 const initCarousel = (carousel) => {
     if (carousel.dataset.carouselReady) return;
     carousel.dataset.carouselReady = '1';
@@ -248,8 +220,6 @@ const initCarousel = (carousel) => {
 
 document.querySelectorAll('[data-carousel]').forEach(initCarousel);
 
-// Steppers (Airbnb-style - number +): [data-stepper] with hidden input,
-// [data-stepper-label], minus/plus buttons and a data-stepper-any label for 0.
 document.querySelectorAll('[data-stepper]').forEach((stepper) => {
     const input = stepper.querySelector('input');
     const label = stepper.querySelector('[data-stepper-label]');
@@ -268,8 +238,6 @@ document.querySelectorAll('[data-stepper]').forEach((stepper) => {
     render();
 });
 
-// Lightbox: click any [data-lightbox-src] image to open the [data-lightbox]
-// overlay; navigate with prev/next or arrow keys, close via button or Escape.
 const lightbox = document.querySelector('[data-lightbox]');
 if (lightbox) {
     const imgEl = lightbox.querySelector('img');
@@ -295,7 +263,6 @@ if (lightbox) {
     });
 }
 
-// Close any open <details data-dropdown> when clicking outside of it.
 document.addEventListener('click', (event) => {
     document.querySelectorAll('details[data-dropdown][open]').forEach((dropdown) => {
         if (!dropdown.contains(event.target)) {
@@ -304,7 +271,6 @@ document.addEventListener('click', (event) => {
     });
 });
 
-// Close open dropdowns on Escape.
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
         document.querySelectorAll('details[data-dropdown][open]').forEach((dropdown) => {
@@ -313,9 +279,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-// Horizontal sliders: [data-slider] wrapping a [data-slider-track] plus
-// optional [data-slider-prev] / [data-slider-next] buttons. Each arrow
-// scrolls exactly one visible page; buttons disable at the track ends.
 document.querySelectorAll('[data-slider]').forEach((slider) => {
     const track = slider.querySelector('[data-slider-track]');
     if (!track) return;
