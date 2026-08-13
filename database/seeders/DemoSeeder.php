@@ -64,9 +64,9 @@ class DemoSeeder extends Seeder
             ['name' => 'Yusuf Demir', 'email' => 'demo-yusuf@studiomatch.test'],
         ])->map(fn ($data) => User::create([...$data, 'password' => 'wachtwoord123', 'role' => 'artiest']))->all();
 
-        $demi = $this->host('Demi Demeester', 'demo-verhuurder@studiomatch.test', "Demeester Studio's B.V.", '020 1234567', '87654321', 'NL867654321B01');
-        $jesse = $this->host('Jesse van Dam', 'demo-jesse@studiomatch.test', 'Van Dam Geluid', '030 2345678', '76543210', 'NL876543210B01');
-        $fatima = $this->host('Fatima el Idrissi', 'demo-fatima@studiomatch.test', 'El Idrissi Audio', '070 3456789', '65432109', 'NL865432109B01');
+        $demi = $this->host('Demi Demeester', 'demo-verhuurder@studiomatch.test', "Demeester Studio's B.V.", '020 1234567', 'ondernemer', true, '87654321', 'NL867654321B01');
+        $jesse = $this->host('Jesse van Dam', 'demo-jesse@studiomatch.test', 'Jesse van Dam', '030 2345678', 'particulier', false, null, null);
+        $fatima = $this->host('Fatima el Idrissi', 'demo-fatima@studiomatch.test', 'El Idrissi Audio', '070 3456789', 'ondernemer', true, '65432109', 'NL865432109B01');
 
         $plan = [
             [$demi, ['name' => 'Redlight Recordings', 'phone' => '020 1234567', 'street' => 'Prinsengracht 263', 'postal_code' => '1016 GV', 'city' => 'Amsterdam', 'lat' => 52.3752, 'lng' => 4.8840], [
@@ -163,8 +163,8 @@ class DemoSeeder extends Seeder
         $this->seedBooking($rooms['hofzaal'], $sam, today()->addDay(), 18, 21, BookingStatus::Confirmed);
         $this->seedBooking($rooms['domstad'], $artist, today()->addDays(9), 13, 16, BookingStatus::Confirmed);
 
-        $this->seedBooking($rooms['liveA'], $artist, today()->subDays(6), 10, 14, BookingStatus::Completed);
-        $this->seedBooking($rooms['noord'], $nora, today()->subDays(12), 18, 21, BookingStatus::Completed);
+        $this->seedBooking($rooms['liveA'], $artist, today()->subDays(6), 10, 14, BookingStatus::Completed, ['transferred_at' => now()->subDays(5)]);
+        $this->seedBooking($rooms['noord'], $nora, today()->subDays(12), 18, 21, BookingStatus::Completed, ['transferred_at' => now()->subDays(11)]);
 
         $this->seedBooking($rooms['machine'], $sam, today()->subDays(8), 12, 15, BookingStatus::Completed, [
             'disputed_at' => now()->subDays(8),
@@ -195,10 +195,10 @@ class DemoSeeder extends Seeder
 
         $this->seedBooking($rooms['domstad'], $artist, today()->addDay(), 20, 22, BookingStatus::Confirmed);
 
-        $this->command->info('Demodata aangemaakt: 3 verhuurders, 10 studio\'s, 13 ruimtes en 18 boekingen in alle statussen.');
+        $this->command->info('Demodata aangemaakt: 3 verhuurders, 10 studio\'s, 13 ruimtes en 18 boekingen in alle statussen, inclusief facturen, creditnota\'s en uitbetalingen.');
     }
 
-    private function host(string $name, string $email, string $company, string $phone, string $kvk, string $vat): User
+    private function host(string $name, string $email, string $company, string $phone, string $ownerType, bool $btwPlichtig, ?string $kvk, ?string $vat): User
     {
         $user = User::create([
             'name' => $name,
@@ -210,8 +210,8 @@ class DemoSeeder extends Seeder
         $user->hostProfile()->create([
             'name' => $company,
             'phone' => $phone,
-            'owner_type' => 'ondernemer',
-            'btw_plichtig' => true,
+            'owner_type' => $ownerType,
+            'btw_plichtig' => $btwPlichtig,
             'kvk_number' => $kvk,
             'vat_number' => $vat,
             'stripe_details_submitted' => true,
