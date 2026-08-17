@@ -280,6 +280,35 @@ class BookingController extends Controller
         return redirect()->route('dashboard.artist')->with('status', __('booking.problem_reported'));
     }
 
+    public function ics(Request $request, Booking $booking): \Illuminate\Http\Response
+    {
+        $this->authorizeBooking($request, $booking);
+
+        abort_unless($booking->status === BookingStatus::Confirmed, 404);
+
+        $escape = fn (string $value) => str_replace([',', ';', "\n"], ['\,', '\;', '\n'], $value);
+
+        $lines = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//StudioMatch//NL',
+            'BEGIN:VEVENT',
+            'UID:artist-booking-' . $booking->id . '@studiomatch',
+            'DTSTAMP:' . now()->utc()->format('Ymd\THis\Z'),
+            'DTSTART:' . $booking->startsAt()->copy()->utc()->format('Ymd\THis\Z'),
+            'DTEND:' . $booking->endsAt()->copy()->utc()->format('Ymd\THis\Z'),
+            'SUMMARY:' . $escape(__('booking.ics_summary', ['room' => $booking->room->studio->name . ' - ' . $booking->room->title])),
+            'LOCATION:' . $escape($booking->room->studio->fullAddress()),
+            'END:VEVENT',
+            'END:VCALENDAR',
+        ];
+
+        return response(implode("\r\n", $lines), 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'attachment; filename="studiomatch-boeking-' . $booking->id . '.ics"',
+        ]);
+    }
+
     private function validateSlot(Request $request, Room $room): array
     {
         $validated = $request->validate([

@@ -66,6 +66,7 @@ return [
                     'Weekly schedule per room',
                     'Blocks for your own sessions or maintenance',
                     'Holiday mode: temporarily hidden',
+                    'iCal link: bookings automatically in your own calendar',
                 ],
                 'mock' => 'Screenshot: availability calendar with time slots',
                 'card_title' => 'Holiday mode',

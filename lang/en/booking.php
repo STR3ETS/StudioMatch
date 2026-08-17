@@ -8,6 +8,8 @@ return [
     'cancel_confirm' => 'Are you sure you want to cancel this booking? The cancellation policy determines how much you get back.',
     'waiting_note' => 'The studio is reviewing your request. After acceptance you will receive the address and contact details.',
 
+    'ics_button' => 'Add to your calendar',
+    'ics_summary' => 'Studio session :room (StudioMatch)',
     'rescheduled' => 'Your booking has been rescheduled. The studio will review the new time and you will hear as soon as it is accepted.',
     'reschedule_button' => 'Reschedule',
     'problem_reported' => 'Your report has been sent. The payout to the studio is paused and StudioMatch will mediate. You will hear from us soon.',

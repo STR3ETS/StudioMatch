@@ -59,6 +59,11 @@
                                         {{ __('booking.finish_payment') }}
                                     </a>
                                 @else
+                                    @if ($status === BookingStatus::Confirmed)
+                                        <a href="{{ route('bookings.ics', $booking) }}" title="{{ __('booking.ics_button') }}" class="rounded-full border border-prussian-blue/20 px-4 py-2.5 text-sm font-semibold text-prussian-blue transition hover:bg-prussian-blue/5">
+                                            <i class="fa-solid fa-calendar-plus fa-sm"></i>
+                                        </a>
+                                    @endif
                                     @if ($booking->canReschedule())
                                         <a href="{{ route('bookings.reschedule', $booking) }}" class="rounded-full border border-prussian-blue/20 px-5 py-2.5 text-sm font-semibold text-prussian-blue transition hover:bg-prussian-blue/5">
                                             {{ __('booking.reschedule_button') }}

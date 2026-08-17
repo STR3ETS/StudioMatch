@@ -119,4 +119,53 @@
             </div>
         @endif
     </section>
+
+    @if ($recent->isNotEmpty())
+        <section class="mt-10">
+            <h2 class="text-lg font-bold text-prussian-blue">{{ __('host.damage.eligible_title') }}</h2>
+            <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.damage.subtitle') }}</p>
+
+            <div class="mt-4 space-y-3">
+                @foreach ($recent as $booking)
+                    <div class="rounded-2xl border border-prussian-blue/10 bg-white p-5">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <p class="font-bold text-prussian-blue">{{ $booking->room->title }}</p>
+                            @if ($booking->damage_reported_at)
+                                <span class="rounded-full bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">{{ __('host.damage.badge') }}</span>
+                            @endif
+                        </div>
+                        <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
+                            <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->date->translatedFormat('D j M Y') }} {{ $booking->timeRange() }}</span>
+                            <span><i class="fa-solid fa-user fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->user->name }}</span>
+                        </p>
+
+                        @if ($booking->damage_reported_at)
+                            <p class="mt-2 rounded-xl bg-prussian-blue/[0.03] px-4 py-3 text-sm leading-relaxed text-prussian-blue/70">{{ $booking->damage_reason }}</p>
+                            <p class="mt-2 text-sm text-prussian-blue/60"><i class="fa-solid fa-circle-info fa-sm mr-1.5 text-prussian-blue/40"></i>{{ __('host.damage.followup') }}</p>
+                        @else
+                            <details class="mt-3">
+                                <summary class="cursor-pointer text-sm font-semibold text-ruby-red hover:underline">
+                                    <i class="fa-solid fa-triangle-exclamation fa-sm mr-1"></i>{{ __('host.damage.report_button') }}
+                                </summary>
+                                <form method="POST" action="{{ route('host.damage.store', $booking) }}" enctype="multipart/form-data" class="mt-3">
+                                    @csrf
+                                    <textarea name="damage_reason" rows="3" required minlength="10" placeholder="{{ __('host.damage.placeholder') }}" class="w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none">{{ old('damage_reason') }}</textarea>
+                                    <x-input-error field="damage_reason" />
+                                    <label class="mt-2 flex w-fit cursor-pointer items-center gap-2 text-sm font-semibold text-prussian-blue/70 transition hover:text-prussian-blue">
+                                        <i class="fa-solid fa-paperclip fa-sm"></i> {{ __('booking.problem.photos_label') }}
+                                        <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" onchange="this.closest('label').querySelector('[data-file-count]').textContent = this.files.length ? '(' + this.files.length + ')' : ''">
+                                        <span data-file-count class="text-xs font-bold text-ruby-red"></span>
+                                    </label>
+                                    <x-input-error field="photos" />
+                                    <x-input-error field="photos.*" />
+                                    <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.damage.window_note') }} {{ __('host.damage.note') }}</p>
+                                    <button type="submit" class="mt-2 cursor-pointer rounded-full bg-ruby-red px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('host.damage.submit') }}</button>
+                                </form>
+                            </details>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 </x-host-layout>

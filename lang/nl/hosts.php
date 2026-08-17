@@ -66,6 +66,7 @@ return [
                     'Wekelijks schema per ruimte',
                     'Blokkades voor eigen sessies of onderhoud',
                     'Vakantiemodus: tijdelijk onzichtbaar',
+                    'iCal-koppeling: boekingen automatisch in je eigen agenda',
                 ],
                 'mock' => 'Screenshot: beschikbaarheidskalender met tijdsloten',
                 'card_title' => 'Vakantiemodus',

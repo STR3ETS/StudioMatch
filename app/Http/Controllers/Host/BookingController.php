@@ -30,6 +30,8 @@ class BookingController extends Controller
                 ->sortBy(fn (Booking $booking) => $booking->startsAt())->values(),
             'disputes' => $bookings->whereNotNull('disputed_at')
                 ->sortByDesc('disputed_at')->values(),
+            'recent' => $bookings->filter(fn (Booking $booking) => $booking->canReportDamage() || $booking->damage_reported_at !== null)
+                ->sortByDesc(fn (Booking $booking) => $booking->startsAt())->take(10)->values(),
         ]);
     }
 

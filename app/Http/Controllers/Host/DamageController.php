@@ -15,20 +15,6 @@ use Illuminate\View\View;
 class DamageController extends Controller
 {
 
-    public function index(Request $request): View
-    {
-        $bookings = Booking::whereIn('room_id', $request->user()->rooms()->select('rooms.id'))
-            ->with(['room.studio', 'user'])
-            ->get();
-
-        return view('host.damage.index', [
-            'eligible' => $bookings->filter(fn (Booking $booking) => $booking->canReportDamage())
-                ->sortByDesc(fn (Booking $booking) => $booking->startsAt())->values(),
-            'reported' => $bookings->whereNotNull('damage_reported_at')
-                ->sortByDesc('damage_reported_at')->values(),
-        ]);
-    }
-
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
@@ -52,6 +38,6 @@ class DamageController extends Controller
 
         Notification::send(User::where('role', UserRole::Admin)->get(), new DamageReported($booking));
 
-        return redirect()->route('host.damage.index')->with('status', __('host.damage.reported'));
+        return redirect()->route('host.bookings.index')->with('status', __('host.damage.reported'));
     }
 }

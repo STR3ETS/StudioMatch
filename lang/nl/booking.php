@@ -8,6 +8,8 @@ return [
     'cancel_confirm' => 'Weet je zeker dat je deze boeking wilt annuleren? De annuleringsvoorwaarden bepalen hoeveel je terugkrijgt.',
     'waiting_note' => 'De studio bekijkt je aanvraag. Na acceptatie ontvang je het adres en de contactgegevens.',
 
+    'ics_button' => 'Zet in je agenda',
+    'ics_summary' => 'Studiosessie :room (StudioMatch)',
     'rescheduled' => 'Je boeking is verzet. De studio bekijkt de nieuwe tijd en je hoort het zodra hij is geaccepteerd.',
     'reschedule_button' => 'Verzetten',
     'problem_reported' => 'Je melding is verstuurd. De uitbetaling aan de studio is gepauzeerd en StudioMatch bemiddelt. Je hoort snel van ons.',

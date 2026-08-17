@@ -123,6 +123,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/boekingen/{booking}/verzetten', [BookingController::class, 'reschedule'])->name('bookings.reschedule');
         Route::post('/boekingen/{booking}/verzetten', [BookingController::class, 'rescheduleStore'])->name('bookings.reschedule.store');
         Route::post('/boekingen/{booking}/probleem', [BookingController::class, 'reportProblem'])->name('bookings.problem');
+        Route::get('/boekingen/{booking}/agenda.ics', [BookingController::class, 'ics'])->name('bookings.ics');
     });
 
     Route::middleware('role:verhuurder')->prefix('dashboard/verhuurder')->group(function () {
@@ -154,7 +155,6 @@ Route::middleware('auth')->group(function () {
         Route::get('/agenda', AgendaController::class)->name('host.agenda');
         Route::get('/omzet', RevenueController::class)->name('host.revenue');
 
-        Route::get('/schade', [DamageController::class, 'index'])->name('host.damage.index');
         Route::post('/schade/{booking}', [DamageController::class, 'store'])->name('host.damage.store');
 
         Route::get('/facturen', [\App\Http\Controllers\Host\InvoiceController::class, 'index'])->name('host.invoices.index');

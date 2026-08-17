@@ -314,6 +314,21 @@ class BookingExtrasTest extends TestCase
             ->assertSee('€ 150,00');
     }
 
+    public function test_artist_can_download_ics_for_confirmed_booking(): void
+    {
+        $booking = $this->booking(['date' => today()->addDays(5)]);
+
+        $response = $this->actingAs($this->artist)->get('/boekingen/' . $booking->id . '/agenda.ics');
+
+        $response->assertOk();
+        $this->assertSame('text/calendar; charset=utf-8', $response->headers->get('content-type'));
+        $this->assertStringContainsString('BEGIN:VEVENT', $response->getContent());
+        $this->assertStringContainsString('LOCATION:', $response->getContent());
+
+        $pending = $this->booking(['status' => 'pending_confirmation', 'confirmed_at' => null, 'start_hour' => 14, 'end_hour' => 16]);
+        $this->actingAs($this->artist)->get('/boekingen/' . $pending->id . '/agenda.ics')->assertNotFound();
+    }
+
     public function test_host_can_report_damage_with_photos(): void
     {
         Notification::fake();
@@ -321,21 +336,21 @@ class BookingExtrasTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $booking = $this->booking(['date' => today()->subDays(2), 'status' => 'completed']);
 
-        $this->actingAs($this->host)->get('/dashboard/verhuurder/schade')
+        $this->actingAs($this->host)->get('/dashboard/verhuurder/boekingen')
             ->assertOk()
-            ->assertSee('Live room A');
+            ->assertSee(__('host.damage.report_button'));
 
         $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/' . $booking->id, [
             'damage_reason' => 'De condensatormicrofoon is beschadigd achtergelaten.',
             'photos' => [\Illuminate\Http\UploadedFile::fake()->image('schade.jpg')],
-        ])->assertRedirect(route('host.damage.index'));
+        ])->assertRedirect(route('host.bookings.index'));
 
         $booking->refresh();
         $this->assertNotNull($booking->damage_reported_at);
         $this->assertCount(1, $booking->damage_photos);
         Notification::assertSentTo($admin, \App\Notifications\DamageReported::class);
 
-        $this->actingAs($this->host)->get('/dashboard/verhuurder/schade')
+        $this->actingAs($this->host)->get('/dashboard/verhuurder/boekingen')
             ->assertSee('De condensatormicrofoon is beschadigd achtergelaten.');
         $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/' . $booking->id, [
             'damage_reason' => 'Nog een keer proberen te melden.',
