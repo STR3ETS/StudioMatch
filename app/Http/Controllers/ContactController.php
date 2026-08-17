@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\User;
+use App\Notifications\ContactConfirmation;
 use App\Notifications\ContactMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -22,7 +23,15 @@ class ContactController extends Controller
             'message' => ['required', 'string', 'min:10', 'max:5000'],
         ]);
 
-        Notification::send(User::where('role', UserRole::Admin)->get(), new ContactMessage($validated));
+        $recipient = (string) config('studio.contact_email');
+
+        if ($recipient !== '') {
+            Notification::route('mail', $recipient)->notify(new ContactMessage($validated));
+        } else {
+            Notification::send(User::where('role', UserRole::Admin)->get(), new ContactMessage($validated));
+        }
+
+        Notification::route('mail', [$validated['email'] => $validated['name']])->notify(new ContactConfirmation($validated));
 
         return redirect()->route('contact')->with('status', __('contact.form.sent'));
     }

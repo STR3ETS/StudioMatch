@@ -8,6 +8,8 @@ return [
 
     'checkout_hold_minutes' => 15,
 
+    'contact_email' => env('CONTACT_EMAIL'),
+
     'equipment' => [
         'mic_condenser',
         'mic_dynamic',

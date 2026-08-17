@@ -204,12 +204,15 @@
                     modal.classList.remove('flex');
                     pendingForm = null;
                 };
+                const acceptButton = modal.querySelector('[data-confirm-accept]');
+                const defaultAcceptLabel = acceptButton.textContent;
                 document.querySelectorAll('form[data-confirm]').forEach((form) => {
                     form.addEventListener('submit', (event) => {
                         if (form.dataset.confirmed === '1') return;
                         event.preventDefault();
                         pendingForm = form;
                         modal.querySelector('[data-confirm-message]').textContent = form.dataset.confirm;
+                        acceptButton.textContent = form.dataset.confirmAccept || defaultAcceptLabel;
                         modal.classList.remove('hidden');
                         modal.classList.add('flex');
                     });

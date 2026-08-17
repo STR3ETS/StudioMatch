@@ -196,6 +196,7 @@ foreach (['voorwaarden' => 'terms', 'privacy' => 'privacy', 'disclaimer' => 'dis
 Route::get('/language/{locale}', function (string $locale) {
     if (array_key_exists($locale, config('localization.supported', []))) {
         session()->put('locale', $locale);
+        auth()->user()?->update(['locale' => $locale]);
     }
 
     return redirect()->back();

@@ -40,7 +40,7 @@
                         </p>
                     </div>
 
-                    <form method="POST" action="{{ route('admin.bookings.status', $booking) }}" data-confirm="{{ __('admin.bookings.change_confirm') }}" class="flex shrink-0 items-center gap-2">
+                    <form method="POST" action="{{ route('admin.bookings.status', $booking) }}" data-confirm="{{ __('admin.bookings.change_confirm') }}" data-confirm-accept="{{ __('admin.bookings.change_accept') }}" class="flex shrink-0 items-center gap-2">
                         @csrf
                         @method('PATCH')
                         <input type="hidden" name="filter_status" value="{{ $status }}">

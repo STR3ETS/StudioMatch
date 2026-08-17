@@ -298,3 +298,13 @@ document.querySelectorAll('[data-slider]').forEach((slider) => {
     window.addEventListener('resize', update);
     update();
 });
+
+document.addEventListener('submit', (event) => {
+    if (event.defaultPrevented) return;
+    setTimeout(() => {
+        event.target.querySelectorAll('button[type="submit"]').forEach((button) => {
+            button.disabled = true;
+            button.classList.add('opacity-60', 'pointer-events-none');
+        });
+    }, 0);
+});

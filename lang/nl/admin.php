@@ -35,6 +35,7 @@ return [
         'empty' => 'Geen boekingen gevonden.',
         'change' => 'Wijzig',
         'change_confirm' => 'Weet je zeker dat je de status van deze boeking handmatig wilt wijzigen? Bij annulering worden beide partijen gemaild.',
+        'change_accept' => 'Ja, wijzig status',
         'updated' => 'De status van de boeking is gewijzigd.',
         'export' => 'Exporteer CSV',
     ],

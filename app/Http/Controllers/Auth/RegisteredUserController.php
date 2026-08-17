@@ -31,6 +31,7 @@ class RegisteredUserController extends Controller
             'email' => $validated['email'],
             'password' => $validated['password'],
             'role' => $validated['role'],
+            'locale' => app()->getLocale(),
         ]);
 
         event(new Registered($user));

@@ -12,8 +12,8 @@ return [
 
     'confirm' => [
         'title' => 'Are you sure?',
-        'cancel' => 'Cancel',
-        'accept' => 'Yes, delete',
+        'cancel' => 'Back',
+        'accept' => 'Yes, continue',
     ],
 
     'toast' => [

@@ -35,7 +35,11 @@ class BookingController extends Controller
 
     public function accept(Request $request, Booking $booking): RedirectResponse
     {
-        $this->authorizeBooking($request, $booking);
+        abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
+
+        if ($booking->status !== BookingStatus::PendingConfirmation) {
+            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.already_handled'));
+        }
 
         $booking->update(['status' => BookingStatus::Confirmed, 'confirmed_at' => now()]);
 
@@ -47,7 +51,11 @@ class BookingController extends Controller
 
     public function decline(Request $request, Booking $booking): RedirectResponse
     {
-        $this->authorizeBooking($request, $booking);
+        abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
+
+        if ($booking->status !== BookingStatus::PendingConfirmation) {
+            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.already_handled'));
+        }
 
         $booking->update(['status' => BookingStatus::Declined]);
 
@@ -56,11 +64,5 @@ class BookingController extends Controller
         $booking->user->notify(new BookingDeclined($booking));
 
         return redirect()->route('host.bookings.index')->with('status', __('host.bookings.declined'));
-    }
-
-    private function authorizeBooking(Request $request, Booking $booking): void
-    {
-        abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
-        abort_unless($booking->status === BookingStatus::PendingConfirmation, 404);
     }
 }

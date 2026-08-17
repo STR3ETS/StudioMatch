@@ -52,8 +52,11 @@ return [
 
     'mail' => [
         'subject' => 'Contactformulier: :subject',
+        'greeting' => 'Hoi StudioMatch-team,',
         'from' => 'Afzender: :name (:email)',
         'message' => 'Bericht: :message',
+        'confirm_subject' => 'We hebben je bericht ontvangen',
+        'confirm_line' => 'Bedankt voor je bericht aan StudioMatch. We reageren doorgaans binnen één werkdag. Hieronder vind je een kopie van wat je hebt verstuurd.',
     ],
 
     'info' => [

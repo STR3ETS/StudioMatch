@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ContactMessage extends Notification
+class ContactConfirmation extends Notification
 {
     use Queueable;
 
@@ -20,10 +20,9 @@ class ContactMessage extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('contact.mail.subject', ['subject' => __('contact.form.subjects.' . $this->data['subject'])]))
-            ->replyTo($this->data['email'], $this->data['name'])
-            ->greeting(__('contact.mail.greeting'))
-            ->line(__('contact.mail.from', ['name' => $this->data['name'], 'email' => $this->data['email']]))
+            ->subject(__('contact.mail.confirm_subject'))
+            ->greeting(__('host.mail.greeting', ['name' => $this->data['name']]))
+            ->line(__('contact.mail.confirm_line'))
             ->line(__('contact.mail.message', ['message' => $this->data['message']]));
     }
 }

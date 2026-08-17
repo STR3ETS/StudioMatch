@@ -52,8 +52,11 @@ return [
 
     'mail' => [
         'subject' => 'Contact form: :subject',
+        'greeting' => 'Hi StudioMatch team,',
         'from' => 'Sender: :name (:email)',
         'message' => 'Message: :message',
+        'confirm_subject' => 'We received your message',
+        'confirm_line' => 'Thank you for your message to StudioMatch. We usually respond within one business day. Below you will find a copy of what you sent.',
     ],
 
     'info' => [

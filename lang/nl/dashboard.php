@@ -12,8 +12,8 @@ return [
 
     'confirm' => [
         'title' => 'Weet je het zeker?',
-        'cancel' => 'Annuleren',
-        'accept' => 'Ja, verwijderen',
+        'cancel' => 'Terug',
+        'accept' => 'Ja, doorgaan',
     ],
 
     'toast' => [

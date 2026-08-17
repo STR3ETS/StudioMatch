@@ -35,6 +35,7 @@ return [
         'empty' => 'No bookings found.',
         'change' => 'Change',
         'change_confirm' => 'Are you sure you want to manually change the status of this booking? On cancellation both parties are emailed.',
+        'change_accept' => 'Yes, change status',
         'updated' => 'The booking status has been changed.',
         'export' => 'Export CSV',
     ],

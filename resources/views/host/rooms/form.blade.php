@@ -140,9 +140,10 @@
                 <i class="fa-solid fa-cloud-arrow-up text-xl text-prussian-blue/40"></i>
                 <span class="mt-2 text-sm font-semibold text-prussian-blue">{{ __('host.rooms.photos_upload') }}</span>
                 <span class="mt-1 text-xs text-prussian-blue/50">{{ __('host.rooms.photos_formats') }}</span>
-                <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" onchange="this.closest('label').querySelector('[data-file-count]').textContent = this.files.length ? this.files.length + ' {{ __('host.rooms.photos_selected') }}' : ''">
+                <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" data-photo-input>
                 <span data-file-count class="mt-2 text-xs font-bold text-ruby-red"></span>
             </label>
+            <div data-photo-preview class="mt-4 hidden grid-cols-3 gap-2 sm:grid-cols-5"></div>
             <x-input-error field="photos" />
             <x-input-error field="photos.*" />
         </div>
@@ -210,4 +211,65 @@
             </form>
         @endforeach
     @endif
+
+    <script>
+        (() => {
+            const input = document.querySelector('[data-photo-input]');
+            if (! input) return;
+            const preview = document.querySelector('[data-photo-preview]');
+            const count = input.closest('label').querySelector('[data-file-count]');
+            const form = input.closest('form');
+            const submits = form.querySelectorAll('button[type="submit"]');
+            const MAX_DIM = 1800;
+
+            const shrink = (file) => new Promise((resolve) => {
+                if (! file.type.startsWith('image/') || file.size < 700 * 1024) return resolve(file);
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.round(img.width * scale);
+                    canvas.height = Math.round(img.height * scale);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    canvas.toBlob((blob) => {
+                        URL.revokeObjectURL(url);
+                        resolve(blob && blob.size < file.size
+                            ? new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' })
+                            : file);
+                    }, 'image/jpeg', 0.85);
+                };
+                img.onerror = () => {
+                    URL.revokeObjectURL(url);
+                    resolve(file);
+                };
+                img.src = url;
+            });
+
+            input.addEventListener('change', async () => {
+                submits.forEach((button) => button.disabled = true);
+                count.textContent = '…';
+
+                try {
+                    const files = await Promise.all([...input.files].map(shrink));
+                    const transfer = new DataTransfer();
+                    files.forEach((file) => transfer.items.add(file));
+                    input.files = transfer.files;
+                } catch (error) {}
+
+                preview.innerHTML = '';
+                [...input.files].forEach((file) => {
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.className = 'aspect-[4/3] w-full rounded-xl object-cover';
+                    preview.appendChild(img);
+                });
+                preview.classList.toggle('hidden', input.files.length === 0);
+                preview.classList.toggle('grid', input.files.length > 0);
+
+                count.textContent = input.files.length ? input.files.length + ' {{ __('host.rooms.photos_selected') }}' : '';
+                submits.forEach((button) => button.disabled = false);
+            });
+        })();
+    </script>
 </x-host-layout>

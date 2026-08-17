@@ -36,6 +36,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'status' => ['required', Rule::enum(BookingStatus::class)],
+            'filter_status' => ['nullable', Rule::enum(BookingStatus::class)],
         ]);
 
         $newStatus = BookingStatus::from($validated['status']);
@@ -52,7 +53,7 @@ class BookingController extends Controller
             $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
         }
 
-        return redirect()->route('admin.bookings.index', $request->only('status'))
+        return redirect()->route('admin.bookings.index', array_filter(['status' => $validated['filter_status'] ?? null]))
             ->with('status', __('admin.bookings.updated'));
     }
 
