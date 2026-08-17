@@ -197,33 +197,55 @@ class BookingExtrasTest extends TestCase
         ]);
 
         Notification::fake();
-        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $booking->id . '/annuleren');
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $booking->id . '/afhandelen', [
+            'refund_percent' => 100,
+            'resolution_note' => 'De studio heeft bevestigd dat de mixer defect was.',
+        ]);
 
         $this->actingAs($this->artist)->get('/dashboard/artiest')
             ->assertOk()
             ->assertSee(__('booking.problem.upheld', ['date' => $booking->fresh()->disputed_at->translatedFormat('j F')]));
     }
 
-    public function test_admin_can_release_or_cancel_disputed_booking(): void
+    public function test_admin_can_resolve_disputes_with_full_partial_or_no_refund(): void
     {
         Notification::fake();
         $admin = User::factory()->create(['role' => 'admin']);
 
         $release = $this->booking(['status' => 'disputed', 'disputed_at' => now(), 'dispute_reason' => 'Probleem A']);
-        $cancel = $this->booking(['status' => 'disputed', 'disputed_at' => now(), 'dispute_reason' => 'Probleem B', 'start_hour' => 14, 'end_hour' => 17]);
+        $partial = $this->booking(['status' => 'disputed', 'disputed_at' => now(), 'dispute_reason' => 'Probleem B', 'start_hour' => 14, 'end_hour' => 17]);
+        $cancel = $this->booking(['status' => 'disputed', 'disputed_at' => now(), 'dispute_reason' => 'Probleem C', 'start_hour' => 18, 'end_hour' => 21]);
 
         $this->actingAs($admin)->get('/dashboard/admin/tickets')
             ->assertOk()
             ->assertSee('Probleem A')
             ->assertSee('Probleem B');
 
-        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $release->id . '/vrijgeven');
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $release->id . '/afhandelen', [
+            'refund_percent' => 0,
+            'resolution_note' => 'De melding is na overleg met beide partijen afgewezen.',
+        ]);
         $this->assertSame('completed', $release->fresh()->status->value);
+        $this->assertNull($release->fresh()->refunded_cents);
+        $this->assertSame('dismissed', $release->fresh()->disputeOutcome());
 
-        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $cancel->id . '/annuleren');
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $partial->id . '/afhandelen', [
+            'refund_percent' => 50,
+            'resolution_note' => 'Beide partijen hebben deels gelijk, we splitsen het verschil.',
+        ]);
+        $this->assertSame('completed', $partial->fresh()->status->value);
+        $this->assertSame(7500 + 1350 + 284, $partial->fresh()->refunded_cents);
+        $this->assertSame('partial', $partial->fresh()->disputeOutcome());
+
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $cancel->id . '/afhandelen', [
+            'refund_percent' => 100,
+            'resolution_note' => 'De studio was in gebreke, volledige terugbetaling.',
+        ]);
         $this->assertSame('cancelled', $cancel->fresh()->status->value);
         $this->assertSame('admin', $cancel->fresh()->cancelled_by);
-        Notification::assertSentTo($this->artist, BookingCancelled::class);
+        $this->assertSame('upheld', $cancel->fresh()->disputeOutcome());
+        Notification::assertSentTo($this->artist, \App\Notifications\DisputeResolved::class);
+        Notification::assertSentTo($this->host, \App\Notifications\DisputeResolved::class);
     }
 
     public function test_reminder_is_sent_once_24_hours_before_start(): void

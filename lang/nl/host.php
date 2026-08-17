@@ -242,6 +242,7 @@ return [
         'disputed_on' => 'gemeld op :date',
         'dispute_open' => 'In behandeling. De uitbetaling staat gepauzeerd en StudioMatch bemiddelt.',
         'dispute_dismissed' => 'Afgehandeld in jouw voordeel. De boeking is afgerond en de uitbetaling is vrijgegeven.',
+        'dispute_partial' => 'Afgehandeld met een gedeeltelijke terugbetaling aan de artiest. Het resterende deel wordt aan jou uitbetaald.',
         'dispute_upheld' => 'Afgehandeld in het voordeel van de artiest. De boeking is geannuleerd en volledig terugbetaald.',
     ],
 

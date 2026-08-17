@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
     'room_id', 'user_id', 'date', 'start_hour', 'end_hour',
     'hourly_rate_cents', 'rent_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
-    'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_photos', 'reminder_sent_at',
+    'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_studio_response', 'dispute_photos', 'resolution_note', 'reminder_sent_at',
     'response_reminder_sent_at', 'damage_reported_at', 'damage_reason', 'damage_photos',
     'stripe_checkout_session_id', 'stripe_payment_intent_id', 'stripe_refund_id', 'refunded_cents',
     'stripe_transfer_id', 'transferred_at',
@@ -122,16 +122,21 @@ class Booking extends Model
             && now()->between($this->startsAt(), $this->startsAt()->addHours(24));
     }
 
-    public function wasDisputeDismissed(): bool
+    public function disputeOutcome(): ?string
     {
-        return $this->disputed_at !== null && $this->status === BookingStatus::Completed;
-    }
+        if ($this->disputed_at === null) {
+            return null;
+        }
 
-    public function wasDisputeUpheld(): bool
-    {
-        return $this->disputed_at !== null
-            && $this->status === BookingStatus::Cancelled
-            && $this->cancelled_by === 'admin';
+        if ($this->status === BookingStatus::Cancelled && $this->cancelled_by === 'admin') {
+            return 'upheld';
+        }
+
+        if ($this->status === BookingStatus::Completed) {
+            return ($this->refunded_cents ?? 0) > 0 ? 'partial' : 'dismissed';
+        }
+
+        return null;
     }
 
     public function canReportDamage(): bool

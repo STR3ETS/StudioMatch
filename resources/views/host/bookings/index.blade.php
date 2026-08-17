@@ -64,11 +64,16 @@
                         </p>
                         <p class="mt-2 rounded-xl bg-prussian-blue/[0.03] px-4 py-3 text-sm leading-relaxed text-prussian-blue/70">{{ $booking->dispute_reason }}</p>
 
-                        @if ($booking->wasDisputeDismissed())
+                        @php $outcome = $booking->disputeOutcome(); @endphp
+                        @if ($outcome === 'dismissed')
                             <p class="mt-2 flex items-start gap-2 text-sm font-medium text-emerald-600">
                                 <i class="fa-solid fa-circle-check mt-0.5"></i> {{ __('host.bookings.dispute_dismissed') }}
                             </p>
-                        @elseif ($booking->wasDisputeUpheld())
+                        @elseif ($outcome === 'partial')
+                            <p class="mt-2 flex items-start gap-2 text-sm font-medium text-amber-600">
+                                <i class="fa-solid fa-scale-balanced mt-0.5"></i> {{ __('host.bookings.dispute_partial') }}
+                            </p>
+                        @elseif ($outcome === 'upheld')
                             <p class="mt-2 flex items-start gap-2 text-sm font-medium text-ruby-red">
                                 <i class="fa-solid fa-circle-xmark mt-0.5"></i> {{ __('host.bookings.dispute_upheld') }}
                             </p>
@@ -76,6 +81,9 @@
                             <p class="mt-2 flex items-start gap-2 text-sm font-medium text-amber-600">
                                 <i class="fa-solid fa-hourglass-half mt-0.5"></i> {{ __('host.bookings.dispute_open') }}
                             </p>
+                        @endif
+                        @if ($outcome !== null && $booking->resolution_note)
+                            <p class="mt-1 text-sm text-prussian-blue/60">{{ __('booking.problem.note_label') }}: {{ $booking->resolution_note }}</p>
                         @endif
                     </div>
                 @endforeach

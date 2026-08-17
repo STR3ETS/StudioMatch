@@ -5,9 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Notifications\BookingCancelled;
+use App\Notifications\DisputeResolved;
 use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class TicketController extends Controller
@@ -23,26 +24,28 @@ class TicketController extends Controller
         ]);
     }
 
-    public function release(Booking $booking): RedirectResponse
+    public function resolve(Request $request, Booking $booking): RedirectResponse
     {
         abort_unless($booking->status === BookingStatus::Disputed, 404);
 
-        $booking->update(['status' => BookingStatus::Completed]);
+        $validated = $request->validate([
+            'refund_percent' => ['required', 'integer', 'between:0,100'],
+            'resolution_note' => ['required', 'string', 'min:10', 'max:2000'],
+        ]);
 
-        return redirect()->route('admin.tickets.index')->with('status', __('admin.tickets.released'));
-    }
+        $percent = (int) $validated['refund_percent'];
 
-    public function cancel(Booking $booking): RedirectResponse
-    {
-        abort_unless($booking->status === BookingStatus::Disputed, 404);
+        $booking->update([
+            'status' => $percent === 100 ? BookingStatus::Cancelled : BookingStatus::Completed,
+            'cancelled_by' => $percent === 100 ? 'admin' : $booking->cancelled_by,
+            'resolution_note' => $validated['resolution_note'],
+        ]);
 
-        $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'admin']);
+        StripeService::refund($booking, $booking->refundAmountCents($percent));
 
-        StripeService::refund($booking, $booking->refundAmountCents(100));
+        $booking->user->notify(new DisputeResolved($booking, $percent));
+        $booking->room->studio->user->notify(new DisputeResolved($booking, $percent));
 
-        $booking->user->notify(new BookingCancelled($booking, 100));
-        $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
-
-        return redirect()->route('admin.tickets.index')->with('status', __('admin.tickets.cancelled'));
+        return redirect()->route('admin.tickets.index')->with('status', __('admin.tickets.resolved'));
     }
 }

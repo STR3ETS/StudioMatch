@@ -179,8 +179,7 @@ Route::middleware('auth')->group(function () {
         Route::patch('/wachtrij/{room}/afwijzen', [QueueController::class, 'reject'])->name('admin.queue.reject');
 
         Route::get('/tickets', [TicketController::class, 'index'])->name('admin.tickets.index');
-        Route::patch('/tickets/{booking}/vrijgeven', [TicketController::class, 'release'])->name('admin.tickets.release');
-        Route::patch('/tickets/{booking}/annuleren', [TicketController::class, 'cancel'])->name('admin.tickets.cancel');
+        Route::patch('/tickets/{booking}/afhandelen', [TicketController::class, 'resolve'])->name('admin.tickets.resolve');
 
         Route::get('/boekingen', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
         Route::get('/boekingen/export', [AdminBookingController::class, 'export'])->name('admin.bookings.export');

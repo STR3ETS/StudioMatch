@@ -188,7 +188,10 @@ class StripeTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->patch('/dashboard/admin/tickets/' . $booking->id . '/annuleren')
+            ->patch('/dashboard/admin/tickets/' . $booking->id . '/afhandelen', [
+                'refund_percent' => 100,
+                'resolution_note' => 'De apparatuur bleek inderdaad defect te zijn.',
+            ])
             ->assertRedirect(route('admin.tickets.index'));
 
         $this->assertSame(16634, $booking->fresh()->refunded_cents);
@@ -221,7 +224,10 @@ class StripeTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->actingAs($admin)
-            ->patch('/dashboard/admin/tickets/' . $booking->id . '/annuleren')
+            ->patch('/dashboard/admin/tickets/' . $booking->id . '/afhandelen', [
+                'refund_percent' => 100,
+                'resolution_note' => 'Volledige terugbetaling na beoordeling van het ticket.',
+            ])
             ->assertRedirect(route('admin.tickets.index'));
 
         $this->assertSame(5000, $booking->fresh()->refunded_cents);

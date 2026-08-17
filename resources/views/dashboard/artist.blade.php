@@ -83,8 +83,12 @@
                                 </summary>
                                 <form method="POST" action="{{ route('bookings.problem', $booking) }}" enctype="multipart/form-data" class="mt-3">
                                     @csrf
-                                    <textarea name="dispute_reason" rows="3" required minlength="10" placeholder="{{ __('booking.problem.placeholder') }}" class="w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none">{{ old('dispute_reason') }}</textarea>
+                                    <label class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('booking.problem.situation_label') }}</label>
+                                    <textarea name="dispute_reason" rows="3" required minlength="10" placeholder="{{ __('booking.problem.placeholder') }}" class="mt-1.5 w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none">{{ old('dispute_reason') }}</textarea>
                                     <x-input-error field="dispute_reason" />
+                                    <label class="mt-3 block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('booking.problem.studio_response_label') }}</label>
+                                    <textarea name="dispute_studio_response" rows="2" placeholder="{{ __('booking.problem.studio_response_placeholder') }}" class="mt-1.5 w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none">{{ old('dispute_studio_response') }}</textarea>
+                                    <x-input-error field="dispute_studio_response" />
                                     <label class="mt-2 flex w-fit cursor-pointer items-center gap-2 text-sm font-semibold text-prussian-blue/70 transition hover:text-prussian-blue">
                                         <i class="fa-solid fa-paperclip fa-sm"></i> {{ __('booking.problem.photos_label') }}
                                         <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" onchange="this.closest('label').querySelector('[data-file-count]').textContent = this.files.length ? '(' + this.files.length + ')' : ''">
@@ -121,16 +125,25 @@
                                 <span><i class="fa-solid fa-euro-sign fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
                             </p>
 
-                            @if ($booking->wasDisputeDismissed())
+                            @php $outcome = $booking->disputeOutcome(); @endphp
+                            @if ($outcome === 'dismissed')
                                 <p class="mt-2 flex items-start gap-2 text-sm font-medium text-ruby-red">
                                     <i class="fa-solid fa-circle-xmark mt-0.5"></i>
                                     {{ __('booking.problem.dismissed', ['date' => $booking->disputed_at->translatedFormat('j F')]) }}
                                 </p>
-                            @elseif ($booking->wasDisputeUpheld())
+                            @elseif ($outcome === 'partial')
+                                <p class="mt-2 flex items-start gap-2 text-sm font-medium text-amber-600">
+                                    <i class="fa-solid fa-scale-balanced mt-0.5"></i>
+                                    {{ __('booking.problem.partial', ['date' => $booking->disputed_at->translatedFormat('j F'), 'amount' => $money($booking->refunded_cents)]) }}
+                                </p>
+                            @elseif ($outcome === 'upheld')
                                 <p class="mt-2 flex items-start gap-2 text-sm font-medium text-emerald-600">
                                     <i class="fa-solid fa-circle-check mt-0.5"></i>
                                     {{ __('booking.problem.upheld', ['date' => $booking->disputed_at->translatedFormat('j F')]) }}
                                 </p>
+                            @endif
+                            @if ($outcome !== null && $booking->resolution_note)
+                                <p class="mt-1 text-sm text-prussian-blue/60">{{ __('booking.problem.note_label') }}: {{ $booking->resolution_note }}</p>
                             @endif
 
                             @if ($booking->canReportProblem())
@@ -139,8 +152,12 @@
                                         <i class="fa-solid fa-triangle-exclamation fa-sm mr-1"></i>{{ __('booking.problem.title') }}</summary>
                                     <form method="POST" action="{{ route('bookings.problem', $booking) }}" enctype="multipart/form-data" class="mt-3">
                                         @csrf
-                                        <textarea name="dispute_reason" rows="3" required minlength="10" placeholder="{{ __('booking.problem.placeholder') }}" class="w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none">{{ old('dispute_reason') }}</textarea>
+                                        <label class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('booking.problem.situation_label') }}</label>
+                                        <textarea name="dispute_reason" rows="3" required minlength="10" placeholder="{{ __('booking.problem.placeholder') }}" class="mt-1.5 w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none">{{ old('dispute_reason') }}</textarea>
                                         <x-input-error field="dispute_reason" />
+                                        <label class="mt-3 block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('booking.problem.studio_response_label') }}</label>
+                                        <textarea name="dispute_studio_response" rows="2" placeholder="{{ __('booking.problem.studio_response_placeholder') }}" class="mt-1.5 w-full rounded-xl border border-prussian-blue/15 px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none">{{ old('dispute_studio_response') }}</textarea>
+                                        <x-input-error field="dispute_studio_response" />
                                         <label class="mt-2 flex w-fit cursor-pointer items-center gap-2 text-sm font-semibold text-prussian-blue/70 transition hover:text-prussian-blue">
                                             <i class="fa-solid fa-paperclip fa-sm"></i> {{ __('booking.problem.photos_label') }}
                                             <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" onchange="this.closest('label').querySelector('[data-file-count]').textContent = this.files.length ? '(' + this.files.length + ')' : ''">

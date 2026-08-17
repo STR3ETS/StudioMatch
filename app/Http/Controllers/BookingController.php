@@ -252,6 +252,7 @@ class BookingController extends Controller
 
         $validated = $request->validate([
             'dispute_reason' => ['required', 'string', 'min:10', 'max:2000'],
+            'dispute_studio_response' => ['nullable', 'string', 'max:2000'],
             'photos' => ['nullable', 'array', 'max:5'],
             'photos.*' => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
@@ -264,6 +265,7 @@ class BookingController extends Controller
             'status' => BookingStatus::Disputed,
             'disputed_at' => now(),
             'dispute_reason' => $validated['dispute_reason'],
+            'dispute_studio_response' => $validated['dispute_studio_response'] ?? null,
             'dispute_photos' => $photos !== [] ? $photos : null,
         ]);
 

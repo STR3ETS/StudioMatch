@@ -242,6 +242,7 @@ return [
         'disputed_on' => 'reported on :date',
         'dispute_open' => 'Being handled. The payout is paused and StudioMatch mediates.',
         'dispute_dismissed' => 'Resolved in your favour. The booking has been completed and the payout has been released.',
+        'dispute_partial' => 'Resolved with a partial refund to the artist. The remaining part is paid out to you.',
         'dispute_upheld' => 'Resolved in favour of the artist. The booking has been cancelled and fully refunded.',
     ],
 
