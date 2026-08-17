@@ -80,11 +80,45 @@ class PublicSiteTest extends TestCase
 
     public function test_search_filters_on_location_and_capacity(): void
     {
+        \Illuminate\Support\Facades\Http::fake(['*' => \Illuminate\Support\Facades\Http::response([], 500)]);
+
         $this->liveRoom($this->studio(['city' => 'Amsterdam']), ['title' => 'Ruimte Amsterdam', 'capacity' => 4]);
         $this->liveRoom($this->studio(['city' => 'Groningen']), ['title' => 'Ruimte Groningen', 'capacity' => 10]);
 
         $this->get('/studios?location=Groningen')->assertSee('Ruimte Groningen')->assertDontSee('Ruimte Amsterdam');
         $this->get('/studios?capacity=8')->assertSee('Ruimte Groningen')->assertDontSee('Ruimte Amsterdam');
+    }
+
+    public function test_city_search_applies_radius_via_geocoding(): void
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'api.pdok.nl/*' => \Illuminate\Support\Facades\Http::response([
+                'response' => ['docs' => [['centroide_ll' => 'POINT(4.3007 52.0705)']]],
+            ]),
+        ]);
+
+        $this->liveRoom($this->studio(['city' => 'Rotterdam', 'lat' => 51.9244, 'lng' => 4.4777]), ['title' => 'Ruimte Rotterdam']);
+        $this->liveRoom($this->studio(['city' => 'Groningen', 'lat' => 53.2194, 'lng' => 6.5665]), ['title' => 'Ruimte Groningen']);
+
+        $this->get('/studios?location=Den+Haag&radius=100')
+            ->assertSee('Ruimte Rotterdam')
+            ->assertDontSee('Ruimte Groningen');
+
+        $this->get('/studios?location=Den+Haag&radius=10')
+            ->assertDontSee('Ruimte Rotterdam');
+    }
+
+    public function test_daw_filter_uses_or_logic(): void
+    {
+        $studio = $this->studio();
+        $this->liveRoom($studio, ['title' => 'Logic ruimte', 'daws' => ['Logic']]);
+        $this->liveRoom($studio, ['title' => 'Ableton ruimte', 'daws' => ['Ableton']]);
+        $this->liveRoom($studio, ['title' => 'Cubase ruimte', 'daws' => ['Cubase']]);
+
+        $this->get('/studios?daws[]=Logic&daws[]=Ableton')
+            ->assertSee('Logic ruimte')
+            ->assertSee('Ableton ruimte')
+            ->assertDontSee('Cubase ruimte');
     }
 
     public function test_search_filters_on_availability_date(): void

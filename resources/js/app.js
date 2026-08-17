@@ -229,7 +229,8 @@ document.querySelectorAll('[data-stepper]').forEach((stepper) => {
     const max = 16;
     const render = () => {
         const value = parseInt(input.value || '0', 10);
-        label.textContent = value === 0 ? (stepper.dataset.stepperAny || '0') : String(value);
+        const suffix = stepper.dataset.stepperSuffix || '';
+        label.textContent = value === 0 ? (stepper.dataset.stepperAny || '0') : String(value) + suffix;
         minus.disabled = value <= 0;
         plus.disabled = value >= max;
     };

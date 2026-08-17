@@ -19,17 +19,22 @@
 
             <span class="hidden sm:block h-8 w-px bg-prussian-blue/10"></span>
 
-            <button type="button" class="flex-1 rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
+            <label class="flex-1 cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
                 <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.when') }}</span>
-                <span class="block text-sm text-prussian-blue/40">{{ __('home.search.when_placeholder') }}</span>
-            </button>
+                <input type="date" name="date" min="{{ today()->toDateString() }}" class="w-full cursor-pointer bg-transparent text-sm text-prussian-blue focus:outline-none [color-scheme:light]">
+            </label>
 
             <span class="hidden sm:block h-8 w-px bg-prussian-blue/10"></span>
 
-            <button type="button" class="flex-1 rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
+            <label class="flex-1 cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
                 <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.type') }}</span>
-                <span class="block text-sm text-prussian-blue/40">{{ __('home.search.type_placeholder') }}</span>
-            </button>
+                <select name="type" class="w-full cursor-pointer appearance-none bg-transparent text-sm text-prussian-blue focus:outline-none">
+                    <option value="">{{ __('home.search.type_placeholder') }}</option>
+                    @foreach (['recording', 'mix', 'master'] as $value)
+                        <option value="{{ $value }}">{{ __('studios.type.' . $value) }}</option>
+                    @endforeach
+                </select>
+            </label>
 
             <button type="submit" aria-label="{{ __('home.search.submit') }}" class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-ruby-red font-semibold text-white transition hover:bg-ruby-red/90 sm:w-12 mx-2 mb-2 sm:my-0 sm:mr-4 sm:ml-4">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -68,8 +73,13 @@
                 <div>
                     <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('home.search.when') }}</span>
                     <div class="mt-2 flex gap-2">
-                        <input type="date" name="date" class="w-full min-w-0 rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
-                        <input type="time" name="time" step="1800" class="w-full min-w-0 rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                        <input type="date" name="date" min="{{ today()->toDateString() }}" class="w-full min-w-0 rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                        <select name="start" class="w-full min-w-0 cursor-pointer rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                            <option value="">--:--</option>
+                            @for ($h = 0; $h <= 23; $h++)
+                                <option value="{{ $h }}">{{ sprintf('%02d:00', $h) }}</option>
+                            @endfor
+                        </select>
                     </div>
                 </div>
 

@@ -8,6 +8,10 @@ return [
 
     'checkout_hold_minutes' => 15,
 
+    'booking_max_hours' => 12,
+
+    'booking_horizon_days' => 365,
+
     'contact_email' => env('CONTACT_EMAIL'),
 
     'equipment' => [
@@ -24,6 +28,8 @@ return [
         'guitar_electric',
         'bass',
         'drums',
+        'screen_extra',
+        'headphones',
     ],
 
     'facilities' => [

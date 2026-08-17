@@ -257,3 +257,17 @@ input[type='time']::-webkit-date-and-time-value {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background-color: rgba(16, 21, 41, 0.35);
 }
+
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%23101529' fill-opacity='0.45'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.06l3.71-3.83a.75.75 0 1 1 1.08 1.04l-4.25 4.39a.75.75 0 0 1-1.08 0L5.23 8.29a.75.75 0 0 1 .02-1.08z' clip-rule='evenodd'/%3E%3C/svg%3E");
+    background-position: right 0.65rem center;
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    padding-right: 2.25rem !important;
+}
+
+input[type='date'],
+input[type='time'] {
+    color-scheme: light;
+}

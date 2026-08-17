@@ -194,8 +194,10 @@ class Room extends Model
         return $hours;
     }
 
-    public function freeHoursByDate(int $days = 84): array
+    public function freeHoursByDate(?int $days = null): array
     {
+        $days ??= (int) config('studio.booking_horizon_days');
+
         $this->loadMissing(['hours', 'exceptions']);
 
         $from = today();

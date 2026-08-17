@@ -96,7 +96,7 @@
                 <div>
                     <label for="min_hours" class="{{ $label }}">{{ __('host.rooms.fields.min_hours') }}</label>
                     <select id="min_hours" name="min_hours" class="{{ $field }} cursor-pointer">
-                        @for ($h = 1; $h <= 8; $h++)
+                        @for ($h = 2; $h <= 8; $h++)
                             <option value="{{ $h }}" @selected((int) old('min_hours', $room->min_hours ?? 2) === $h)>{{ __('host.rooms.hours', ['count' => $h]) }}</option>
                         @endfor
                     </select>

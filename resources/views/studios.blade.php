@@ -35,7 +35,7 @@
                                 <i class="fa-solid fa-location-crosshairs mt-0.5"></i>
                                 <span>{{ request('lat') ? __('studios.filters.location_active') : __('studios.filters.near_me') }}</span>
                             </button>
-                            @if (request('lat'))
+                            @if (request('lat') || request('location'))
                                 <div class="mt-4">
                                     <div class="flex items-center justify-between">
                                         <span class="{{ $subLabel }}">{{ __('studios.filters.distance') }}</span>
@@ -91,8 +91,8 @@
                             </div>
                             <div class="mt-4">
                                 <span class="{{ $subLabel }}">{{ __('studios.filters.capacity') }}</span>
-                                <div class="mt-2 flex items-center justify-between rounded-xl border border-prussian-blue/15 px-3 py-2" data-stepper data-stepper-any="{{ __('studios.filters.capacity_any') }}">
-                                    <span class="text-sm text-prussian-blue" data-stepper-label>{{ (int) request('capacity', 0) > 0 ? (int) request('capacity') : __('studios.filters.capacity_any') }}</span>
+                                <div class="mt-2 flex items-center justify-between rounded-xl border border-prussian-blue/15 px-3 py-2" data-stepper data-stepper-any="{{ __('studios.filters.capacity_any') }}" data-stepper-suffix=" {{ __('studios.filters.persons') }}">
+                                    <span class="text-sm text-prussian-blue" data-stepper-label>{{ (int) request('capacity', 0) > 0 ? (int) request('capacity') . ' ' . __('studios.filters.persons') : __('studios.filters.capacity_any') }}</span>
                                     <div class="flex items-center gap-2">
                                         <button type="button" data-stepper-minus class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-prussian-blue/20 text-prussian-blue transition hover:bg-prussian-blue/5 disabled:cursor-not-allowed disabled:opacity-30"><i class="fa-solid fa-minus text-[10px]"></i></button>
                                         <button type="button" data-stepper-plus class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border border-prussian-blue/20 text-prussian-blue transition hover:bg-prussian-blue/5 disabled:cursor-not-allowed disabled:opacity-30"><i class="fa-solid fa-plus text-[10px]"></i></button>

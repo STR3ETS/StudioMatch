@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Enums\RoomType;
 use App\Models\Room;
+use App\Support\Geocoder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -72,7 +74,23 @@ class PublicStudioController extends Controller
             ->publiclyVisible()
             ->with(['studio', 'photos', 'hours', 'exceptions']);
 
-        if (! empty($filters['location'])) {
+        $center = isset($filters['lat'], $filters['lng'])
+            ? [(float) $filters['lat'], (float) $filters['lng']]
+            : null;
+
+        if ($center === null && ! empty($filters['location'])) {
+            $place = Cache::remember(
+                'geocode-place:' . mb_strtolower(trim($filters['location'])),
+                now()->addDay(),
+                fn () => Geocoder::place($filters['location']) ?? [],
+            );
+
+            if ($place !== []) {
+                $center = [$place['lat'], $place['lng']];
+            }
+        }
+
+        if ($center === null && ! empty($filters['location'])) {
             $location = $filters['location'];
             $query->whereHas('studio', function ($query) use ($location) {
                 $query->where('city', 'like', "%{$location}%")
@@ -102,9 +120,16 @@ class PublicStudioController extends Controller
         foreach ($filters['equipment'] ?? [] as $item) {
             $query->whereJsonContains('equipment', $item);
         }
-        foreach ($filters['daws'] ?? [] as $daw) {
-            $query->whereJsonContains('daws', $daw);
+
+        $daws = $filters['daws'] ?? [];
+        if ($daws !== []) {
+            $query->where(function ($query) use ($daws) {
+                foreach ($daws as $daw) {
+                    $query->orWhereJsonContains('daws', $daw);
+                }
+            });
         }
+
         foreach ($filters['facilities'] ?? [] as $facility) {
             $query->whereJsonContains('facilities', $facility);
         }
@@ -119,10 +144,8 @@ class PublicStudioController extends Controller
 
         $rooms = $query->get();
 
-        $hasLocation = isset($filters['lat'], $filters['lng']);
-        if ($hasLocation) {
-            $lat = (float) $filters['lat'];
-            $lng = (float) $filters['lng'];
+        if ($center !== null) {
+            [$lat, $lng] = $center;
             $radius = (int) ($filters['radius'] ?? 25);
 
             $rooms = $rooms
@@ -143,6 +166,9 @@ class PublicStudioController extends Controller
             $date = Carbon::parse($filters['date']);
             $start = isset($filters['start']) ? (int) $filters['start'] : null;
             $end = isset($filters['end']) ? (int) $filters['end'] : null;
+            if ($start !== null && $end === null) {
+                $end = min(24, $start + 2);
+            }
             if ($start !== null && $end !== null && $end <= $start) {
                 $end = null;
                 $start = null;

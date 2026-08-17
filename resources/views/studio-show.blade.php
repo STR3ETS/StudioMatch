@@ -172,7 +172,7 @@
                           data-rent-label="{{ __('studio.booking.rent', ['count' => ':count']) }}"
                           data-hours-label="{{ __('studio.booking.hours', ['count' => ':count']) }}"
                           data-min-hours="{{ $room->min_hours }}"
-                          data-max-hours="8"
+                          data-max-hours="{{ config('studio.booking_max_hours') }}"
                           class="custom-scrollbar scroll-mt-28 rounded-2xl border border-prussian-blue/10 bg-white p-6 shadow-lg lg:sticky lg:top-28 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto">
                         <p class="text-prussian-blue">
                             <span class="text-2xl font-bold">{{ $money($room->hourlyRateEuros()) }}</span>
@@ -195,7 +195,7 @@
                             <div data-cal-grid class="mt-2 grid grid-cols-7 gap-1"></div>
                         </div>
 
-                        @php $initialHours = min(8, max($room->min_hours, (int) old('hours', request('hours', $hours)))); @endphp
+                        @php $initialHours = min((int) config('studio.booking_max_hours'), max($room->min_hours, (int) old('hours', request('hours', $hours)))); @endphp
                         <div class="mt-4">
                             <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.duration') }}</span>
                             <div class="mt-1 flex items-center justify-between rounded-xl border border-prussian-blue/15 px-3 py-2">

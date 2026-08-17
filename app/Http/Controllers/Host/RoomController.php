@@ -97,7 +97,7 @@ class RoomController extends Controller
             'description' => ['required', 'string', 'max:5000'],
             'type' => ['required', Rule::enum(RoomType::class)],
             'hourly_rate' => ['required', 'numeric', 'min:1', 'max:1000'],
-            'min_hours' => ['required', 'integer', 'min:1', 'max:8'],
+            'min_hours' => ['required', 'integer', 'min:2', 'max:8'],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
             'engineer_included' => ['nullable', 'boolean'],
             'house_rules' => ['nullable', 'string', 'max:2000'],

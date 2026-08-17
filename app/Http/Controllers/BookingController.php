@@ -267,7 +267,7 @@ class BookingController extends Controller
         $validated = $request->validate([
             'date' => ['required', 'date', 'after_or_equal:today'],
             'start' => ['required', 'integer', 'between:0,23'],
-            'hours' => ['required', 'integer', 'min:' . $room->min_hours, 'max:8'],
+            'hours' => ['required', 'integer', 'min:' . $room->min_hours, 'max:' . config('studio.booking_max_hours')],
         ]);
 
         $date = Carbon::parse($validated['date']);

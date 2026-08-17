@@ -10,11 +10,21 @@ class Geocoder
 
     public static function geocode(string $street, string $postalCode, string $city): ?array
     {
+        return self::lookup("{$street}, {$postalCode} {$city}", 'type:adres');
+    }
+
+    public static function place(string $query): ?array
+    {
+        return self::lookup($query, 'type:(woonplaats OR postcode)');
+    }
+
+    private static function lookup(string $query, string $filter): ?array
+    {
         try {
             $point = Http::timeout(5)
                 ->get('https://api.pdok.nl/bzk/locatieserver/search/v3_1/free', [
-                    'q' => "{$street}, {$postalCode} {$city}",
-                    'fq' => 'type:adres',
+                    'q' => $query,
+                    'fq' => $filter,
                     'rows' => 1,
                 ])
                 ->json('response.docs.0.centroide_ll');
