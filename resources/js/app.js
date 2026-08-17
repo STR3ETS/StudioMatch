@@ -1,8 +1,10 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
-const mapEl = document.getElementById('studio-map');
-if (mapEl) {
+const initStudioMap = () => {
+    const mapEl = document.getElementById('studio-map');
+    if (!mapEl || mapEl.dataset.mapReady) return;
+    mapEl.dataset.mapReady = '1';
     const studios = JSON.parse(mapEl.dataset.studios || '[]');
     const perHour = mapEl.dataset.perHour || '/uur';
 
@@ -111,24 +113,31 @@ if (mapEl) {
             marker.getElement()?.classList.remove('is-active');
         });
     });
-}
+};
 
-const revealEls = document.querySelectorAll('section, footer, [data-reveal]');
-if (revealEls.length && 'IntersectionObserver' in window) {
-    const revealObserver = new IntersectionObserver((entries) => {
+initStudioMap();
+
+const revealObserver = 'IntersectionObserver' in window
+    ? new IntersectionObserver((entries) => {
         entries.forEach((entry) => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('reveal-visible');
                 revealObserver.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' })
+    : null;
 
-    revealEls.forEach((el) => {
+const initReveals = () => {
+    if (!revealObserver) return;
+    document.querySelectorAll('section, footer, [data-reveal]').forEach((el) => {
+        if (el.classList.contains('reveal') || el.classList.contains('reveal-visible')) return;
         el.classList.add('reveal');
         revealObserver.observe(el);
     });
-}
+};
+
+initReveals();
 
 const header = document.querySelector('[data-header]');
 if (header) {
@@ -141,27 +150,34 @@ if (header) {
     onHeaderScroll();
 }
 
-document.querySelectorAll('[data-loadmore]').forEach((container) => {
-    const grid = container.querySelector('[data-loadmore-grid]');
-    const btn = container.querySelector('[data-loadmore-btn]');
-    if (!grid || !btn) return;
+const initLoadMore = () => {
+    document.querySelectorAll('[data-loadmore]').forEach((container) => {
+        if (container.dataset.loadmoreReady) return;
+        container.dataset.loadmoreReady = '1';
 
-    const step = parseInt(container.dataset.loadmoreStep || '16', 10);
-    let visible = parseInt(container.dataset.loadmoreInitial || String(step), 10);
+        const grid = container.querySelector('[data-loadmore-grid]');
+        const btn = container.querySelector('[data-loadmore-btn]');
+        if (!grid || !btn) return;
 
-    const apply = () => {
-        const items = Array.from(grid.children);
-        items.forEach((item, i) => item.classList.toggle('hidden', i >= visible));
-        btn.classList.toggle('hidden', visible >= items.length);
-    };
+        const step = parseInt(container.dataset.loadmoreStep || '16', 10);
+        let visible = parseInt(container.dataset.loadmoreInitial || String(step), 10);
 
-    btn.addEventListener('click', () => {
-        visible += step;
+        const apply = () => {
+            const items = Array.from(grid.children);
+            items.forEach((item, i) => item.classList.toggle('hidden', i >= visible));
+            btn.classList.toggle('hidden', visible >= items.length);
+        };
+
+        btn.addEventListener('click', () => {
+            visible += step;
+            apply();
+        });
+
         apply();
     });
+};
 
-    apply();
-});
+initLoadMore();
 
 const menuToggle = document.querySelector('[data-menu-toggle]');
 const mobileMenu = document.querySelector('[data-mobile-menu]');
@@ -308,4 +324,11 @@ document.addEventListener('submit', (event) => {
             button.classList.add('opacity-60', 'pointer-events-none');
         });
     }, 0);
+});
+
+document.addEventListener('sm:results-updated', () => {
+    initStudioMap();
+    initLoadMore();
+    initReveals();
+    document.querySelectorAll('[data-carousel]').forEach(initCarousel);
 });

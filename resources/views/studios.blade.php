@@ -35,17 +35,15 @@
                                 <i class="fa-solid fa-location-crosshairs mt-0.5"></i>
                                 <span>{{ request('lat') ? __('studios.filters.location_active') : __('studios.filters.near_me') }}</span>
                             </button>
-                            @if (request('lat') || request('location'))
-                                <div class="mt-4">
-                                    <div class="flex items-center justify-between">
-                                        <span class="{{ $subLabel }}">{{ __('studios.filters.distance') }}</span>
-                                        <span class="text-xs font-semibold text-prussian-blue" data-distance-value>{{ (int) request('radius', 25) }} km</span>
-                                    </div>
-                                    <input type="range" name="radius" min="1" max="100" value="{{ (int) request('radius', 25) }}" class="mt-2 w-full accent-ruby-red"
-                                           oninput="this.closest('div').querySelector('[data-distance-value]').textContent = this.value + ' km'"
-                                           onchange="this.form.requestSubmit()">
+                            <div data-radius-wrap @class(['mt-4', 'hidden' => ! (request('lat') || request('location'))])>
+                                <div class="flex items-center justify-between">
+                                    <span class="{{ $subLabel }}">{{ __('studios.filters.distance') }}</span>
+                                    <span class="text-xs font-semibold text-prussian-blue" data-distance-value>{{ (int) request('radius', 25) }} km</span>
                                 </div>
-                            @endif
+                                <input type="range" name="radius" min="1" max="100" value="{{ (int) request('radius', 25) }}" class="mt-2 w-full accent-ruby-red"
+                                       oninput="this.closest('div').querySelector('[data-distance-value]').textContent = this.value + ' km'"
+                                       onchange="this.form.requestSubmit()">
+                            </div>
                         </x-filter-group>
 
                         <x-filter-group :title="__('studios.filters.groups.price')">
@@ -137,7 +135,7 @@
                     </form>
                 </aside>
 
-                <div data-reveal style="--reveal-delay: .1s" class="flex-1">
+                <div data-reveal data-results style="--reveal-delay: .1s" class="flex-1 transition-opacity duration-200">
                     <div class="mb-5 flex items-center justify-between gap-4">
                         <p class="text-sm font-medium text-prussian-blue/60">{{ __('studios.results', ['count' => $cards->count()]) }}</p>
                         <label class="flex items-center gap-2 text-sm text-prussian-blue">
@@ -179,15 +177,64 @@
                 </div>
             </div>
 
-            @if (count($mapStudios) > 0)
-                <div data-reveal class="mt-16">
-                    <x-studio-map :studios="$mapStudios" class="aspect-[2/1] rounded-[2.5rem] border border-prussian-blue/10" />
-                </div>
-            @endif
+            <div data-results-map>
+                @if (count($mapStudios) > 0)
+                    <div data-reveal class="mt-16">
+                        <x-studio-map :studios="$mapStudios" class="aspect-[2/1] rounded-[2.5rem] border border-prussian-blue/10" />
+                    </div>
+                @endif
+            </div>
         </div>
     </div>
 
     <script>
+        (() => {
+            const form = document.getElementById('studio-filters');
+            const results = document.querySelector('[data-results]');
+            const mapWrap = document.querySelector('[data-results-map]');
+            const radiusWrap = document.querySelector('[data-radius-wrap]');
+            if (! form || ! results) return;
+
+            let controller = null;
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const params = new URLSearchParams(new FormData(form));
+                [...params.keys()].forEach((key) => {
+                    if (params.getAll(key).every((value) => value === '')) params.delete(key);
+                });
+                const url = form.action + (params.toString() ? '?' + params.toString() : '');
+
+                results.classList.add('opacity-40', 'pointer-events-none');
+                controller?.abort();
+                controller = new AbortController();
+
+                try {
+                    const response = await fetch(url, { signal: controller.signal, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (! response.ok) throw new Error('fetch failed');
+                    const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+                    const newResults = doc.querySelector('[data-results]');
+                    const newMap = doc.querySelector('[data-results-map]');
+                    if (! newResults) throw new Error('missing results');
+
+                    results.innerHTML = newResults.innerHTML;
+                    if (mapWrap && newMap) mapWrap.innerHTML = newMap.innerHTML;
+                    history.replaceState({}, '', url);
+
+                    const hasLocation = form.elements.location.value.trim() !== '' || form.elements.lat.value !== '';
+                    radiusWrap?.classList.toggle('hidden', ! hasLocation);
+
+                    document.dispatchEvent(new CustomEvent('sm:results-updated'));
+                } catch (error) {
+                    if (error.name !== 'AbortError') window.location.href = url;
+                    return;
+                } finally {
+                    results.classList.remove('opacity-40', 'pointer-events-none');
+                }
+            });
+        })();
+
         (() => {
             const button = document.querySelector('[data-near-me]');
             if (! button || ! navigator.geolocation) return;
