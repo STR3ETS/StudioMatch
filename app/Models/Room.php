@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 
 #[Fillable([
     'title', 'description', 'type', 'hourly_rate_cents', 'min_hours', 'capacity',
-    'engineer_included', 'house_rules', 'equipment', 'equipment_extra', 'daws', 'facilities', 'status',
+    'engineer_included', 'engineer_rate_cents', 'house_rules', 'equipment', 'equipment_extra', 'daws', 'facilities', 'status',
     'rejection_reason', 'on_vacation', 'vacation_until',
 ])]
 class Room extends Model
@@ -215,6 +215,11 @@ class Room extends Model
         }
 
         return $result;
+    }
+
+    public function hasOptionalEngineer(): bool
+    {
+        return ! $this->engineer_included && $this->engineer_rate_cents !== null;
     }
 
     public function isBookableFor(CarbonInterface $date, int $startHour, int $endHour): bool

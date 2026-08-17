@@ -99,7 +99,8 @@ class RoomController extends Controller
             'hourly_rate' => ['required', 'numeric', 'min:1', 'max:1000'],
             'min_hours' => ['required', 'integer', 'min:2', 'max:8'],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
-            'engineer_included' => ['nullable', 'boolean'],
+            'engineer_option' => ['required', Rule::in(['none', 'included', 'optional'])],
+            'engineer_rate' => ['nullable', 'numeric', 'min:1', 'max:500', 'required_if:engineer_option,optional'],
             'house_rules' => ['nullable', 'string', 'max:2000'],
             'equipment' => ['nullable', 'array'],
             'equipment.*' => [Rule::in(config('studio.equipment'))],
@@ -121,7 +122,10 @@ class RoomController extends Controller
         $validated['hourly_rate_cents'] = (int) round($validated['hourly_rate'] * 100);
         unset($validated['hourly_rate']);
 
-        $validated['engineer_included'] = $request->boolean('engineer_included');
+        $option = $validated['engineer_option'];
+        $validated['engineer_included'] = $option === 'included';
+        $validated['engineer_rate_cents'] = $option === 'optional' ? (int) round($validated['engineer_rate'] * 100) : null;
+        unset($validated['engineer_option'], $validated['engineer_rate']);
 
         return [$validated, $photos];
     }

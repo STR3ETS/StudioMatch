@@ -110,6 +110,7 @@ class ScopeExtrasTest extends TestCase
             'description' => 'Fijne ruimte met nieuwe fotos.',
             'type' => 'opname',
             'hourly_rate' => 50,
+            'engineer_option' => 'none',
             'min_hours' => 2,
             'capacity' => 6,
         ])->assertRedirect();

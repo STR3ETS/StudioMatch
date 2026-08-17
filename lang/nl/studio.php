@@ -16,10 +16,12 @@ return [
         'capacity' => 'Tot :count personen',
         'min_duration' => 'Vanaf :count uur boekbaar',
         'engineer_yes' => 'Engineer inbegrepen',
+        'engineer_optional' => 'Engineer optioneel (+ :amount per uur)',
         'engineer_no' => 'Zonder engineer',
     ],
 
     'booking' => [
+        'engineer_toggle' => 'Engineer erbij (+ :amount per uur)',
         'from' => 'vanaf',
         'per_hour' => 'per uur',
         'date' => 'Datum',

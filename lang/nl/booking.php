@@ -55,6 +55,7 @@ return [
     ],
 
     'checkout' => [
+        'with_engineer' => 'incl. engineer',
         'address_title' => 'Je factuuradres',
         'address_note' => 'We hebben je adres nodig voor de factuur. Je vult dit maar één keer in.',
         'title' => 'Boeking controleren',

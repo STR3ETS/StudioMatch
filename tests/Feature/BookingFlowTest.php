@@ -67,6 +67,40 @@ class BookingFlowTest extends TestCase
         return Booking::latest('id')->first();
     }
 
+    public function test_booking_with_optional_engineer_adds_surcharge(): void
+    {
+        $this->room->update(['engineer_included' => false, 'engineer_rate_cents' => 1000]);
+
+        $this->actingAs($this->artist)->post('/studios/' . $this->room->slug . '/boeken', [
+            ...$this->slot(),
+            'engineer' => '1',
+            'terms' => '1',
+        ]);
+
+        $booking = Booking::latest('id')->first();
+
+        $this->assertTrue($booking->with_engineer);
+        $this->assertSame(6000, (int) $booking->hourly_rate_cents);
+        $this->assertSame(18000, (int) $booking->rent_cents);
+        $this->assertSame(1620, (int) $booking->service_fee_cents);
+        $this->assertSame(340, (int) $booking->vat_cents);
+        $this->assertSame(19960, (int) $booking->total_cents);
+    }
+
+    public function test_engineer_param_is_ignored_when_room_has_no_optional_engineer(): void
+    {
+        $this->actingAs($this->artist)->post('/studios/' . $this->room->slug . '/boeken', [
+            ...$this->slot(),
+            'engineer' => '1',
+            'terms' => '1',
+        ]);
+
+        $booking = Booking::latest('id')->first();
+
+        $this->assertFalse($booking->with_engineer);
+        $this->assertSame(15000, (int) $booking->rent_cents);
+    }
+
     public function test_guest_is_redirected_to_login_from_checkout(): void
     {
         $this->get('/studios/' . $this->room->slug . '/boeken?date=2030-01-07&start=10&hours=2')

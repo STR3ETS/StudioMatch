@@ -97,7 +97,15 @@
                     <div class="flex flex-wrap gap-x-8 gap-y-3 border-b border-prussian-blue/10 pb-6 text-sm text-prussian-blue">
                         <span class="flex items-center gap-2"><i class="fa-solid fa-users text-ruby-red"></i> {{ __('studio.facts.capacity', ['count' => $room->capacity]) }}</span>
                         <span class="flex items-center gap-2"><i class="fa-solid fa-clock text-ruby-red"></i> {{ __('studio.facts.min_duration', ['count' => $room->min_hours]) }}</span>
-                        <span class="flex items-center gap-2"><i class="fa-solid fa-headphones text-ruby-red"></i> {{ $room->engineer_included ? __('studio.facts.engineer_yes') : __('studio.facts.engineer_no') }}</span>
+                        <span class="flex items-center gap-2"><i class="fa-solid fa-headphones text-ruby-red"></i>
+                            @if ($room->engineer_included)
+                                {{ __('studio.facts.engineer_yes') }}
+                            @elseif ($room->hasOptionalEngineer())
+                                {{ __('studio.facts.engineer_optional', ['amount' => $money($room->engineer_rate_cents / 100)]) }}
+                            @else
+                                {{ __('studio.facts.engineer_no') }}
+                            @endif
+                        </span>
                     </div>
 
                     <section class="border-b border-prussian-blue/10 py-6">
@@ -169,6 +177,7 @@
                     <form method="GET" action="{{ route('studios.book', $room) }}" id="boeken"
                           data-availability='@json($freeHours)'
                           data-price-cents="{{ $room->hourly_rate_cents }}"
+                          data-engineer-rate-cents="{{ $room->hasOptionalEngineer() ? $room->engineer_rate_cents : 0 }}"
                           data-rent-label="{{ __('studio.booking.rent', ['count' => ':count']) }}"
                           data-hours-label="{{ __('studio.booking.hours', ['count' => ':count']) }}"
                           data-min-hours="{{ $room->min_hours }}"
@@ -216,6 +225,15 @@
 
                         <input type="hidden" name="date" value="{{ old('date', request('date')) }}">
                         <input type="hidden" name="start" value="{{ old('start', request('start')) }}">
+
+                        @if ($room->hasOptionalEngineer())
+                            <label class="mt-4 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-prussian-blue/15 px-3 py-2.5 transition hover:border-prussian-blue/30">
+                                <span class="text-sm font-semibold text-prussian-blue">
+                                    <i class="fa-solid fa-headphones fa-sm mr-1.5 text-prussian-blue/40"></i>{{ __('studio.booking.engineer_toggle', ['amount' => $money($room->engineer_rate_cents / 100)]) }}
+                                </span>
+                                <input type="checkbox" name="engineer" value="1" data-engineer-toggle class="h-4 w-4 shrink-0 rounded border-prussian-blue/30 accent-ruby-red" @checked(request('engineer'))>
+                            </label>
+                        @endif
 
                         <div class="mt-5 flex justify-between border-t border-prussian-blue/10 pt-4 font-bold text-prussian-blue">
                             <span data-rent-text>{{ __('studio.booking.rent', ['count' => $hours]) }}</span>
@@ -287,6 +305,9 @@
             const totalEl = form.querySelector('[data-total]');
             const rentText = form.querySelector('[data-rent-text]');
             const submit = form.querySelector('[data-book-submit]');
+            const engineerToggle = form.querySelector('[data-engineer-toggle]');
+            const ENGINEER_RATE = parseInt(form.dataset.engineerRateCents || '0', 10);
+            const hourlyPrice = () => PRICE + (engineerToggle?.checked ? ENGINEER_RATE : 0);
 
             const keys = Object.keys(AVAIL);
             const parseKey = (k) => new Date(k + 'T00:00:00');
@@ -369,7 +390,7 @@
             const sync = () => {
                 dateInput.value = selectedDate ?? '';
                 startInput.value = selectedStart ?? '';
-                totalEl.textContent = money.format(PRICE * duration() / 100);
+                totalEl.textContent = money.format(hourlyPrice() * duration() / 100);
                 rentText.textContent = RENT_LABEL.replace(':count', duration());
                 submit.disabled = ! (selectedDate && selectedStart !== null);
             };
@@ -407,6 +428,7 @@
 
             hoursMinus.addEventListener('click', () => setDuration(duration() - 1));
             hoursPlus.addEventListener('click', () => setDuration(duration() + 1));
+            engineerToggle?.addEventListener('change', sync);
 
             prevBtn.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); renderCalendar(); });
             nextBtn.addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); renderCalendar(); });

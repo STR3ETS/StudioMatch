@@ -55,6 +55,7 @@ return [
     ],
 
     'checkout' => [
+        'with_engineer' => 'incl. engineer',
         'address_title' => 'Your billing address',
         'address_note' => 'We need your address for the invoice. You only fill this in once.',
         'title' => 'Review your booking',

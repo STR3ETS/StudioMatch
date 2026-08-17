@@ -16,10 +16,12 @@ return [
         'capacity' => 'Up to :count people',
         'min_duration' => 'From :count hours',
         'engineer_yes' => 'Engineer included',
+        'engineer_optional' => 'Engineer optional (+ :amount per hour)',
         'engineer_no' => 'Without engineer',
     ],
 
     'booking' => [
+        'engineer_toggle' => 'Add engineer (+ :amount per hour)',
         'from' => 'from',
         'per_hour' => 'per hour',
         'date' => 'Date',

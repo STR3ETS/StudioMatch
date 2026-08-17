@@ -216,6 +216,7 @@ class HostAvailabilityTest extends TestCase
             'description' => 'Tweede ruimte.',
             'type' => 'mix_master',
             'hourly_rate' => '30',
+            'engineer_option' => 'none',
             'min_hours' => 2,
             'capacity' => 4,
             'photos' => collect(range(1, 5))->map(fn ($i) => \Illuminate\Http\UploadedFile::fake()->image("room{$i}.jpg"))->all(),

@@ -28,12 +28,15 @@ class BookingController extends Controller
 
         [$date, $startHour, $endHour] = $this->validateSlot($request, $room);
 
+        $withEngineer = $room->hasOptionalEngineer() && $request->boolean('engineer');
+
         return view('book.checkout', [
             'room' => $room->load(['studio', 'photos']),
             'date' => $date,
             'startHour' => $startHour,
             'endHour' => $endHour,
-            'prices' => $this->prices($room, $endHour - $startHour),
+            'withEngineer' => $withEngineer,
+            'prices' => $this->prices($room, $endHour - $startHour, $withEngineer),
         ]);
     }
 
@@ -56,9 +59,10 @@ class BookingController extends Controller
             $user->update($address);
         }
 
-        $prices = $this->prices($room, $endHour - $startHour);
+        $withEngineer = $room->hasOptionalEngineer() && $request->boolean('engineer');
+        $prices = $this->prices($room, $endHour - $startHour, $withEngineer);
 
-        $booking = DB::transaction(function () use ($request, $room, $date, $startHour, $endHour, $prices) {
+        $booking = DB::transaction(function () use ($request, $room, $date, $startHour, $endHour, $withEngineer, $prices) {
             $taken = $room->bookings()
                 ->whereDate('date', $date)
                 ->where('start_hour', '<', $endHour)
@@ -76,6 +80,7 @@ class BookingController extends Controller
                 'date' => $date,
                 'start_hour' => $startHour,
                 'end_hour' => $endHour,
+                'with_engineer' => $withEngineer,
                 'status' => BookingStatus::PendingPayment,
                 'expires_at' => now()->addMinutes((int) config('studio.checkout_hold_minutes')),
                 'terms_accepted_at' => now(),
@@ -302,14 +307,15 @@ class BookingController extends Controller
         return [$date, $startHour, $endHour];
     }
 
-    private function prices(Room $room, int $hours): array
+    private function prices(Room $room, int $hours, bool $withEngineer = false): array
     {
-        $rent = $room->hourly_rate_cents * $hours;
+        $hourly = $room->hourly_rate_cents + ($withEngineer ? (int) $room->engineer_rate_cents : 0);
+        $rent = $hourly * $hours;
         $fee = (int) round($rent * config('studio.service_fee_percent') / 100);
         $vat = (int) round($fee * config('studio.vat_percent') / 100);
 
         return [
-            'hourly_rate_cents' => $room->hourly_rate_cents,
+            'hourly_rate_cents' => $hourly,
             'rent_cents' => $rent,
             'service_fee_cents' => $fee,
             'vat_cents' => $vat,

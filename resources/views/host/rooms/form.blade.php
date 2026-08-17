@@ -110,12 +110,45 @@
                 </div>
             </div>
 
-            <label class="{{ $check }} mt-5">
-                <input type="checkbox" name="engineer_included" value="1" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(old('engineer_included', $room->engineer_included))>
-                {{ __('host.rooms.fields.engineer') }}
-            </label>
+            @php
+                $engineerOption = old('engineer_option', $room->engineer_included ? 'included' : ($room->engineer_rate_cents !== null ? 'optional' : 'none'));
+            @endphp
+            <div class="mt-5">
+                <span class="{{ $label }}">{{ __('host.rooms.fields.engineer_option') }}</span>
+                <div class="mt-2 flex flex-wrap gap-2" data-engineer-options>
+                    @foreach (['none', 'included', 'optional'] as $option)
+                        <label>
+                            <input type="radio" name="engineer_option" value="{{ $option }}" class="peer sr-only" @checked($engineerOption === $option)>
+                            <span class="inline-flex cursor-pointer items-center rounded-full border border-prussian-blue/15 px-4 py-2 text-sm font-semibold text-prussian-blue/70 transition peer-checked:border-ruby-red peer-checked:bg-ruby-red/5 peer-checked:text-prussian-blue">
+                                {{ __('host.rooms.fields.engineer_' . $option) }}
+                            </span>
+                        </label>
+                    @endforeach
+                </div>
+                <x-input-error field="engineer_option" />
+                <div data-engineer-rate class="{{ $engineerOption === 'optional' ? 'mt-3' : 'mt-3 hidden' }}">
+                    <label for="engineer_rate" class="{{ $label }}">{{ __('host.rooms.fields.engineer_rate') }}</label>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-sm text-prussian-blue/50">&euro;</span>
+                        <input id="engineer_rate" type="number" name="engineer_rate" min="1" max="500" step="0.50" value="{{ old('engineer_rate', $room->engineer_rate_cents !== null ? $room->engineer_rate_cents / 100 : '') }}" class="{{ $field }} !mt-0 max-w-40">
+                        <span class="text-sm text-prussian-blue/50">{{ __('host.rooms.per_hour') }}</span>
+                    </div>
+                    <x-input-error field="engineer_rate" />
+                </div>
+            </div>
 
             <x-info-note class="mt-5">{{ __('host.rooms.pricing_note') }}</x-info-note>
+
+            <script>
+                (() => {
+                    const options = document.querySelector('[data-engineer-options]');
+                    const rate = document.querySelector('[data-engineer-rate]');
+                    if (! options || ! rate) return;
+                    options.querySelectorAll('input[type="radio"]').forEach((radio) => {
+                        radio.addEventListener('change', () => rate.classList.toggle('hidden', radio.value !== 'optional'));
+                    });
+                })();
+            </script>
         </div>
 
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">

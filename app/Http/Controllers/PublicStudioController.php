@@ -114,7 +114,9 @@ class PublicStudioController extends Controller
 
         $engineer = $filters['engineer'] ?? [];
         if (count($engineer) === 1) {
-            $query->where('engineer_included', (bool) $engineer[array_key_first($engineer)]);
+            (bool) $engineer[array_key_first($engineer)]
+                ? $query->where(fn ($query) => $query->where('engineer_included', true)->orWhereNotNull('engineer_rate_cents'))
+                : $query->where('engineer_included', false);
         }
 
         foreach ($filters['equipment'] ?? [] as $item) {

@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 #[Fillable([
-    'room_id', 'user_id', 'date', 'start_hour', 'end_hour',
+    'room_id', 'user_id', 'date', 'start_hour', 'end_hour', 'with_engineer',
     'hourly_rate_cents', 'rent_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_studio_response', 'dispute_photos', 'resolution_note', 'reminder_sent_at',
@@ -28,6 +28,7 @@ class Booking extends Model
     {
         return [
             'date' => 'date',
+            'with_engineer' => 'boolean',
             'status' => BookingStatus::class,
             'expires_at' => 'datetime',
             'terms_accepted_at' => 'datetime',

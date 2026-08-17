@@ -87,7 +87,9 @@
                 <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-prussian-blue">
                     <span>{{ __('host.rooms.capacity_short', ['count' => $room->capacity]) }}</span>
                     @if ($room->engineer_included)
-                        <span class="text-prussian-blue/60"><i class="fa-solid fa-headphones fa-xs mr-1.5 text-prussian-blue/40"></i>{{ __('host.rooms.fields.engineer') }}</span>
+                        <span class="text-prussian-blue/60"><i class="fa-solid fa-headphones fa-xs mr-1.5 text-prussian-blue/40"></i>{{ __('host.rooms.fields.engineer_included') }}</span>
+                    @elseif ($room->hasOptionalEngineer())
+                        <span class="text-prussian-blue/60"><i class="fa-solid fa-headphones fa-xs mr-1.5 text-prussian-blue/40"></i>{{ __('host.rooms.fields.engineer_optional') }} (&euro; {{ number_format($room->engineer_rate_cents / 100, 2, ',', '.') }})</span>
                     @endif
                 </p>
             </div>

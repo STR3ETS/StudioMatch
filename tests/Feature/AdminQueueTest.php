@@ -122,6 +122,7 @@ class AdminQueueTest extends TestCase
             'description' => 'Een veel uitgebreidere omschrijving van de ruimte.',
             'type' => 'opname',
             'hourly_rate' => '45',
+            'engineer_option' => 'none',
             'min_hours' => 2,
             'capacity' => 6,
         ]);

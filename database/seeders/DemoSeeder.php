@@ -81,8 +81,8 @@ class DemoSeeder extends Seeder
                     'description' => 'Opnamestudio op de NDSM-werf met uitzicht over het IJ.'],
             ]],
             [$demi, ['name' => 'Havenklank', 'phone' => '010 7654321', 'street' => 'Maashaven Oostzijde 155', 'postal_code' => '3072 HS', 'city' => 'Rotterdam', 'lat' => 51.8990, 'lng' => 4.4930], [
-                ['key' => 'noord', 'title' => 'Studio Noord', 'type' => 'opname', 'rate' => 3500, 'capacity' => 5, 'engineer' => false, 'status' => 'live',
-                    'description' => 'Sfeervolle opnamestudio in een oud havenpakhuis. Warme akoestiek en veel analoge apparatuur.'],
+                ['key' => 'noord', 'title' => 'Studio Noord', 'type' => 'opname', 'rate' => 3500, 'capacity' => 5, 'engineer' => false, 'engineer_rate' => 1500, 'status' => 'live',
+                    'description' => 'Sfeervolle opnamestudio in een oud havenpakhuis. Warme akoestiek en veel analoge apparatuur. Op verzoek boek je een ervaren engineer bij je sessie.'],
                 ['title' => 'Vocal Booth', 'type' => 'opname', 'rate' => 2500, 'capacity' => 2, 'engineer' => false, 'status' => 'live', 'vacation' => true,
                     'description' => 'Compacte booth voor vocals en voice-overs. Snel geboekt, snel klaar.'],
             ]],
@@ -93,8 +93,8 @@ class DemoSeeder extends Seeder
                     'description' => 'Hoogwaardige masteringstudio met geoptimaliseerde akoestiek en gekalibreerde monitoring.'],
             ]],
             [$jesse, ['name' => 'Domstad Studio', 'phone' => '030 2345678', 'street' => 'Oudegracht 187', 'postal_code' => '3511 NE', 'city' => 'Utrecht', 'lat' => 52.0894, 'lng' => 5.1213], [
-                ['key' => 'domstad', 'title' => 'De Werfkelder', 'type' => 'opname', 'rate' => 3200, 'capacity' => 4, 'engineer' => false, 'status' => 'live',
-                    'description' => 'Opnamestudio in een werfkelder aan de Oudegracht. Natuurlijke demping en een unieke sfeer.'],
+                ['key' => 'domstad', 'title' => 'De Werfkelder', 'type' => 'opname', 'rate' => 3200, 'capacity' => 4, 'engineer' => false, 'engineer_rate' => 1000, 'status' => 'live',
+                    'description' => 'Opnamestudio in een werfkelder aan de Oudegracht. Natuurlijke demping en een unieke sfeer. Een engineer boek je optioneel bij.'],
             ]],
             [$jesse, ['name' => 'Stadspark Sessies', 'phone' => '050 1122334', 'street' => 'Paterswoldseweg 43', 'postal_code' => '9726 BB', 'city' => 'Groningen', 'lat' => 53.2110, 'lng' => 6.5570], [
                 ['title' => 'Groene Kamer', 'type' => 'opname', 'rate' => 2800, 'capacity' => 5, 'engineer' => false, 'status' => 'live',
@@ -133,6 +133,7 @@ class DemoSeeder extends Seeder
                     'min_hours' => 2,
                     'capacity' => $roomData['capacity'],
                     'engineer_included' => $roomData['engineer'],
+                    'engineer_rate_cents' => $roomData['engineer_rate'] ?? null,
                     'house_rules' => "Maximaal {$roomData['capacity']} personen in de studio\nNiet roken in de opnameruimte\nEigen apparatuur in overleg",
                     'equipment' => self::EQUIPMENT_SETS[$index % 4],
                     'equipment_extra' => $index % 2 === 0 ? 'Neumann U87, SSL-console' : null,

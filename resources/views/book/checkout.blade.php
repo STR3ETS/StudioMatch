@@ -20,6 +20,9 @@
                 <input type="hidden" name="date" value="{{ request('date') }}">
                 <input type="hidden" name="start" value="{{ request('start') }}">
                 <input type="hidden" name="hours" value="{{ request('hours') }}">
+                @if ($withEngineer)
+                    <input type="hidden" name="engineer" value="1">
+                @endif
 
                 <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-5 sm:flex-nowrap">
                     @if ($room->photos->isNotEmpty())
@@ -39,7 +42,7 @@
                     <h2 class="font-bold text-prussian-blue">{{ __('booking.checkout.price_title') }}</h2>
                     <div class="mt-4 space-y-3 text-sm">
                         <div class="flex justify-between text-prussian-blue/70">
-                            <span>{{ __('studio.booking.rent', ['count' => $endHour - $startHour]) }}</span>
+                            <span>{{ __('studio.booking.rent', ['count' => $endHour - $startHour]) }}{{ $withEngineer ? ' ' . __('booking.checkout.with_engineer') : '' }}</span>
                             <span>{{ $money($prices['rent_cents']) }}</span>
                         </div>
                         <div class="flex justify-between text-prussian-blue/70">

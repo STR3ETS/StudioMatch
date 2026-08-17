@@ -135,6 +135,7 @@ class HostDashboardTest extends TestCase
             'description' => 'Ruime live room met akoestische behandeling.',
             'type' => 'opname',
             'hourly_rate' => '45.50',
+            'engineer_option' => 'none',
             'min_hours' => 2,
             'capacity' => 6,
             'photos' => collect(range(1, 5))->map(fn ($i) => UploadedFile::fake()->image("room{$i}.jpg", 1200, 800))->all(),
@@ -206,6 +207,7 @@ class HostDashboardTest extends TestCase
             'description' => 'Ruime live room.',
             'type' => 'opname',
             'hourly_rate' => '45',
+            'engineer_option' => 'none',
             'min_hours' => 2,
             'capacity' => 6,
             'photos' => collect(range(1, 4))->map(fn ($i) => UploadedFile::fake()->image("room{$i}.jpg"))->all(),
@@ -240,6 +242,7 @@ class HostDashboardTest extends TestCase
             'description' => 'Een fijne ruimte.',
             'type' => 'opname',
             'hourly_rate' => '45',
+            'engineer_option' => 'none',
             'min_hours' => 2,
             'capacity' => 6,
         ]);
