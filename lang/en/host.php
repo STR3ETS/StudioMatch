@@ -78,6 +78,7 @@ return [
         'delete_confirm' => 'Are you sure you want to delete this studio? All rooms of this studio will be deleted too.',
         'action_needed' => 'Action needed',
         'action_needed_hint' => '{1}1 room was rejected and needs adjusting.|[2,*]:count rooms were rejected and need adjusting.',
+        'address_invalid' => 'We cannot find this address. Check the street, house number and postal code.',
         'empty_title' => 'No studios yet',
         'empty_text' => 'Add your first studio. After that you can create rooms within it.',
         'rooms_title' => 'Rooms of this studio',
@@ -96,6 +97,29 @@ return [
             'postal_code' => 'Postal code',
             'city' => 'City',
         ],
+    ],
+
+    'wizard' => [
+        'title' => 'New studio + first room',
+        'subtitle' => 'We ask everything step by step. At the end your studio and first room go straight into review.',
+        'progress' => 'Step :current of :total: :title',
+        'steps' => [
+            'studio' => 'Your studio',
+            'room' => 'Your first room',
+            'pricing' => 'Price & capacity',
+            'equipment' => 'Equipment & amenities',
+            'photos' => 'Photos',
+        ],
+        'address_note' => 'We verify the address automatically and place your studio on the map.',
+        'room_note' => 'Every studio has at least one bookable room. You can add more rooms later.',
+        'equipment_note' => 'Tick what is available. The more complete, the easier artists find you through the filters.',
+        'back' => 'Back',
+        'next' => 'Next',
+        'submit' => 'Submit studio and room',
+        'errors_intro' => 'Something still went wrong. Walk through the steps, the fields with a message are highlighted.',
+        'profile_saved_next' => 'Your business details are set. Next step: create your first studio and room.',
+        'done' => 'Your studio and first room are in review. We will email you once the room is live.',
+        'done_stripe_next' => 'Your studio and first room are in review. Final step: connect Stripe so you can receive payouts.',
     ],
 
     'types' => [

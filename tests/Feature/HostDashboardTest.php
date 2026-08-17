@@ -55,7 +55,7 @@ class HostDashboardTest extends TestCase
             'vat_number' => 'NL123456789B01',
         ]);
 
-        $response->assertRedirect(route('host.profile.edit'));
+        $response->assertRedirect(route('host.studios.create'));
         $this->assertDatabaseHas('host_profiles', [
             'user_id' => $host->id,
             'name' => 'Redlight Recordings B.V.',
@@ -79,7 +79,11 @@ class HostDashboardTest extends TestCase
 
     public function test_host_can_create_multiple_studios_including_same_address(): void
     {
-        Http::fake();
+        Http::fake([
+            'api.pdok.nl/*' => Http::response([
+                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)']]],
+            ]),
+        ]);
         $host = $this->host();
 
         foreach (['Redlight A', 'Redlight B'] as $name) {

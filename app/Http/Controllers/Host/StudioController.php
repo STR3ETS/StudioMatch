@@ -3,15 +3,20 @@
 namespace App\Http\Controllers\Host;
 
 use App\Enums\RoomStatus;
+use App\Http\Controllers\Concerns\HandlesRoomForm;
 use App\Http\Controllers\Controller;
+use App\Models\Room;
 use App\Models\Studio;
 use App\Support\Geocoder;
+use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class StudioController extends Controller
 {
+    use HandlesRoomForm;
 
     public function index(Request $request): View
     {
@@ -28,19 +33,37 @@ class StudioController extends Controller
 
     public function create(): View
     {
-        return view('host.studios.form', ['studio' => new Studio]);
+        return view('host.studios.wizard', ['studio' => new Studio, 'room' => new Room]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $validated = $this->validateStudio($request);
 
-        $studio = $request->user()->studios()->create([
-            ...$validated,
-            ...(Geocoder::geocode($validated['street'], $validated['postal_code'], $validated['city']) ?? []),
-        ]);
+        $coords = $this->verifiedCoords($validated);
 
-        return redirect()->route('host.studios.show', $studio)->with('status', __('host.studios.saved'));
+        $withRoom = $request->filled('title');
+
+        if ($withRoom) {
+            [$roomData, $photos] = $this->validateRoom($request, isCreate: true);
+        }
+
+        $studio = $request->user()->studios()->create([...$validated, ...($coords ?? [])]);
+
+        if (! $withRoom) {
+            return redirect()->route('host.studios.show', $studio)->with('status', __('host.studios.saved'));
+        }
+
+        $room = $studio->rooms()->create([...$roomData, 'status' => RoomStatus::InReview]);
+        $room->seedDefaultHours();
+        $this->storePhotos($room, $photos);
+        $this->notifySubmitted($request, $room);
+
+        if (StripeService::enabled() && ! $request->user()->hostProfile?->stripe_payouts_enabled) {
+            return redirect()->route('host.stripe.show')->with('status', __('host.wizard.done_stripe_next'));
+        }
+
+        return redirect()->route('dashboard.host')->with('status', __('host.wizard.done'));
     }
 
     public function show(Request $request, Studio $studio): View
@@ -70,7 +93,7 @@ class StudioController extends Controller
             || $validated['city'] !== $studio->city;
 
         if ($addressChanged || $studio->lat === null) {
-            $coords = Geocoder::geocode($validated['street'], $validated['postal_code'], $validated['city']);
+            $coords = $this->verifiedCoords($validated);
             $validated['lat'] = $coords['lat'] ?? null;
             $validated['lng'] = $coords['lng'] ?? null;
         }
@@ -99,6 +122,17 @@ class StudioController extends Controller
             'postal_code' => ['required', 'string', 'max:10'],
             'city' => ['required', 'string', 'max:100'],
         ]);
+    }
+
+    private function verifiedCoords(array $validated): ?array
+    {
+        $result = Geocoder::verify($validated['street'], $validated['postal_code'], $validated['city']);
+
+        if ($result === false) {
+            throw ValidationException::withMessages(['street' => __('host.studios.address_invalid')]);
+        }
+
+        return $result;
     }
 
     private function authorizeStudio(Request $request, Studio $studio): void

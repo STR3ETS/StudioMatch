@@ -78,6 +78,7 @@ return [
         'delete_confirm' => 'Weet je zeker dat je deze studio wilt verwijderen? Alle ruimtes van deze studio worden ook verwijderd.',
         'action_needed' => 'Actie nodig',
         'action_needed_hint' => '{1}1 ruimte is afgekeurd en heeft aanpassing nodig.|[2,*]:count ruimtes zijn afgekeurd en hebben aanpassing nodig.',
+        'address_invalid' => 'We kunnen dit adres niet vinden. Controleer de straat, het huisnummer en de postcode.',
         'empty_title' => "Nog geen studio's",
         'empty_text' => 'Voeg je eerste studio toe. Daarna kun je binnen die studio ruimtes aanmaken.',
         'rooms_title' => 'Ruimtes van deze studio',
@@ -96,6 +97,29 @@ return [
             'postal_code' => 'Postcode',
             'city' => 'Plaats',
         ],
+    ],
+
+    'wizard' => [
+        'title' => 'Nieuwe studio + eerste ruimte',
+        'subtitle' => 'We vragen alles stap voor stap uit. Aan het einde staan je studio en je eerste ruimte direct in review.',
+        'progress' => 'Stap :current van :total: :title',
+        'steps' => [
+            'studio' => 'Je studio',
+            'room' => 'Je eerste ruimte',
+            'pricing' => 'Prijs & capaciteit',
+            'equipment' => 'Apparatuur & voorzieningen',
+            'photos' => "Foto's",
+        ],
+        'address_note' => 'We controleren het adres automatisch en zetten je studio op de kaart.',
+        'room_note' => 'Elke studio heeft minimaal één boekbare ruimte. Meer ruimtes voeg je later toe.',
+        'equipment_note' => 'Vink aan wat aanwezig is. Hoe completer, hoe beter artiesten je kunnen vinden via de filters.',
+        'back' => 'Terug',
+        'next' => 'Volgende',
+        'submit' => 'Studio en ruimte indienen',
+        'errors_intro' => 'Er ging nog iets mis. Loop de stappen na, de velden met een melding zijn gemarkeerd.',
+        'profile_saved_next' => 'Je bedrijfsgegevens staan klaar. Volgende stap: maak je eerste studio en ruimte aan.',
+        'done' => 'Je studio en eerste ruimte staan in review. We mailen je zodra de ruimte live staat.',
+        'done_stripe_next' => 'Je studio en eerste ruimte staan in review. Laatste stap: koppel Stripe zodat je uitbetalingen kunt ontvangen.',
     ],
 
     'types' => [

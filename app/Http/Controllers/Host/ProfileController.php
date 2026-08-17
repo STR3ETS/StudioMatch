@@ -33,6 +33,10 @@ class ProfileController extends Controller
 
         $request->user()->hostProfile()->updateOrCreate([], $validated);
 
+        if ($request->user()->studios()->doesntExist()) {
+            return redirect()->route('host.studios.create')->with('status', __('host.wizard.profile_saved_next'));
+        }
+
         return redirect()->route('host.profile.edit')->with('status', __('host.profile.saved'));
     }
 }

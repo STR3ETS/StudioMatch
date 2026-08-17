@@ -145,4 +145,77 @@ class FeedbackFixesTest extends TestCase
         $this->assertSame('en', $this->artist->fresh()->locale);
         $this->assertSame('en', $this->artist->fresh()->preferredLocale());
     }
+
+    public function test_fake_address_is_rejected_when_creating_a_studio(): void
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'api.pdok.nl/*' => \Illuminate\Support\Facades\Http::response(['response' => ['docs' => []]]),
+        ]);
+
+        $this->actingAs($this->host)->post('/dashboard/verhuurder/studios', [
+            'name' => 'Nepstudio',
+            'street' => 'Verzonnenstraat 999',
+            'postal_code' => '0000 XX',
+            'city' => 'Nergenshuizen',
+        ])->assertSessionHasErrors('street');
+
+        $this->assertSame(1, $this->host->studios()->count());
+    }
+
+    public function test_wizard_creates_studio_with_first_room_in_one_go(): void
+    {
+        Notification::fake();
+        \Illuminate\Support\Facades\Storage::fake('public');
+        \Illuminate\Support\Facades\Http::fake([
+            'api.pdok.nl/*' => \Illuminate\Support\Facades\Http::response([
+                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)']]],
+            ]),
+        ]);
+
+        $this->actingAs($this->host)->post('/dashboard/verhuurder/studios', [
+            'name' => 'Nieuwe Studio',
+            'street' => 'Prinsengracht 263',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
+            'title' => 'Wizard Room',
+            'description' => 'Aangemaakt via de wizard met alles erop en eraan.',
+            'type' => 'opname',
+            'hourly_rate' => '40',
+            'min_hours' => 2,
+            'capacity' => 4,
+            'engineer_option' => 'optional',
+            'engineer_rate' => '12.50',
+            'photos' => collect(range(1, 5))->map(fn ($i) => \Illuminate\Http\UploadedFile::fake()->image("foto{$i}.jpg"))->all(),
+        ])->assertRedirect(route('dashboard.host'));
+
+        $studio = $this->host->studios()->where('name', 'Nieuwe Studio')->first();
+        $this->assertNotNull($studio);
+        $this->assertEqualsWithDelta(52.3752, $studio->lat, 0.0001);
+
+        $room = $studio->rooms()->first();
+        $this->assertSame('Wizard Room', $room->title);
+        $this->assertSame('in_review', $room->status->value);
+        $this->assertSame(1250, $room->engineer_rate_cents);
+        $this->assertCount(5, $room->photos);
+        Notification::assertSentTo($this->host, \App\Notifications\RoomSubmitted::class);
+    }
+
+    public function test_profile_save_guides_host_to_studio_creation(): void
+    {
+        $freshHost = User::factory()->create(['role' => 'verhuurder']);
+
+        $this->actingAs($freshHost)->put('/dashboard/verhuurder/bedrijfsgegevens', [
+            'name' => 'Nieuwe Verhuurder',
+            'phone' => '0612345678',
+            'owner_type' => 'particulier',
+            'btw_plichtig' => '0',
+        ])->assertRedirect(route('host.studios.create'));
+
+        $this->actingAs($this->host)->put('/dashboard/verhuurder/bedrijfsgegevens', [
+            'name' => 'Bestaande Verhuurder',
+            'phone' => '0612345678',
+            'owner_type' => 'particulier',
+            'btw_plichtig' => '0',
+        ])->assertRedirect(route('host.profile.edit'));
+    }
 }
