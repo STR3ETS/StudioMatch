@@ -131,7 +131,7 @@ class FeedbackFixesTest extends TestCase
             'role' => 'artiest',
             'name' => 'New Artist',
             'email' => 'new-artist@example.com',
-            'password' => 'wachtwoord123',
+            'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
         ])->assertRedirect();
 

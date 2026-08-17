@@ -50,6 +50,8 @@ return [
     ],
 
     'checkout' => [
+        'address_title' => 'Je factuuradres',
+        'address_note' => 'We hebben je adres nodig voor de factuur. Je vult dit maar één keer in.',
         'title' => 'Boeking controleren',
         'subtitle' => 'Controleer je sessie en ga akkoord met de huisregels en voorwaarden. Daarna reserveren we het tijdslot voor je.',
         'price_title' => 'Prijsopbouw',

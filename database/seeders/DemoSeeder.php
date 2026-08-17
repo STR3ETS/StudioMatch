@@ -195,6 +195,9 @@ class DemoSeeder extends Seeder
 
         $this->seedBooking($rooms['domstad'], $artist, today()->addDay(), 20, 22, BookingStatus::Confirmed);
 
+        User::query()->update(['email_verified_at' => now()]);
+        User::where('role', 'artiest')->update(['street' => 'Keizersgracht 12', 'postal_code' => '1015 CN', 'city' => 'Amsterdam']);
+
         $this->command->info('Demodata aangemaakt: 3 verhuurders, 10 studio\'s, 13 ruimtes en 18 boekingen in alle statussen, inclusief facturen, creditnota\'s en uitbetalingen.');
     }
 

@@ -28,7 +28,7 @@ class BookingFlowTest extends TestCase
     {
         parent::setUp();
 
-        $this->artist = User::factory()->create(['role' => 'artiest']);
+        $this->artist = User::factory()->create(['role' => 'artiest', 'street' => 'Keizersgracht 12', 'postal_code' => '1015 CN', 'city' => 'Amsterdam']);
         $this->host = User::factory()->create(['role' => 'verhuurder']);
 
         $studio = $this->host->studios()->create([
@@ -128,7 +128,7 @@ class BookingFlowTest extends TestCase
         $booking = $this->bookingViaFlow();
         $booking->update(['expires_at' => now()->subMinute()]);
 
-        $other = User::factory()->create(['role' => 'artiest']);
+        $other = User::factory()->create(['role' => 'artiest', 'street' => 'Teststraat 1', 'postal_code' => '1234 AB', 'city' => 'Utrecht']);
 
         $this->actingAs($other)->post('/studios/' . $this->room->slug . '/boeken', [
             ...$this->slot(),

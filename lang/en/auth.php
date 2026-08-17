@@ -14,6 +14,7 @@ return [
         'email' => 'Email address',
         'email_placeholder' => 'you@example.com',
         'password' => 'Password',
+        'password_confirmation' => 'Repeat password',
         'password_placeholder' => '••••••••',
     ],
 
@@ -35,7 +36,7 @@ return [
         'role_artist_sub' => 'I want to book studios',
         'role_host' => 'Host',
         'role_host_sub' => 'I want to rent out my studio',
-        'password_hint' => 'At least 8 characters',
+        'password_hint' => 'At least 8 characters, with an uppercase letter, lowercase letter and number',
         'terms' => 'I agree to the :terms and the :privacy',
         'terms_link' => 'terms & conditions',
         'privacy_link' => 'privacy statement',
@@ -60,6 +61,13 @@ return [
     ],
 
     'failed' => 'These credentials do not match our records.',
+    'verify' => [
+        'banner' => 'Please confirm your email address via the email we sent you.',
+        'resend' => 'Resend email',
+        'sent' => 'The confirmation email has been resent.',
+        'done' => 'Your email address has been confirmed.',
+    ],
+
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 ];

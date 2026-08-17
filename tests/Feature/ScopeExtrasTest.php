@@ -127,7 +127,7 @@ class ScopeExtrasTest extends TestCase
             'role' => 'verhuurder',
             'name' => 'Nieuwe Verhuurder',
             'email' => 'nieuw@voorbeeld.nl',
-            'password' => 'wachtwoord123',
+            'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
         ])->assertRedirect();
 
@@ -142,7 +142,7 @@ class ScopeExtrasTest extends TestCase
             'role' => 'artiest',
             'name' => 'Nieuwe Artiest',
             'email' => 'artiest-nieuw@voorbeeld.nl',
-            'password' => 'wachtwoord123',
+            'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
         ])->assertRedirect();
 

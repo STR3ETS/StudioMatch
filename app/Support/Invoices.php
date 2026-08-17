@@ -103,7 +103,12 @@ class Invoices
             ...$data,
             'number' => $numbers[$type],
             'date' => ($booking->requested_at ?? $booking->created_at)->format('d-m-Y'),
-            'buyer' => [$booking->user->name, $booking->user->email],
+            'buyer' => array_filter([
+                $booking->user->name,
+                $booking->user->street,
+                trim(($booking->user->postal_code ?? '') . ' ' . ($booking->user->city ?? '')) ?: null,
+                $booking->user->email,
+            ]),
         ];
     }
 

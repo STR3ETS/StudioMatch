@@ -50,6 +50,8 @@ return [
     ],
 
     'checkout' => [
+        'address_title' => 'Your billing address',
+        'address_note' => 'We need your address for the invoice. You only fill this in once.',
         'title' => 'Review your booking',
         'subtitle' => 'Check your session and agree to the house rules and terms. After that we reserve the time slot for you.',
         'price_title' => 'Price breakdown',

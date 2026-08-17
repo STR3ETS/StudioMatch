@@ -45,6 +45,17 @@ class BookingController extends Controller
 
         $request->validate(['terms' => ['accepted']]);
 
+        $user = $request->user();
+        if ($user->street === null || $user->postal_code === null || $user->city === null) {
+            $address = $request->validate([
+                'street' => ['required', 'string', 'max:255'],
+                'postal_code' => ['required', 'string', 'max:10'],
+                'city' => ['required', 'string', 'max:100'],
+            ]);
+
+            $user->update($address);
+        }
+
         $prices = $this->prices($room, $endHour - $startHour);
 
         $booking = DB::transaction(function () use ($request, $room, $date, $startHour, $endHour, $prices) {

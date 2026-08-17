@@ -16,7 +16,7 @@ class AuthTest extends TestCase
             'role' => 'artiest',
             'name' => 'Test Artiest',
             'email' => 'artiest@example.com',
-            'password' => 'wachtwoord123',
+            'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
         ]);
 
@@ -31,7 +31,7 @@ class AuthTest extends TestCase
             'role' => 'verhuurder',
             'name' => 'Test Verhuurder',
             'email' => 'verhuurder@example.com',
-            'password' => 'wachtwoord123',
+            'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
         ]);
 
@@ -46,7 +46,7 @@ class AuthTest extends TestCase
             'role' => 'admin',
             'name' => 'Test',
             'email' => 'test@example.com',
-            'password' => 'wachtwoord123',
+            'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
         ]);
 
         $response->assertSessionHasErrors(['role', 'terms']);

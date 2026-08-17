@@ -26,6 +26,26 @@
                     <input id="email" type="email" name="email" value="{{ old('email', $user->email) }}" class="{{ $field }}" required>
                     <x-input-error field="email" />
                 </div>
+                @if ($user->isArtist())
+                    <div>
+                        <label for="street" class="{{ $label }}">{{ __('account.profile.street') }}</label>
+                        <input id="street" type="text" name="street" value="{{ old('street', $user->street) }}" class="{{ $field }}">
+                        <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('account.profile.address_hint') }}</p>
+                        <x-input-error field="street" />
+                    </div>
+                    <div class="grid gap-5 sm:grid-cols-2">
+                        <div>
+                            <label for="postal_code" class="{{ $label }}">{{ __('account.profile.postal_code') }}</label>
+                            <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code', $user->postal_code) }}" class="{{ $field }}">
+                            <x-input-error field="postal_code" />
+                        </div>
+                        <div>
+                            <label for="city" class="{{ $label }}">{{ __('account.profile.city') }}</label>
+                            <input id="city" type="text" name="city" value="{{ old('city', $user->city) }}" class="{{ $field }}">
+                            <x-input-error field="city" />
+                        </div>
+                    </div>
+                @endif
             </div>
             <button type="submit" class="mt-6 cursor-pointer rounded-full bg-ruby-red px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
                 {{ __('account.profile.submit') }}

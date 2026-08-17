@@ -87,6 +87,18 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
+    Route::get('/email/verifieren/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+        $request->fulfill();
+
+        return redirect()->route('dashboard')->with('status', __('auth.verify.done'));
+    })->middleware('signed')->name('verification.verify');
+
+    Route::post('/email/verifieren', function (\Illuminate\Http\Request $request) {
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('status', __('auth.verify.sent'));
+    })->middleware('throttle:3,1')->name('verification.send');
+
     Route::get('/dashboard/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/dashboard/account/profiel', [AccountController::class, 'updateProfile'])->name('account.profile.update');
     Route::put('/dashboard/account/wachtwoord', [AccountController::class, 'updatePassword'])->name('account.password.update');

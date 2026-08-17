@@ -25,6 +25,13 @@ return [
         'string' => ':attribute moet minimaal :min tekens bevatten.',
     ],
     'numeric' => ':attribute moet een getal zijn.',
+    'password' => [
+        'letters' => ':attribute moet minimaal één letter bevatten.',
+        'mixed' => ':attribute moet minimaal één hoofdletter en één kleine letter bevatten.',
+        'numbers' => ':attribute moet minimaal één cijfer bevatten.',
+        'symbols' => ':attribute moet minimaal één symbool bevatten.',
+        'uncompromised' => 'Dit wachtwoord is aangetroffen in een datalek. Kies een ander wachtwoord.',
+    ],
     'required' => ':attribute is verplicht.',
     'required_if' => ':attribute is hier verplicht.',
     'string' => ':attribute moet tekst zijn.',

@@ -52,6 +52,11 @@
             <x-input-error field="password" />
         </div>
 
+        <div>
+            <label for="password_confirmation" class="{{ $label }}">{{ __('auth.fields.password_confirmation') }}</label>
+            <input id="password_confirmation" type="password" name="password_confirmation" placeholder="{{ __('auth.fields.password_placeholder') }}" class="{{ $field }}" required minlength="8">
+        </div>
+
         <label class="flex cursor-pointer items-start gap-2.5 text-sm text-prussian-blue/80">
             <input type="checkbox" name="terms" value="1" class="mt-0.5 h-4 w-4 shrink-0 rounded border-prussian-blue/30 accent-ruby-red" required>
             <span>{!! __('auth.register.terms', [

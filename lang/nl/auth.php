@@ -14,6 +14,7 @@ return [
         'email' => 'E-mailadres',
         'email_placeholder' => 'jij@voorbeeld.nl',
         'password' => 'Wachtwoord',
+        'password_confirmation' => 'Herhaal wachtwoord',
         'password_placeholder' => '••••••••',
     ],
 
@@ -35,7 +36,7 @@ return [
         'role_artist_sub' => "Ik wil studio's boeken",
         'role_host' => 'Verhuurder',
         'role_host_sub' => 'Ik wil mijn studio verhuren',
-        'password_hint' => 'Minimaal 8 tekens',
+        'password_hint' => 'Minimaal 8 tekens, met een hoofdletter, kleine letter en cijfer',
         'terms' => 'Ik ga akkoord met de :terms en de :privacy',
         'terms_link' => 'algemene voorwaarden',
         'privacy_link' => 'privacyverklaring',
@@ -60,6 +61,13 @@ return [
     ],
 
     'failed' => 'De combinatie van e-mailadres en wachtwoord klopt niet.',
+    'verify' => [
+        'banner' => 'Bevestig je e-mailadres via de mail die we je hebben gestuurd.',
+        'resend' => 'Mail opnieuw versturen',
+        'sent' => 'De bevestigingsmail is opnieuw verstuurd.',
+        'done' => 'Je e-mailadres is bevestigd.',
+    ],
+
     'password' => 'Het opgegeven wachtwoord is onjuist.',
     'throttle' => 'Te veel inlogpogingen. Probeer het over :seconds seconden opnieuw.',
 ];

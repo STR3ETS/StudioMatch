@@ -55,11 +55,22 @@ class AccountTest extends TestCase
 
         $this->actingAs($user)->put('/dashboard/account/wachtwoord', [
             'current_password' => 'password',
-            'password' => 'nieuwwachtwoord123',
-            'password_confirmation' => 'nieuwwachtwoord123',
+            'password' => 'NieuwWachtwoord123',
+            'password_confirmation' => 'NieuwWachtwoord123',
         ])->assertRedirect(route('account.edit'));
 
-        $this->assertTrue(Hash::check('nieuwwachtwoord123', $user->fresh()->password));
+        $this->assertTrue(Hash::check('NieuwWachtwoord123', $user->fresh()->password));
+    }
+
+    public function test_weak_password_gives_validation_error_not_server_error(): void
+    {
+        $user = User::factory()->create(['role' => 'verhuurder']);
+
+        $this->actingAs($user)->from('/dashboard/account')->put('/dashboard/account/wachtwoord', [
+            'current_password' => 'password',
+            'password' => 'zwakwachtwoord',
+            'password_confirmation' => 'zwakwachtwoord',
+        ])->assertRedirect('/dashboard/account')->assertSessionHasErrors('password');
     }
 
     public function test_wrong_current_password_is_rejected(): void

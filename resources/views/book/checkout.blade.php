@@ -57,6 +57,33 @@
                     </div>
                 </div>
 
+                @if (auth()->user()->street === null || auth()->user()->postal_code === null || auth()->user()->city === null)
+                    @php $addressField = 'mt-2 w-full rounded-xl border border-prussian-blue/15 bg-white px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none'; @endphp
+                    <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
+                        <h2 class="font-bold text-prussian-blue">{{ __('booking.checkout.address_title') }}</h2>
+                        <p class="mt-1 text-sm text-prussian-blue/60">{{ __('booking.checkout.address_note') }}</p>
+                        <div class="mt-4 space-y-4">
+                            <div>
+                                <label for="street" class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('account.profile.street') }}</label>
+                                <input id="street" type="text" name="street" value="{{ old('street', auth()->user()->street) }}" class="{{ $addressField }}" required>
+                                <x-input-error field="street" />
+                            </div>
+                            <div class="grid gap-4 sm:grid-cols-2">
+                                <div>
+                                    <label for="postal_code" class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('account.profile.postal_code') }}</label>
+                                    <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code', auth()->user()->postal_code) }}" class="{{ $addressField }}" required>
+                                    <x-input-error field="postal_code" />
+                                </div>
+                                <div>
+                                    <label for="city" class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('account.profile.city') }}</label>
+                                    <input id="city" type="text" name="city" value="{{ old('city', auth()->user()->city) }}" class="{{ $addressField }}" required>
+                                    <x-input-error field="city" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
                     <h2 class="font-bold text-prussian-blue">{{ __('booking.checkout.rules_title') }}</h2>
                     @if ($houseRules->isNotEmpty())

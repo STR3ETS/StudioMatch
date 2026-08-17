@@ -135,6 +135,20 @@
                 </header>
 
                 <main class="mx-auto w-full max-w-6xl px-5 py-6 pb-28 sm:px-6 lg:px-10 lg:py-10 lg:pb-10 [view-transition-name:dash-content]">
+                    @if (! auth()->user()->hasVerifiedEmail())
+                        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 px-5 py-4">
+                            <p class="text-sm text-prussian-blue/80">
+                                <i class="fa-solid fa-envelope mr-1.5 text-amber-600"></i>{{ __('auth.verify.banner') }}
+                            </p>
+                            <form method="POST" action="{{ route('verification.send') }}">
+                                @csrf
+                                <button type="submit" class="cursor-pointer rounded-full border border-prussian-blue/20 px-4 py-2 text-xs font-semibold text-prussian-blue transition hover:bg-prussian-blue/5">
+                                    {{ __('auth.verify.resend') }}
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+
                     {{ $slot }}
                 </main>
             </div>
