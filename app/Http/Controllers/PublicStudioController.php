@@ -62,11 +62,7 @@ class PublicStudioController extends Controller
 
         $types = $filters['types'] ?? [];
         if (! empty($filters['type'])) {
-            $types[] = match ($filters['type']) {
-                'recording' => RoomType::Opname->value,
-                'mix', 'master' => RoomType::MixMaster->value,
-                default => $filters['type'],
-            };
+            $types[] = $filters['type'] === 'recording' ? RoomType::Opname->value : $filters['type'];
             $types = array_intersect($types, array_column(RoomType::cases(), 'value'));
         }
 
@@ -213,7 +209,7 @@ class PublicStudioController extends Controller
             ->map(function (Room $room) {
 
                 [$lat, $lng] = $room->studio->lat !== null
-                    ? [$room->studio->lat, $room->studio->lng]
+                    ? [round($room->studio->lat, 3), round($room->studio->lng, 3)]
                     : self::CITY_COORDS[mb_strtolower($room->studio->city)];
 
                 return [

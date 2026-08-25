@@ -13,6 +13,7 @@ return [
         'when_placeholder' => 'Datum & tijd',
         'type' => 'Type',
         'type_placeholder' => 'Type studio',
+        'all_types' => 'Alle types',
         'submit' => 'Zoeken',
         'mobile_placeholder' => 'Zoek een studio',
         'mobile_hint' => 'Plaats · datum & tijd · type',

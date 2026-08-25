@@ -88,6 +88,9 @@ return [
         'resolve_confirm' => 'Weet je zeker dat je dit ticket wilt afhandelen? De terugbetaling wordt direct uitgevoerd en beide partijen ontvangen het eindoordeel per mail.',
         'resolve_accept' => 'Ja, handel af',
         'resolved' => 'Het ticket is afgehandeld en beide partijen zijn gemaild.',
+        'already_resolved' => 'Dit ticket is al afgehandeld.',
+        'damage_title' => 'Probleemmeldingen van verhuurders',
+        'damage_text' => 'Meldingen na afloop van een sessie. Deel de gegevens van de artiest met de verhuurder, de afhandeling gebeurt buiten het platform.',
     ],
 
     'queue' => [

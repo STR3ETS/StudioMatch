@@ -82,4 +82,40 @@
             @endforeach
         </div>
     @endif
+
+    @if ($damages->isNotEmpty())
+        <section class="mt-12">
+            <h2 class="text-lg font-bold text-prussian-blue">{{ __('admin.tickets.damage_title') }}</h2>
+            <p class="mt-1 text-sm text-prussian-blue/60">{{ __('admin.tickets.damage_text') }}</p>
+
+            <div class="mt-4 space-y-4">
+                @foreach ($damages as $booking)
+                    <div class="rounded-2xl border border-amber-500/40 bg-white p-6">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h3 class="font-bold text-prussian-blue">{{ $booking->room->studio->name }} - {{ $booking->room->title }}</h3>
+                            <span class="rounded-full bg-amber-500/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">{{ __('host.damage.badge') }}</span>
+                        </div>
+                        <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
+                            <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->date->translatedFormat('D j M Y') }} {{ $booking->timeRange() }}</span>
+                            <span><i class="fa-solid fa-building fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->room->studio->user->name }} ({{ $booking->room->studio->user->email }})</span>
+                            <span><i class="fa-solid fa-music fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->user->name }} ({{ $booking->user->email }})</span>
+                            <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ __('admin.tickets.reported', ['date' => $booking->damage_reported_at->translatedFormat('j M Y H:i')]) }}</span>
+                        </p>
+                        <p class="mt-3 rounded-xl bg-prussian-blue/[0.03] px-4 py-3 text-sm leading-relaxed text-prussian-blue/80">
+                            <span class="font-semibold">{{ __('admin.tickets.reason') }}:</span> {{ $booking->damage_reason }}
+                        </p>
+                        @if ($booking->damage_photos)
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                @foreach ($booking->damage_photos as $photo)
+                                    <a href="{{ Storage::disk('public')->url($photo) }}" target="_blank" rel="noopener" class="group">
+                                        <img src="{{ Storage::disk('public')->url($photo) }}" alt="" class="h-20 w-28 rounded-xl border border-prussian-blue/10 object-cover transition group-hover:brightness-90">
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
+        </section>
+    @endif
 </x-admin-layout>

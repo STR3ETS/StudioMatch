@@ -55,7 +55,13 @@
                         </x-filter-group>
 
                         <x-filter-group :title="__('studios.filters.groups.availability')">
-                            <input type="date" name="date" value="{{ request('date') }}" min="{{ today()->toDateString() }}" class="{{ $field }} min-w-0">
+                            <div data-datepicker data-min="{{ today()->toDateString() }}" data-submit="1">
+                                <input type="hidden" name="date" value="{{ request('date') }}">
+                                <button type="button" data-datepicker-toggle class="{{ $field }} cursor-pointer text-left">
+                                    <span data-datepicker-label class="{{ request('date') ? '' : 'text-prussian-blue/40' }}">{{ request('date') ? \Illuminate\Support\Carbon::parse(request('date'))->translatedFormat('j M Y') : __('studios.filters.date_placeholder') }}</span>
+                                </button>
+                                <div data-datepicker-panel class="mt-2 hidden rounded-2xl border border-prussian-blue/10 bg-white p-3"></div>
+                            </div>
                             <div class="mt-2 grid grid-cols-2 gap-2">
                                 <div class="min-w-0">
                                     <span class="{{ $subLabel }}">{{ __('studios.filters.start') }}</span>

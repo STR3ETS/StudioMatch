@@ -57,6 +57,11 @@ class StripeController extends Controller
 
         if ($profile !== null) {
             StripeService::refreshAccountStatus($profile);
+            $profile->refresh();
+        }
+
+        if ($profile?->stripe_payouts_enabled) {
+            return redirect()->route('dashboard.host')->with('status', __('host.stripe.completed'));
         }
 
         return redirect()->route('host.stripe.show')->with('status', __('host.stripe.returned'));

@@ -124,6 +124,8 @@ return [
 
     'types' => [
         'opname' => 'Recording',
+        'mix' => 'Mix',
+        'master' => 'Master',
         'mix_master' => 'Mix / master',
     ],
 
@@ -237,8 +239,9 @@ return [
         'demo_note' => 'The Stripe connection is not enabled in this environment yet. Once it is, connecting your account here takes just a few minutes.',
         'failed' => 'The Stripe connection could not be started. Please try again later.',
         'returned' => 'Welcome back. We updated your Stripe status.',
+        'completed' => 'Your Stripe account is connected. Your onboarding is complete, you can receive bookings and payouts!',
         'not_connected_title' => 'Not connected yet',
-        'not_connected_text' => 'Start the Stripe onboarding and complete the identity and bank verification. It takes a few minutes and is required before your rooms can go live.',
+        'not_connected_text' => 'Start the Stripe onboarding and complete the identity and bank verification. It takes a few minutes and is required before your rooms can go live. If Stripe asks for a website, use the StudioMatch address, which is already prefilled for you.',
         'connect_button' => 'Start Stripe onboarding',
         'pending_title' => 'Verification in progress',
         'pending_text' => 'Your details have been (partly) submitted. Finish the onboarding or wait for Stripe to complete the verification. This page updates the status automatically.',
@@ -261,6 +264,7 @@ return [
         'decline_confirm' => 'Are you sure you want to decline this request? The artist automatically receives a full refund.',
         'accepted' => 'The booking has been confirmed. Both parties receive an email with the address and contact details.',
         'already_handled' => 'This request has already been handled.',
+        'request_expired' => 'This request had expired: the start time had (almost) been reached. The booking has been cancelled automatically and the artist receives a full refund.',
         'declined' => 'The request has been declined. The artist receives a full refund and an email.',
         'disputes_title' => 'Problem reports',
         'disputed_on' => 'reported on :date',
@@ -271,12 +275,12 @@ return [
     ],
 
     'damage' => [
-        'title' => 'Report damage',
-        'subtitle' => 'Damage after a session? Report it here with evidence and StudioMatch will get in touch.',
-        'note' => 'After your report the admin receives an alert and shares the artist\'s details with you. The damage itself is settled outside the platform.',
+        'title' => 'Report a problem',
+        'subtitle' => 'Damage or a problem after a session? Report it here with evidence and StudioMatch will get in touch.',
+        'note' => 'After your report the admin receives an alert and shares the artist\'s details with you. Settlement happens outside the platform.',
         'eligible_title' => 'Recent sessions',
-        'eligible_empty' => 'No recent sessions to report damage for. Reporting is possible up to 14 days after a session ends.',
-        'report_button' => 'Report damage for this session',
+        'eligible_empty' => 'No recent sessions to report a problem for. Reporting is possible up to 14 days after a session ends.',
+        'report_button' => 'Report a problem',
         'placeholder' => 'Describe the damage as concretely as possible...',
         'window_note' => 'Reporting is possible up to 14 days after the session ends.',
         'submit' => 'Send report',

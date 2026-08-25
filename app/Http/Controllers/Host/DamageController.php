@@ -36,7 +36,13 @@ class DamageController extends Controller
             'damage_photos' => $photos !== [] ? $photos : null,
         ]);
 
-        Notification::send(User::where('role', UserRole::Admin)->get(), new DamageReported($booking));
+        $recipient = (string) config('studio.contact_email');
+
+        if ($recipient !== '') {
+            Notification::route('mail', $recipient)->notify(new DamageReported($booking));
+        } else {
+            Notification::send(User::where('role', UserRole::Admin)->get(), new DamageReported($booking));
+        }
 
         return redirect()->route('host.bookings.index')->with('status', __('host.damage.reported'));
     }

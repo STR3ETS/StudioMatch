@@ -135,6 +135,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/studios', [StudioController::class, 'index'])->name('host.studios.index');
         Route::get('/studios/nieuw', [StudioController::class, 'create'])->name('host.studios.create');
         Route::post('/studios', [StudioController::class, 'store'])->name('host.studios.store');
+        Route::post('/studios/adres-check', [StudioController::class, 'checkAddress'])
+            ->middleware('throttle:20,1')->name('host.studios.address-check');
         Route::get('/studios/{studio}', [StudioController::class, 'show'])->name('host.studios.show');
         Route::get('/studios/{studio}/bewerken', [StudioController::class, 'edit'])->name('host.studios.edit');
         Route::put('/studios/{studio}', [StudioController::class, 'update'])->name('host.studios.update');

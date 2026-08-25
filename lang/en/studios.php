@@ -25,6 +25,7 @@ return [
         'type' => 'Studio type',
         'capacity' => 'Capacity',
         'capacity_any' => "Doesn't matter",
+        'date_placeholder' => 'Pick a date',
         'persons' => 'people',
         'engineer' => 'Engineer',
         'equipment' => 'Equipment',
@@ -70,7 +71,7 @@ return [
         'bass' => 'Bass guitar',
         'drums' => 'Drum kit',
         'screen_extra' => 'Extra display',
-        'headphones' => 'Headphones',
+        'headphones' => 'Headphone',
     ],
 
     'facilities' => [

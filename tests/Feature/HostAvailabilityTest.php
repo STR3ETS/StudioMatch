@@ -214,7 +214,7 @@ class HostAvailabilityTest extends TestCase
         $this->actingAs($host)->post('/dashboard/verhuurder/studios/' . $existingRoom->studio_id . '/ruimtes', [
             'title' => 'Studio B',
             'description' => 'Tweede ruimte.',
-            'type' => 'mix_master',
+            'type' => 'mix',
             'hourly_rate' => '30',
             'engineer_option' => 'none',
             'min_hours' => 2,

@@ -5,6 +5,25 @@
         <p class="mt-2 text-prussian-blue/60">{{ __('dashboard.host.subtitle') }}</p>
     </div>
 
+    @if ($pendingRequests > 0)
+        <section data-reveal style="--reveal-delay: .05s" class="mt-10">
+            <a href="{{ route('host.bookings.index') }}" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-ruby-red p-6 text-white shadow-xl shadow-ruby-red/30 transition hover:-translate-y-0.5 sm:flex-nowrap">
+                <div class="flex items-center gap-4">
+                    <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                        <i class="fa-solid fa-inbox text-lg"></i>
+                        <span class="absolute -right-1.5 -top-1.5 flex h-6 min-w-6 animate-pulse items-center justify-center rounded-full bg-white px-1.5 text-xs font-bold text-ruby-red">{{ $pendingRequests }}</span>
+                    </span>
+                    <div>
+                        <h2 class="text-lg font-bold">{{ trans_choice('host.overview.requests_pending', $pendingRequests, ['count' => $pendingRequests]) }}</h2>
+                        <p class="mt-0.5 text-sm text-white/70">{{ __('host.overview.requests_text') }}</p>
+                    </div>
+                </div>
+                <span class="flex shrink-0 items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-ruby-red">{{ __('host.overview.requests_action') }} <i class="fa-solid fa-arrow-right fa-xs"></i></span>
+            </a>
+        </section>
+    @endif
+
+    @if ($checklistDone < count($checklist))
     <section data-reveal style="--reveal-delay: .1s" class="mt-10">
         <div class="rounded-2xl bg-prussian-blue p-6 text-white sm:p-8">
             <div class="flex flex-wrap items-center justify-between gap-3">
@@ -44,23 +63,6 @@
             </ul>
         </div>
     </section>
-
-    @if ($pendingRequests > 0)
-        <section data-reveal style="--reveal-delay: .05s" class="mt-10">
-            <a href="{{ route('host.bookings.index') }}" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-prussian-blue p-6 text-white shadow-xl shadow-prussian-blue/20 transition hover:-translate-y-0.5 sm:flex-nowrap">
-                <div class="flex items-center gap-4">
-                    <span class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/10">
-                        <i class="fa-solid fa-inbox"></i>
-                        <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-ruby-red px-1 text-[10px] font-bold">{{ $pendingRequests }}</span>
-                    </span>
-                    <div>
-                        <h2 class="font-bold">{{ trans_choice('host.overview.requests_pending', $pendingRequests, ['count' => $pendingRequests]) }}</h2>
-                        <p class="mt-0.5 text-sm text-white/60">{{ __('host.overview.requests_text') }}</p>
-                    </div>
-                </div>
-                <span class="flex shrink-0 items-center gap-2 text-sm font-semibold">{{ __('host.overview.requests_action') }} <i class="fa-solid fa-arrow-right fa-xs"></i></span>
-            </a>
-        </section>
     @endif
 
     @if ($rejectedRooms->isNotEmpty() || $inReviewRooms->isNotEmpty())

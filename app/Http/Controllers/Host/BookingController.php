@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Host;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Notifications\BookingCancelled;
 use App\Notifications\BookingConfirmed;
 use App\Notifications\BookingDeclined;
 use App\Support\StripeService;
@@ -43,6 +44,12 @@ class BookingController extends Controller
             return redirect()->route('host.bookings.index')->with('status', __('host.bookings.already_handled'));
         }
 
+        if ($booking->startsAt()->subHours(2)->isPast()) {
+            $this->cancelExpiredRequest($booking);
+
+            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.request_expired'));
+        }
+
         $booking->update(['status' => BookingStatus::Confirmed, 'confirmed_at' => now()]);
 
         $booking->user->notify(new BookingConfirmed($booking));
@@ -59,6 +66,12 @@ class BookingController extends Controller
             return redirect()->route('host.bookings.index')->with('status', __('host.bookings.already_handled'));
         }
 
+        if ($booking->startsAt()->subHours(2)->isPast()) {
+            $this->cancelExpiredRequest($booking);
+
+            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.request_expired'));
+        }
+
         $booking->update(['status' => BookingStatus::Declined]);
 
         StripeService::refund($booking, $booking->refundAmountCents(100));
@@ -66,5 +79,15 @@ class BookingController extends Controller
         $booking->user->notify(new BookingDeclined($booking));
 
         return redirect()->route('host.bookings.index')->with('status', __('host.bookings.declined'));
+    }
+
+    private function cancelExpiredRequest(Booking $booking): void
+    {
+        $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'auto']);
+
+        StripeService::refund($booking, $booking->refundAmountCents(100));
+
+        $booking->user->notify(new BookingCancelled($booking, 100));
+        $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
     }
 }

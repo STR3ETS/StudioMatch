@@ -94,33 +94,15 @@
     <section class="py-20">
         <div class="mx-auto max-w-7xl px-6">
             <div class="relative overflow-hidden rounded-3xl bg-prussian-blue px-8 py-14 lg:px-14">
-                <div class="relative grid items-center gap-12 lg:grid-cols-2">
-                    <div>
-                        <span class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-white/50"><i class="fa-solid fa-receipt"></i> {{ __('how.pricing.label') }}</span>
-                        <h2 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ __('how.pricing.title') }}</h2>
-                        <p class="mt-3 text-white/60">{{ __('how.pricing.text') }}</p>
-                        <ul class="mt-5 space-y-3">
-                            @foreach (__('how.pricing.bullets') as $bullet)
-                                <li class="flex items-start gap-3 text-sm text-white/80"><i class="fa-solid fa-check mt-0.5 text-ruby-red"></i> {{ $bullet }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-
-                    <div class="relative mx-auto w-full max-w-sm">
-                        <div class="absolute inset-0 rotate-3 rounded-3xl bg-white/10"></div>
-                        <div class="relative -rotate-1 rounded-3xl bg-white p-6 shadow-2xl shadow-black/30 transition-transform duration-300 hover:rotate-0">
-                            <div class="flex items-center justify-between">
-                                <p class="font-bold text-prussian-blue">{{ __('how.pricing.receipt.title') }}</p>
-                                <span class="rounded-full bg-prussian-blue/5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-prussian-blue/60">iDEAL</span>
-                            </div>
-                            <div class="mt-5 space-y-3 text-sm">
-                                <div class="flex justify-between text-prussian-blue/70"><span>{{ __('how.pricing.receipt.rent') }}</span><span>€ 150,00</span></div>
-                                <div class="flex justify-between text-prussian-blue/70"><span>{{ __('how.pricing.receipt.fee') }}</span><span>€ 16,34</span></div>
-                                <div class="flex justify-between border-t border-dashed border-prussian-blue/15 pt-3 font-bold text-prussian-blue"><span>{{ __('how.pricing.receipt.total') }}</span><span class="text-ruby-red">€ 166,34</span></div>
-                            </div>
-                            <p class="mt-5 flex items-center gap-2 text-xs text-prussian-blue/50"><i class="fa-solid fa-lock text-prussian-blue/30"></i> {{ __('how.pricing.receipt.footer') }}</p>
-                        </div>
-                    </div>
+                <div class="relative mx-auto max-w-2xl text-center">
+                    <span class="flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wide text-white/50"><i class="fa-solid fa-receipt"></i> {{ __('how.pricing.label') }}</span>
+                    <h2 class="mt-2 text-2xl font-bold text-white sm:text-3xl">{{ __('how.pricing.title') }}</h2>
+                    <p class="mt-3 text-white/60">{{ __('how.pricing.text') }}</p>
+                    <ul class="mx-auto mt-6 max-w-md space-y-3 text-left">
+                        @foreach (__('how.pricing.bullets') as $bullet)
+                            <li class="flex items-start gap-3 text-sm text-white/80"><i class="fa-solid fa-check mt-0.5 text-ruby-red"></i> {{ $bullet }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
         </div>

@@ -12,6 +12,8 @@ return [
     'location' => 'Location',
     'map_placeholder' => 'Map',
 
+    'location_privacy' => 'You receive the exact address once your booking is confirmed',
+
     'facts' => [
         'capacity' => 'Up to :count people',
         'min_duration' => 'From :count hours',

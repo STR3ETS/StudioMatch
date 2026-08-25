@@ -149,6 +149,17 @@
                         </div>
                     @endif
 
+                    @if (auth()->user()->isArtist() && ! request()->routeIs('account.edit') && (auth()->user()->street === null || auth()->user()->postal_code === null || auth()->user()->city === null))
+                        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-prussian-blue/15 bg-white px-5 py-4">
+                            <p class="text-sm text-prussian-blue/80">
+                                <i class="fa-solid fa-location-dot mr-1.5 text-ruby-red"></i>{{ __('account.profile.address_banner') }}
+                            </p>
+                            <a href="{{ route('account.edit') }}" class="rounded-full bg-ruby-red px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
+                                {{ __('account.profile.address_banner_action') }}
+                            </a>
+                        </div>
+                    @endif
+
                     {{ $slot }}
                 </main>
             </div>
@@ -231,8 +242,10 @@
                         modal.classList.add('flex');
                     });
                 });
-                modal.querySelector('[data-confirm-accept]').addEventListener('click', () => {
+                modal.querySelector('[data-confirm-accept]').addEventListener('click', (event) => {
                     if (! pendingForm) return;
+                    event.currentTarget.disabled = true;
+                    setTimeout(() => event.target.disabled = false, 3000);
                     pendingForm.dataset.confirmed = '1';
                     pendingForm.requestSubmit();
                 });

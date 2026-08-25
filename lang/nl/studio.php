@@ -12,6 +12,8 @@ return [
     'location' => 'Locatie',
     'map_placeholder' => 'Kaart',
 
+    'location_privacy' => 'Het exacte adres ontvang je na bevestiging van je boeking',
+
     'facts' => [
         'capacity' => 'Tot :count personen',
         'min_duration' => 'Vanaf :count uur boekbaar',

@@ -24,7 +24,7 @@ class DamageReported extends Notification
 
         return (new MailMessage)
             ->subject(__('booking.mail.damage_subject', ['room' => $this->booking->room->title]))
-            ->greeting(__('booking.mail.greeting', ['name' => $notifiable->firstName()]))
+            ->greeting(method_exists($notifiable, 'firstName') ? __('booking.mail.greeting', ['name' => $notifiable->firstName()]) : __('contact.mail.greeting'))
             ->line(__('booking.mail.damage_line', [
                 'host' => $studio->user->name,
                 'room' => $this->booking->room->title,

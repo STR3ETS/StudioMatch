@@ -148,6 +148,10 @@ class StripeService
                     'defaults' => [
                         'currency' => 'eur',
                         'locales' => ['nl-NL'],
+                        'profile' => [
+                            'business_url' => config('app.url'),
+                            'doing_business_as' => $profile->name,
+                        ],
                         'responsibilities' => [
                             'fees_collector' => 'application',
                             'losses_collector' => 'application',

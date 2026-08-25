@@ -21,12 +21,19 @@ class TicketController extends Controller
                 ->with(['room.studio.user', 'user'])
                 ->oldest('disputed_at')
                 ->get(),
+            'damages' => Booking::whereNotNull('damage_reported_at')
+                ->with(['room.studio.user', 'user'])
+                ->latest('damage_reported_at')
+                ->take(20)
+                ->get(),
         ]);
     }
 
     public function resolve(Request $request, Booking $booking): RedirectResponse
     {
-        abort_unless($booking->status === BookingStatus::Disputed, 404);
+        if ($booking->status !== BookingStatus::Disputed) {
+            return redirect()->route('admin.tickets.index')->with('status', __('admin.tickets.already_resolved'));
+        }
 
         $validated = $request->validate([
             'refund_percent' => ['required', 'integer', 'between:0,100'],

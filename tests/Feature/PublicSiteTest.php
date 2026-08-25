@@ -71,10 +71,10 @@ class PublicSiteTest extends TestCase
     {
         $studio = $this->studio();
         $this->liveRoom($studio, ['title' => 'Goedkope opname', 'hourly_rate_cents' => 3000]);
-        $this->liveRoom($studio, ['title' => 'Dure mix', 'type' => 'mix_master', 'hourly_rate_cents' => 9000, 'engineer_included' => false]);
+        $this->liveRoom($studio, ['title' => 'Dure mix', 'type' => 'mix', 'hourly_rate_cents' => 9000, 'engineer_included' => false]);
 
         $this->get('/studios?price_max=50')->assertSee('Goedkope opname')->assertDontSee('Dure mix');
-        $this->get('/studios?types[]=mix_master')->assertSee('Dure mix')->assertDontSee('Goedkope opname');
+        $this->get('/studios?types[]=mix')->assertSee('Dure mix')->assertDontSee('Goedkope opname');
         $this->get('/studios?engineer[]=1')->assertSee('Goedkope opname')->assertDontSee('Dure mix');
     }
 
@@ -177,7 +177,8 @@ class PublicSiteTest extends TestCase
             ->assertSee('Redlight Recordings')
             ->assertSee('Professionele opnamestudio')
             ->assertSee('Condensatormicrofoon')
-            ->assertSee('Prinsengracht 263');
+            ->assertSee(__('studio.location_privacy'))
+            ->assertDontSee('Prinsengracht 263');
     }
 
     public function test_detail_page_is_not_available_for_unpublished_rooms(): void
@@ -211,7 +212,7 @@ class PublicSiteTest extends TestCase
     {
         $studio = $this->studio();
         $this->liveRoom($studio, ['title' => 'Opname ruimte']);
-        $this->liveRoom($studio, ['title' => 'Mix ruimte', 'type' => 'mix_master']);
+        $this->liveRoom($studio, ['title' => 'Mix ruimte', 'type' => 'mix']);
 
         $this->get('/studios?type=recording')->assertSee('Opname ruimte')->assertDontSee('Mix ruimte');
         $this->get('/studios?type=mix')->assertSee('Mix ruimte')->assertDontSee('Opname ruimte');

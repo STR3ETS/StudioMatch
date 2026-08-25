@@ -198,7 +198,8 @@ class AdminPanelTest extends TestCase
         $this->get('/studios/' . $this->room->slug)
             ->assertOk()
             ->assertSee('LocalBusiness', false)
-            ->assertSee('Prinsengracht 263', false);
+            ->assertSee('addressLocality', false)
+            ->assertDontSee('Prinsengracht 263');
     }
 
     public function test_public_page_contains_cookie_banner(): void

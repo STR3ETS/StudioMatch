@@ -12,6 +12,8 @@ return [
         'postal_code' => 'Postcode',
         'city' => 'Plaats',
         'address_hint' => 'Je adres is nodig voor je facturen.',
+        'address_banner' => 'Vul je adres in, dan staat het straks op je facturen.',
+        'address_banner_action' => 'Adres invullen',
         'submit' => 'Gegevens opslaan',
         'saved' => 'Je gegevens zijn opgeslagen.',
     ],

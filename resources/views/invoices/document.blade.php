@@ -29,7 +29,7 @@
 </head>
 <body>
     <div class="wrap">
-        <div class="brand">Studio<span>Match</span></div>
+        <img src="{{ public_path('logos/sm-primary-logo-blauw.png') }}" alt="StudioMatch" style="height: 32px; width: auto;">
         <p class="meta">studiomatch.nl</p>
 
         <h1>{{ $title }}</h1>

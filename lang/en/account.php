@@ -12,6 +12,8 @@ return [
         'postal_code' => 'Postal code',
         'city' => 'City',
         'address_hint' => 'Your address is needed for your invoices.',
+        'address_banner' => 'Fill in your address so it appears on your invoices.',
+        'address_banner_action' => 'Add address',
         'submit' => 'Save details',
         'saved' => 'Your details have been saved.',
     ],

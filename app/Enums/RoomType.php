@@ -6,5 +6,6 @@ enum RoomType: string
 {
 
     case Opname = 'opname';
-    case MixMaster = 'mix_master';
+    case Mix = 'mix';
+    case Master = 'master';
 }

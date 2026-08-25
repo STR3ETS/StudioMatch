@@ -72,7 +72,7 @@ class DemoSeeder extends Seeder
             [$demi, ['name' => 'Redlight Recordings', 'phone' => '020 1234567', 'street' => 'Prinsengracht 263', 'postal_code' => '1016 GV', 'city' => 'Amsterdam', 'lat' => 52.3752, 'lng' => 4.8840], [
                 ['key' => 'liveA', 'title' => 'Live Room A', 'type' => 'opname', 'rate' => 5500, 'capacity' => 8, 'engineer' => true, 'status' => 'live',
                     'description' => "Ruime live room met akoestische behandeling en een aparte controlroom. Ideaal voor bands, vocals en volledige producties.\n\nInclusief ervaren engineer die met je meedenkt."],
-                ['key' => 'mix', 'title' => 'Mix Suite', 'type' => 'mix_master', 'rate' => 4000, 'capacity' => 3, 'engineer' => false, 'status' => 'live',
+                ['key' => 'mix', 'title' => 'Mix Suite', 'type' => 'mix', 'rate' => 4000, 'capacity' => 3, 'engineer' => false, 'status' => 'live',
                     'description' => 'Compacte mixstudio met uitstekende monitoring. Perfect voor mix- en mastersessies.'],
             ]],
             [$demi, ['name' => 'Noorderlicht Audio', 'phone' => '020 9876543', 'street' => 'NDSM-plein 28', 'postal_code' => '1033 WB', 'city' => 'Amsterdam', 'lat' => 52.4010, 'lng' => 4.8940], [
@@ -89,7 +89,7 @@ class DemoSeeder extends Seeder
             [$demi, ['name' => 'Strijp Sound', 'phone' => null, 'street' => 'Torenallee 45', 'postal_code' => '5617 BA', 'city' => 'Eindhoven', 'lat' => 51.4480, 'lng' => 5.4560], [
                 ['key' => 'machine', 'title' => 'De Machinekamer', 'type' => 'opname', 'rate' => 4500, 'capacity' => 6, 'engineer' => true, 'status' => 'live',
                     'description' => 'Industriële opnamestudio op Strijp-S met hoge plafonds en een royale opnameruimte.'],
-                ['title' => 'Master Lab', 'type' => 'mix_master', 'rate' => 6000, 'capacity' => 2, 'engineer' => true, 'status' => 'in_review',
+                ['title' => 'Master Lab', 'type' => 'master', 'rate' => 6000, 'capacity' => 2, 'engineer' => true, 'status' => 'in_review',
                     'description' => 'Hoogwaardige masteringstudio met geoptimaliseerde akoestiek en gekalibreerde monitoring.'],
             ]],
             [$jesse, ['name' => 'Domstad Studio', 'phone' => '030 2345678', 'street' => 'Oudegracht 187', 'postal_code' => '3511 NE', 'city' => 'Utrecht', 'lat' => 52.0894, 'lng' => 5.1213], [
@@ -101,7 +101,7 @@ class DemoSeeder extends Seeder
                     'description' => 'Lichte studio aan het Stadspark met veel daglicht en een relaxte sfeer voor songwriters.'],
             ]],
             [$jesse, ['name' => 'Waalzicht Records', 'phone' => '024 5566778', 'street' => 'Waalkade 68', 'postal_code' => '6511 XP', 'city' => 'Nijmegen', 'lat' => 51.8480, 'lng' => 5.8630], [
-                ['key' => 'waal', 'title' => 'Waalstudio', 'type' => 'mix_master', 'rate' => 4800, 'capacity' => 3, 'engineer' => true, 'status' => 'live',
+                ['key' => 'waal', 'title' => 'Waalstudio', 'type' => 'mix', 'rate' => 4800, 'capacity' => 3, 'engineer' => true, 'status' => 'live',
                     'description' => 'Mix- en masterstudio met uitzicht op de Waal. Inclusief engineer met tien jaar ervaring.'],
             ]],
             [$fatima, ['name' => 'Hofstad Geluid', 'phone' => '070 3456789', 'street' => 'Prinsestraat 74', 'postal_code' => '2513 CG', 'city' => 'Den Haag', 'lat' => 52.0810, 'lng' => 4.3050], [
@@ -113,7 +113,7 @@ class DemoSeeder extends Seeder
                     'description' => 'Betaalbare opnamestudio in de oude textielfabriek. Ideaal voor demo\'s en podcasts.'],
             ]],
             [$fatima, ['name' => 'Spaarne Sound', 'phone' => '023 7788990', 'street' => 'Spaarne 11', 'postal_code' => '2011 CD', 'city' => 'Haarlem', 'lat' => 52.3800, 'lng' => 4.6400], [
-                ['title' => 'Spaarnezicht', 'type' => 'mix_master', 'rate' => 5200, 'capacity' => 3, 'engineer' => false, 'status' => 'in_review',
+                ['title' => 'Spaarnezicht', 'type' => 'master', 'rate' => 5200, 'capacity' => 3, 'engineer' => false, 'status' => 'in_review',
                     'description' => 'Mixstudio aan het Spaarne met moderne monitoring en een stille, geïsoleerde regieruimte.'],
             ]],
         ];

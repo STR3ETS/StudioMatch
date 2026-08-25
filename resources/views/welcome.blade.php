@@ -19,17 +19,21 @@
 
             <span class="hidden sm:block h-8 w-px bg-prussian-blue/10"></span>
 
-            <label class="flex-1 cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
-                <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.when') }}</span>
-                <input type="date" name="date" min="{{ today()->toDateString() }}" class="w-full cursor-pointer bg-transparent text-sm text-prussian-blue focus:outline-none [color-scheme:light]">
-            </label>
+            <div class="relative flex-1" data-datepicker data-min="{{ today()->toDateString() }}">
+                <input type="hidden" name="date">
+                <button type="button" data-datepicker-toggle class="w-full cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
+                    <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.when') }}</span>
+                    <span data-datepicker-label class="block text-sm text-prussian-blue/40">{{ __('home.search.when_placeholder') }}</span>
+                </button>
+                <div data-datepicker-panel class="absolute left-1/2 top-full z-50 mt-3 hidden w-72 -translate-x-1/2 rounded-2xl border border-prussian-blue/10 bg-white p-4 text-left shadow-xl"></div>
+            </div>
 
             <span class="hidden sm:block h-8 w-px bg-prussian-blue/10"></span>
 
             <label class="flex-1 cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
                 <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.type') }}</span>
                 <select name="type" class="w-full cursor-pointer appearance-none bg-transparent text-sm text-prussian-blue focus:outline-none">
-                    <option value="">{{ __('home.search.type_placeholder') }}</option>
+                    <option value="">{{ __('home.search.all_types') }}</option>
                     @foreach (['recording', 'mix', 'master'] as $value)
                         <option value="{{ $value }}">{{ __('studios.type.' . $value) }}</option>
                     @endforeach
@@ -73,7 +77,13 @@
                 <div>
                     <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('home.search.when') }}</span>
                     <div class="mt-2 flex gap-2">
-                        <input type="date" name="date" min="{{ today()->toDateString() }}" class="w-full min-w-0 rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                        <div class="relative w-full min-w-0" data-datepicker data-min="{{ today()->toDateString() }}">
+                            <input type="hidden" name="date">
+                            <button type="button" data-datepicker-toggle class="w-full cursor-pointer rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-left text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                                <span data-datepicker-label class="text-prussian-blue/40">{{ __('home.search.when_placeholder') }}</span>
+                            </button>
+                            <div data-datepicker-panel class="absolute left-0 top-full z-50 mt-2 hidden w-72 rounded-2xl border border-prussian-blue/10 bg-white p-4 shadow-xl"></div>
+                        </div>
                         <select name="start" class="w-full min-w-0 cursor-pointer rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
                             <option value="">--:--</option>
                             @for ($h = 0; $h <= 23; $h++)

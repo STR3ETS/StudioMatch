@@ -124,6 +124,8 @@ return [
 
     'types' => [
         'opname' => 'Opname',
+        'mix' => 'Mix',
+        'master' => 'Master',
         'mix_master' => 'Mix / master',
     ],
 
@@ -237,8 +239,9 @@ return [
         'demo_note' => 'De koppeling met Stripe staat nog niet aan in deze omgeving. Zodra dat gebeurd is, koppel je hier in een paar minuten je account.',
         'failed' => 'De koppeling met Stripe kon niet worden gestart. Probeer het later opnieuw.',
         'returned' => 'Welkom terug. We hebben je Stripe-status bijgewerkt.',
+        'completed' => 'Je Stripe-account is gekoppeld. Je onboarding is compleet, je kunt boekingen en uitbetalingen ontvangen!',
         'not_connected_title' => 'Nog niet gekoppeld',
-        'not_connected_text' => 'Start de Stripe-onboarding en doorloop de identiteits- en bankverificatie. Dit duurt een paar minuten en is nodig voordat je ruimtes live kunnen.',
+        'not_connected_text' => 'Start de Stripe-onboarding en doorloop de identiteits- en bankverificatie. Dit duurt een paar minuten en is nodig voordat je ruimtes live kunnen. Vraagt Stripe om een website? Vul dan het adres van StudioMatch in, dat staat al voor je klaar.',
         'connect_button' => 'Start Stripe-onboarding',
         'pending_title' => 'Verificatie in behandeling',
         'pending_text' => 'Je gegevens zijn (deels) aangeleverd. Rond de onboarding af of wacht tot Stripe de verificatie heeft afgerond. Deze pagina werkt de status automatisch bij.',
@@ -261,6 +264,7 @@ return [
         'decline_confirm' => 'Weet je zeker dat je deze aanvraag wilt weigeren? De artiest krijgt automatisch het volledige bedrag terug.',
         'accepted' => 'De boeking is bevestigd. Beide partijen ontvangen een mail met het adres en de contactgegevens.',
         'already_handled' => 'Deze aanvraag is al afgehandeld.',
+        'request_expired' => 'Deze aanvraag was verlopen: de starttijd was al (bijna) bereikt. De boeking is automatisch geannuleerd en de artiest krijgt het volledige bedrag terug.',
         'declined' => 'De aanvraag is geweigerd. De artiest krijgt het volledige bedrag terug en ontvangt een mail.',
         'disputes_title' => 'Probleemmeldingen',
         'disputed_on' => 'gemeld op :date',
@@ -271,12 +275,12 @@ return [
     ],
 
     'damage' => [
-        'title' => 'Schade melden',
-        'subtitle' => 'Schade na een sessie? Meld het hier met bewijs, dan neemt StudioMatch contact op.',
-        'note' => 'Na je melding krijgt de admin een alert en deelt hij de gegevens van de artiest met je. De afhandeling van de schade gebeurt buiten het platform.',
+        'title' => 'Meld een probleem',
+        'subtitle' => 'Schade of een probleem na een sessie? Meld het hier met bewijs, dan neemt StudioMatch contact op.',
+        'note' => 'Na je melding krijgt de admin een alert en deelt hij de gegevens van de artiest met je. De afhandeling gebeurt buiten het platform.',
         'eligible_title' => 'Recente sessies',
-        'eligible_empty' => 'Geen recente sessies om schade voor te melden. Melden kan tot 14 dagen na afloop van een sessie.',
-        'report_button' => 'Schade melden voor deze sessie',
+        'eligible_empty' => 'Geen recente sessies om een probleem voor te melden. Melden kan tot 14 dagen na afloop van een sessie.',
+        'report_button' => 'Meld een probleem',
         'placeholder' => 'Beschrijf de schade zo concreet mogelijk...',
         'window_note' => 'Melden kan tot 14 dagen na afloop van de sessie.',
         'submit' => 'Melding versturen',

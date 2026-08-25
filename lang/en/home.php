@@ -13,6 +13,7 @@ return [
         'when_placeholder' => 'Date & time',
         'type' => 'Type',
         'type_placeholder' => 'Type of studio',
+        'all_types' => 'All types',
         'submit' => 'Search',
         'mobile_placeholder' => 'Find a studio',
         'mobile_hint' => 'Location · date & time · type',

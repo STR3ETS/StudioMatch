@@ -124,6 +124,19 @@ class StudioController extends Controller
         ]);
     }
 
+    public function checkAddress(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $validated = $request->validate([
+            'street' => ['required', 'string', 'max:255'],
+            'postal_code' => ['required', 'string', 'max:10'],
+            'city' => ['required', 'string', 'max:100'],
+        ]);
+
+        return response()->json([
+            'found' => Geocoder::verify($validated['street'], $validated['postal_code'], $validated['city']) !== false,
+        ]);
+    }
+
     private function verifiedCoords(array $validated): ?array
     {
         $result = Geocoder::verify($validated['street'], $validated['postal_code'], $validated['city']);

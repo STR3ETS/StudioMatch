@@ -88,6 +88,9 @@ return [
         'resolve_confirm' => 'Are you sure you want to handle this ticket? The refund is executed immediately and both parties receive the final decision by email.',
         'resolve_accept' => 'Yes, handle it',
         'resolved' => 'The ticket has been handled and both parties have been emailed.',
+        'already_resolved' => 'This ticket has already been handled.',
+        'damage_title' => 'Problem reports from hosts',
+        'damage_text' => 'Reports filed after a session. Share the artist details with the host, settlement happens outside the platform.',
     ],
 
     'queue' => [

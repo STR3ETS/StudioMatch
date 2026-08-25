@@ -25,6 +25,7 @@ return [
         'type' => 'Type studio',
         'capacity' => 'Capaciteit',
         'capacity_any' => 'Maakt niet uit',
+        'date_placeholder' => 'Kies een datum',
         'persons' => 'personen',
         'engineer' => 'Engineer',
         'equipment' => 'Apparatuur',
@@ -70,7 +71,7 @@ return [
         'bass' => 'Basgitaar',
         'drums' => 'Drumstel',
         'screen_extra' => 'Extra beeldscherm',
-        'headphones' => 'Koptelefoons',
+        'headphones' => 'Koptelefoon',
     ],
 
     'facilities' => [

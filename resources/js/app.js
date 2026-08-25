@@ -61,6 +61,19 @@ const initStudioMap = () => {
         })
         .catch(() => applyHighlight([nlFallback], true));
 
+    if (mapEl.dataset.approx) {
+        studios.forEach((studio) => {
+            L.circle([studio.lat, studio.lng], {
+                radius: 400,
+                color: '#AD0924',
+                weight: 2,
+                fillColor: '#AD0924',
+                fillOpacity: 0.15,
+            }).addTo(map);
+        });
+        return;
+    }
+
     studios.forEach((studio) => {
         const icon = L.divIcon({ className: 'map-pin-wrap', html: `<span class="map-pin">&euro;${studio.price}</span>`, iconSize: null });
         const marker = L.marker([studio.lat, studio.lng], { icon }).addTo(map);
@@ -326,9 +339,190 @@ document.addEventListener('submit', (event) => {
     }, 0);
 });
 
+window.addEventListener('pageshow', () => {
+    document.querySelectorAll('button[type="submit"]:disabled').forEach((button) => {
+        button.disabled = false;
+        button.classList.remove('opacity-60', 'pointer-events-none');
+    });
+});
+
+document.querySelectorAll('[data-datepicker]').forEach((wrap) => {
+    const input = wrap.querySelector('input[type="hidden"]');
+    const toggle = wrap.querySelector('[data-datepicker-toggle]');
+    const label = wrap.querySelector('[data-datepicker-label]');
+    const panel = wrap.querySelector('[data-datepicker-panel]');
+    if (!input || !toggle || !label || !panel) return;
+
+    const locale = document.documentElement.lang || 'nl';
+    const min = new Date((wrap.dataset.min || new Date().toISOString().slice(0, 10)) + 'T00:00:00');
+    const max = new Date(min);
+    max.setDate(max.getDate() + 365);
+    const monthFmt = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
+    const dayFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+    const weekdayFmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
+    const dateKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+
+    let view = input.value ? new Date(input.value + 'T00:00:00') : new Date(min);
+    view = new Date(view.getFullYear(), view.getMonth(), 1);
+
+    const render = () => {
+        let html = '<div class="flex items-center justify-between">'
+            + '<button type="button" data-dp-prev class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-prussian-blue/60 transition hover:bg-prussian-blue/5"><i class="fa-solid fa-chevron-left fa-xs"></i></button>'
+            + `<span class="text-sm font-semibold capitalize text-prussian-blue">${monthFmt.format(view)}</span>`
+            + '<button type="button" data-dp-next class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-prussian-blue/60 transition hover:bg-prussian-blue/5"><i class="fa-solid fa-chevron-right fa-xs"></i></button>'
+            + '</div><div class="mt-2 grid grid-cols-7 gap-1">';
+
+        for (let i = 0; i < 7; i++) {
+            html += `<span class="py-1 text-center text-[10px] font-bold uppercase text-prussian-blue/40">${weekdayFmt.format(new Date(2024, 0, i + 1)).slice(0, 2)}</span>`;
+        }
+
+        const offset = (new Date(view.getFullYear(), view.getMonth(), 1).getDay() + 6) % 7;
+        html += '<span></span>'.repeat(offset);
+
+        const days = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
+        for (let d = 1; d <= days; d++) {
+            const date = new Date(view.getFullYear(), view.getMonth(), d);
+            const key = dateKey(date);
+            const disabled = date < min || date > max;
+            const selected = input.value === key;
+            const classes = selected
+                ? 'bg-ruby-red font-bold text-white'
+                : disabled
+                    ? 'text-prussian-blue/25'
+                    : 'cursor-pointer font-semibold text-prussian-blue transition hover:bg-ruby-red/10';
+            html += `<button type="button" data-dp-day="${key}" ${disabled ? 'disabled' : ''} class="h-8 rounded-lg text-center text-sm ${classes}">${d}</button>`;
+        }
+
+        panel.innerHTML = html + '</div>';
+
+        panel.querySelector('[data-dp-prev]').addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() - 1, 1); render(); });
+        panel.querySelector('[data-dp-next]').addEventListener('click', () => { view = new Date(view.getFullYear(), view.getMonth() + 1, 1); render(); });
+        panel.querySelectorAll('[data-dp-day]').forEach((day) => day.addEventListener('click', () => {
+            input.value = day.dataset.dpDay;
+            label.textContent = dayFmt.format(new Date(day.dataset.dpDay + 'T00:00:00'));
+            label.classList.remove('text-prussian-blue/40');
+            panel.classList.add('hidden');
+            input.dispatchEvent(new Event('change', { bubbles: true }));
+            if (wrap.dataset.submit) input.form?.requestSubmit();
+        }));
+    };
+
+    toggle.addEventListener('click', () => {
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden')) render();
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!wrap.contains(event.target)) panel.classList.add('hidden');
+    });
+});
+
 document.addEventListener('sm:results-updated', () => {
     initStudioMap();
     initLoadMore();
     initReveals();
     document.querySelectorAll('[data-carousel]').forEach(initCarousel);
+});
+
+document.querySelectorAll('[data-photo-input]').forEach((input) => {
+    const scope = input.closest('form') || document;
+    const preview = scope.querySelector('[data-photo-preview]');
+    const count = input.closest('label')?.querySelector('[data-file-count]');
+    const submits = scope.querySelectorAll('button[type="submit"]');
+    const selectedLabel = input.dataset.selectedLabel || '';
+    if (!preview || !count) return;
+
+    const MAX_DIM = 1800;
+    let files = [];
+
+    const shrink = (file) => new Promise((resolve) => {
+        if (!file.type.startsWith('image/') || file.size < 700 * 1024) return resolve(file);
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.onload = () => {
+            const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob((blob) => {
+                URL.revokeObjectURL(url);
+                resolve(blob && blob.size < file.size
+                    ? new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' })
+                    : file);
+            }, 'image/jpeg', 0.85);
+        };
+        img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve(file);
+        };
+        img.src = url;
+    });
+
+    const syncInput = () => {
+        const transfer = new DataTransfer();
+        files.forEach((file) => transfer.items.add(file));
+        try { input.files = transfer.files; } catch (error) {}
+    };
+
+    const controlButton = (icon, onClick) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/90 text-[10px] text-prussian-blue shadow transition hover:bg-white';
+        button.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+        button.addEventListener('click', onClick);
+        return button;
+    };
+
+    const render = () => {
+        preview.innerHTML = '';
+        files.forEach((file, index) => {
+            const wrap = document.createElement('div');
+            wrap.className = 'relative';
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.className = 'aspect-[4/3] w-full rounded-xl object-cover';
+            wrap.appendChild(img);
+
+            const controls = document.createElement('div');
+            controls.className = 'absolute inset-x-1 top-1 flex items-center justify-between gap-1';
+            const left = controlButton('fa-chevron-left', () => {
+                if (index === 0) return;
+                [files[index - 1], files[index]] = [files[index], files[index - 1]];
+                syncInput();
+                render();
+            });
+            const remove = controlButton('fa-trash', () => {
+                files.splice(index, 1);
+                syncInput();
+                render();
+            });
+            remove.classList.remove('text-prussian-blue');
+            remove.classList.add('text-ruby-red');
+            const right = controlButton('fa-chevron-right', () => {
+                if (index === files.length - 1) return;
+                [files[index + 1], files[index]] = [files[index], files[index + 1]];
+                syncInput();
+                render();
+            });
+            controls.append(left, remove, right);
+            wrap.appendChild(controls);
+            preview.appendChild(wrap);
+        });
+        preview.classList.toggle('hidden', files.length === 0);
+        preview.classList.toggle('grid', files.length > 0);
+        count.textContent = files.length ? files.length + ' ' + selectedLabel : '';
+    };
+
+    input.addEventListener('change', async () => {
+        if (!input.files.length) return;
+        submits.forEach((button) => button.disabled = true);
+        count.textContent = '…';
+
+        const shrunk = await Promise.all([...input.files].map(shrink));
+        files = files.concat(shrunk);
+        syncInput();
+        render();
+        submits.forEach((button) => button.disabled = false);
+    });
 });

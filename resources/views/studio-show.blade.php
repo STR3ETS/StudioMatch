@@ -29,15 +29,13 @@
         'url' => route('studios.show', $room),
         'address' => [
             '@type' => 'PostalAddress',
-            'streetAddress' => $studio->street,
-            'postalCode' => $studio->postal_code,
             'addressLocality' => $studio->city,
             'addressCountry' => 'NL',
         ],
         'geo' => $studio->lat !== null ? [
             '@type' => 'GeoCoordinates',
-            'latitude' => $studio->lat,
-            'longitude' => $studio->lng,
+            'latitude' => round($studio->lat, 3),
+            'longitude' => round($studio->lng, 3),
         ] : null,
         'priceRange' => '€' . number_format($room->hourlyRateEuros(), 0) . ' ' . __('studio.booking.per_hour'),
     ]);
@@ -65,25 +63,25 @@
 
             @php $extraPhotos = count($photos) - 5; @endphp
             @if (count($photos) > 0)
-                <div data-reveal style="--reveal-delay: .1s" class="mt-5 grid gap-2 overflow-hidden rounded-2xl sm:h-[440px] sm:grid-cols-4 sm:grid-rows-2">
+                <div data-reveal style="--reveal-delay: .1s" class="mt-5 flex snap-x snap-mandatory gap-2 overflow-x-auto rounded-2xl [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:grid sm:h-[440px] sm:snap-none sm:grid-cols-4 sm:grid-rows-2 sm:overflow-hidden">
                     <img src="{{ $photos[0] }}" alt="{{ $room->title }}" data-lightbox-src="{{ $photos[0] }}" @class([
-                        'h-64 w-full cursor-zoom-in object-cover transition hover:brightness-90 sm:h-full',
+                        'h-64 w-[88%] shrink-0 snap-center cursor-zoom-in rounded-xl object-cover transition hover:brightness-90 sm:h-full sm:w-full sm:shrink sm:rounded-none',
                         'sm:col-span-2 sm:row-span-2' => count($photos) > 1,
                         'sm:col-span-4 sm:row-span-2' => count($photos) === 1,
                     ])>
                     @foreach (array_slice($photos, 1, 4) as $photo)
                         @if ($loop->last && $extraPhotos > 0)
-                            <div class="relative hidden sm:block">
-                                <img src="{{ $photo }}" alt="{{ $room->title }}" data-lightbox-src="{{ $photo }}" class="h-full w-full cursor-zoom-in object-cover transition hover:brightness-90">
-                                <span class="pointer-events-none absolute inset-0 flex items-center justify-center bg-prussian-blue/60 text-2xl font-bold text-white">+{{ $extraPhotos }}</span>
+                            <div class="relative h-64 w-[88%] shrink-0 snap-center sm:h-full sm:w-full sm:shrink">
+                                <img src="{{ $photo }}" alt="{{ $room->title }}" data-lightbox-src="{{ $photo }}" class="h-full w-full cursor-zoom-in rounded-xl object-cover transition hover:brightness-90 sm:rounded-none">
+                                <span class="pointer-events-none absolute inset-0 hidden items-center justify-center bg-prussian-blue/60 text-2xl font-bold text-white sm:flex">+{{ $extraPhotos }}</span>
                             </div>
                         @else
-                            <img src="{{ $photo }}" alt="{{ $room->title }}" data-lightbox-src="{{ $photo }}" class="hidden h-full w-full cursor-zoom-in object-cover transition hover:brightness-90 sm:block">
+                            <img src="{{ $photo }}" alt="{{ $room->title }}" data-lightbox-src="{{ $photo }}" class="h-64 w-[88%] shrink-0 snap-center cursor-zoom-in rounded-xl object-cover transition hover:brightness-90 sm:h-full sm:w-full sm:shrink sm:rounded-none">
                         @endif
                     @endforeach
 
                     @foreach (array_slice($photos, 5) as $photo)
-                        <span class="hidden" data-lightbox-src="{{ $photo }}"></span>
+                        <img src="{{ $photo }}" alt="{{ $room->title }}" data-lightbox-src="{{ $photo }}" class="h-64 w-[88%] shrink-0 snap-center cursor-zoom-in rounded-xl object-cover sm:hidden">
                     @endforeach
                 </div>
             @else
@@ -162,9 +160,12 @@
 
                     <section class="pt-6">
                         <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.location') }}</h2>
-                        <p class="mt-2 text-sm text-prussian-blue/70">{{ $studio->fullAddress() }}</p>
+                        <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/70">
+                            <span><i class="fa-solid fa-location-dot fa-sm mr-1.5 text-prussian-blue/40"></i>{{ $studio->city }}</span>
+                            <span class="text-prussian-blue/50"><i class="fa-solid fa-lock fa-xs mr-1.5 text-prussian-blue/30"></i>{{ __('studio.location_privacy') }}</span>
+                        </p>
                         @if (count($mapStudios) > 0)
-                            <x-studio-map :studios="$mapStudios" data-zoom="{{ $studio->lat !== null ? 15 : 12 }}" class="mt-3 h-[28rem] max-sm:h-80 border border-prussian-blue/10" />
+                            <x-studio-map :studios="$mapStudios" data-zoom="{{ $studio->lat !== null ? 14 : 12 }}" data-approx="1" class="mt-3 h-[28rem] max-sm:h-80 border border-prussian-blue/10" />
                         @else
                             <div class="mt-3 flex h-64 items-center justify-center rounded-2xl bg-prussian-blue/5 text-prussian-blue/30">
                                 <span class="flex items-center gap-2"><i class="fa-solid fa-map-location-dot"></i> {{ __('studio.map_placeholder') }}</span>
