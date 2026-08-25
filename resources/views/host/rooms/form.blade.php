@@ -160,13 +160,41 @@
                     @foreach ($room->photos as $photo)
                         <div class="group relative">
                             <img src="{{ $photo->url() }}" alt="" class="aspect-[4/3] w-full rounded-xl object-cover">
+                            @if ($loop->first)
+                                <span class="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-prussian-blue shadow">{{ __('host.rooms.main_photo') }}</span>
+                            @endif
                             <button type="submit" form="delete-photo-{{ $photo->id }}" title="{{ __('host.rooms.photo_delete') }}"
-                                    class="absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-ruby-red opacity-0 shadow transition group-hover:opacity-100">
+                                    class="absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-ruby-red shadow transition sm:opacity-0 sm:group-hover:opacity-100">
                                 <i class="fa-solid fa-trash fa-xs"></i>
                             </button>
+                            <div class="absolute inset-x-2 bottom-2 flex justify-between transition sm:opacity-0 sm:group-hover:opacity-100">
+                                @if (! $loop->first)
+                                    <form method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="direction" value="up">
+                                        <button type="submit" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
+                                            <i class="fa-solid fa-chevron-left fa-xs"></i>
+                                        </button>
+                                    </form>
+                                @else
+                                    <span></span>
+                                @endif
+                                @if (! $loop->last)
+                                    <form method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <input type="hidden" name="direction" value="down">
+                                        <button type="submit" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
+                                            <i class="fa-solid fa-chevron-right fa-xs"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>
+                <p class="mt-2 text-xs text-prussian-blue/50">{{ __('host.rooms.photo_order_hint') }}</p>
             @endif
 
             <label class="mt-5 flex cursor-pointer flex-col items-center rounded-xl border border-dashed border-prussian-blue/25 px-6 py-8 text-center transition hover:border-prussian-blue/50 hover:bg-prussian-blue/[0.02]">

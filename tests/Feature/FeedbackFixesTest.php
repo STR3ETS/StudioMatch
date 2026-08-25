@@ -162,13 +162,44 @@ class FeedbackFixesTest extends TestCase
         $this->assertSame(1, $this->host->studios()->count());
     }
 
+    public function test_fuzzy_pdok_match_with_wrong_postal_code_is_rejected(): void
+    {
+        \Illuminate\Support\Facades\Http::fake([
+            'api.pdok.nl/*' => \Illuminate\Support\Facades\Http::response([
+                'response' => ['docs' => [['centroide_ll' => 'POINT(5.1 52.1)', 'postcode' => '3555HS']]],
+            ]),
+        ]);
+
+        $this->actingAs($this->host)->post('/dashboard/verhuurder/studios', [
+            'name' => 'Nepstudio',
+            'street' => 'Verzonnenstraat 999',
+            'postal_code' => '0000 XX',
+            'city' => 'Nergenshuizen',
+        ])->assertSessionHasErrors('street');
+
+        $this->assertSame(1, $this->host->studios()->count());
+    }
+
+    public function test_host_can_reorder_stored_room_photos(): void
+    {
+        $first = $this->room->photos()->create(['path' => 'rooms/1/a.jpg', 'sort_order' => 0]);
+        $second = $this->room->photos()->create(['path' => 'rooms/1/b.jpg', 'sort_order' => 1]);
+
+        $this->actingAs($this->host)
+            ->patch('/dashboard/verhuurder/ruimtes/' . $this->room->id . '/fotos/' . $second->id . '/volgorde', ['direction' => 'up'])
+            ->assertRedirect(route('host.rooms.edit', $this->room));
+
+        $this->assertSame(1, (int) $first->fresh()->sort_order);
+        $this->assertSame(0, (int) $second->fresh()->sort_order);
+    }
+
     public function test_wizard_creates_studio_with_first_room_in_one_go(): void
     {
         Notification::fake();
         \Illuminate\Support\Facades\Storage::fake('public');
         \Illuminate\Support\Facades\Http::fake([
             'api.pdok.nl/*' => \Illuminate\Support\Facades\Http::response([
-                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)']]],
+                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)', 'postcode' => '1016GV']]],
             ]),
         ]);
 

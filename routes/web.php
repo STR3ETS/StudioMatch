@@ -149,6 +149,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/ruimtes/{room}', [RoomController::class, 'update'])->name('host.rooms.update');
         Route::delete('/ruimtes/{room}', [RoomController::class, 'destroy'])->name('host.rooms.destroy');
         Route::delete('/ruimtes/{room}/fotos/{photo}', [RoomPhotoController::class, 'destroy'])->name('host.rooms.photos.destroy');
+        Route::patch('/ruimtes/{room}/fotos/{photo}/volgorde', [RoomPhotoController::class, 'move'])->name('host.rooms.photos.move');
 
         Route::get('/boekingen', [HostBookingController::class, 'index'])->name('host.bookings.index');
         Route::patch('/boekingen/{booking}/accepteren', [HostBookingController::class, 'accept'])->name('host.bookings.accept');

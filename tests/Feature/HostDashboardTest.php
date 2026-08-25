@@ -79,11 +79,13 @@ class HostDashboardTest extends TestCase
 
     public function test_host_can_create_multiple_studios_including_same_address(): void
     {
-        Http::fake([
-            'api.pdok.nl/*' => Http::response([
-                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)']]],
-            ]),
-        ]);
+        Http::fake(function ($request) {
+            $postcode = str_contains(urldecode($request->url()), '1073') ? '1073LL' : '1016GV';
+
+            return Http::response([
+                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)', 'postcode' => $postcode]]],
+            ]);
+        });
         $host = $this->host();
 
         foreach (['Redlight A', 'Redlight B'] as $name) {
@@ -110,7 +112,7 @@ class HostDashboardTest extends TestCase
     {
         Http::fake([
             'api.pdok.nl/*' => Http::response([
-                'response' => ['docs' => [['centroide_ll' => 'POINT(5.92976488 51.98858137)']]],
+                'response' => ['docs' => [['centroide_ll' => 'POINT(5.92976488 51.98858137)', 'postcode' => '6824BG']]],
             ]),
         ]);
 

@@ -15,7 +15,41 @@ class Geocoder
 
     public static function verify(string $street, string $postalCode, string $city): array|false|null
     {
-        return self::lookup("{$street}, {$postalCode} {$city}", 'type:adres');
+        try {
+            $response = Http::timeout(5)
+                ->get('https://api.pdok.nl/bzk/locatieserver/search/v3_1/free', [
+                    'q' => "{$street}, {$postalCode} {$city}",
+                    'fq' => 'type:adres',
+                    'rows' => 1,
+                ]);
+
+            if (! $response->successful()) {
+                return null;
+            }
+
+            $doc = $response->json('response.docs.0');
+
+            if (! is_array($doc)) {
+                return false;
+            }
+
+            $wanted = strtoupper(preg_replace('/\s+/', '', $postalCode));
+            $found = strtoupper(preg_replace('/\s+/', '', $doc['postcode'] ?? ''));
+
+            if ($wanted === '' || $wanted !== $found) {
+                return false;
+            }
+
+            $point = $doc['centroide_ll'] ?? null;
+
+            if (! is_string($point) || ! preg_match('/POINT\(([\d.]+) ([\d.]+)\)/', $point, $matches)) {
+                return false;
+            }
+
+            return ['lat' => (float) $matches[2], 'lng' => (float) $matches[1]];
+        } catch (Throwable) {
+            return null;
+        }
     }
 
     public static function place(string $query): ?array

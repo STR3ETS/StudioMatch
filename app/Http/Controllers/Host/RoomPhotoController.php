@@ -24,4 +24,25 @@ class RoomPhotoController extends Controller
 
         return redirect()->route('host.rooms.edit', $room)->with('status', __('host.rooms.photo_deleted'));
     }
+
+    public function move(Request $request, Room $room, RoomPhoto $photo): RedirectResponse
+    {
+        abort_unless($room->studio->user_id === $request->user()->id, 403);
+        abort_unless($photo->room_id === $room->id, 404);
+
+        $direction = $request->validate(['direction' => ['required', 'in:up,down']])['direction'];
+
+        $neighbor = $room->photos()
+            ->where('sort_order', $direction === 'up' ? '<' : '>', $photo->sort_order)
+            ->orderBy('sort_order', $direction === 'up' ? 'desc' : 'asc')
+            ->first();
+
+        if ($neighbor !== null) {
+            [$photoOrder, $neighborOrder] = [$photo->sort_order, $neighbor->sort_order];
+            $photo->update(['sort_order' => $neighborOrder]);
+            $neighbor->update(['sort_order' => $photoOrder]);
+        }
+
+        return redirect()->route('host.rooms.edit', $room)->with('status', __('host.rooms.photo_moved'));
+    }
 }
