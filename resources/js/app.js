@@ -346,12 +346,24 @@ window.addEventListener('pageshow', () => {
     });
 });
 
+const floatPanel = (toggle, panel, width) => {
+    const rect = toggle.getBoundingClientRect();
+    let left = rect.left + window.scrollX + rect.width / 2 - width / 2;
+    left = Math.max(8, Math.min(left, window.scrollX + document.documentElement.clientWidth - width - 8));
+    panel.style.position = 'absolute';
+    panel.style.top = rect.bottom + window.scrollY + 8 + 'px';
+    panel.style.left = left + 'px';
+};
+
 document.querySelectorAll('[data-datepicker]').forEach((wrap) => {
     const input = wrap.querySelector('input[type="hidden"]');
     const toggle = wrap.querySelector('[data-datepicker-toggle]');
     const label = wrap.querySelector('[data-datepicker-label]');
     const panel = wrap.querySelector('[data-datepicker-panel]');
     if (!input || !toggle || !label || !panel) return;
+
+    const isFloat = panel.dataset.float !== undefined;
+    if (isFloat) document.body.appendChild(panel);
 
     const locale = document.documentElement.lang || 'nl';
     const min = new Date((wrap.dataset.min || new Date().toISOString().slice(0, 10)) + 'T00:00:00');
@@ -409,11 +421,45 @@ document.querySelectorAll('[data-datepicker]').forEach((wrap) => {
 
     toggle.addEventListener('click', () => {
         panel.classList.toggle('hidden');
-        if (!panel.classList.contains('hidden')) render();
+        if (!panel.classList.contains('hidden')) {
+            if (isFloat) floatPanel(toggle, panel, 288);
+            render();
+        }
     });
 
     document.addEventListener('click', (event) => {
-        if (!wrap.contains(event.target)) panel.classList.add('hidden');
+        if (!wrap.contains(event.target) && !panel.contains(event.target)) panel.classList.add('hidden');
+    });
+});
+
+document.querySelectorAll('[data-select]').forEach((wrap) => {
+    const input = wrap.querySelector('input[type="hidden"]');
+    const toggle = wrap.querySelector('[data-select-toggle]');
+    const label = wrap.querySelector('[data-select-label]');
+    const panel = wrap.querySelector('[data-select-panel]');
+    if (!input || !toggle || !label || !panel) return;
+
+    const isFloat = panel.dataset.float !== undefined;
+    if (isFloat) document.body.appendChild(panel);
+
+    toggle.addEventListener('click', () => {
+        panel.classList.toggle('hidden');
+        if (!panel.classList.contains('hidden') && isFloat) floatPanel(toggle, panel, 224);
+    });
+
+    panel.querySelectorAll('[data-select-option]').forEach((option) => {
+        option.addEventListener('click', () => {
+            input.value = option.dataset.value;
+            label.textContent = option.textContent.trim();
+            panel.querySelectorAll('[data-select-option]').forEach((item) => {
+                item.classList.toggle('bg-prussian-blue/5', item === option);
+            });
+            panel.classList.add('hidden');
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!wrap.contains(event.target) && !panel.contains(event.target)) panel.classList.add('hidden');
     });
 });
 

@@ -25,20 +25,27 @@
                     <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.when') }}</span>
                     <span data-datepicker-label class="block text-sm text-prussian-blue/40">{{ __('home.search.when_placeholder') }}</span>
                 </button>
-                <div data-datepicker-panel class="absolute left-1/2 top-full z-50 mt-3 hidden w-72 -translate-x-1/2 rounded-2xl border border-prussian-blue/10 bg-white p-4 text-left shadow-xl"></div>
+                <div data-datepicker-panel data-float class="z-[1400] hidden w-72 rounded-2xl border border-prussian-blue/10 bg-white p-4 text-left shadow-xl"></div>
             </div>
 
             <span class="hidden sm:block h-8 w-px bg-prussian-blue/10"></span>
 
-            <label class="flex-1 cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
-                <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.type') }}</span>
-                <select name="type" class="w-full cursor-pointer appearance-none bg-transparent text-sm text-prussian-blue focus:outline-none">
-                    <option value="">{{ __('home.search.all_types') }}</option>
+            <div class="relative flex-1" data-select>
+                <input type="hidden" name="type" value="">
+                <button type="button" data-select-toggle class="w-full cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
+                    <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.type') }}</span>
+                    <span class="flex items-center justify-between text-sm text-prussian-blue">
+                        <span data-select-label>{{ __('home.search.all_types') }}</span>
+                        <i class="fa-solid fa-chevron-down fa-2xs ml-2 text-prussian-blue/40"></i>
+                    </span>
+                </button>
+                <div data-select-panel data-float class="z-[1400] hidden w-56 rounded-2xl border border-prussian-blue/10 bg-white p-1.5 text-left shadow-xl">
+                    <button type="button" data-select-option data-value="" class="block w-full cursor-pointer rounded-xl bg-prussian-blue/5 px-3 py-2 text-left text-sm font-medium text-prussian-blue transition hover:bg-prussian-blue/5">{{ __('home.search.all_types') }}</button>
                     @foreach (['recording', 'mix', 'master'] as $value)
-                        <option value="{{ $value }}">{{ __('studios.type.' . $value) }}</option>
+                        <button type="button" data-select-option data-value="{{ $value }}" class="block w-full cursor-pointer rounded-xl px-3 py-2 text-left text-sm font-medium text-prussian-blue transition hover:bg-prussian-blue/5">{{ __('studios.type.' . $value) }}</button>
                     @endforeach
-                </select>
-            </label>
+                </div>
+            </div>
 
             <button type="submit" aria-label="{{ __('home.search.submit') }}" class="flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-ruby-red font-semibold text-white transition hover:bg-ruby-red/90 sm:w-12 mx-2 mb-2 sm:my-0 sm:mr-4 sm:ml-4">
                 <i class="fa-solid fa-magnifying-glass"></i>
