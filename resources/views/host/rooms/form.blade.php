@@ -169,26 +169,16 @@
                             </button>
                             <div class="absolute inset-x-2 bottom-2 flex justify-between transition sm:opacity-0 sm:group-hover:opacity-100">
                                 @if (! $loop->first)
-                                    <form method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="direction" value="up">
-                                        <button type="submit" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
-                                            <i class="fa-solid fa-chevron-left fa-xs"></i>
-                                        </button>
-                                    </form>
+                                    <button type="submit" form="move-photo-up-{{ $photo->id }}" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
+                                        <i class="fa-solid fa-chevron-left fa-xs"></i>
+                                    </button>
                                 @else
                                     <span></span>
                                 @endif
                                 @if (! $loop->last)
-                                    <form method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
-                                        @csrf
-                                        @method('PATCH')
-                                        <input type="hidden" name="direction" value="down">
-                                        <button type="submit" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
-                                            <i class="fa-solid fa-chevron-right fa-xs"></i>
-                                        </button>
-                                    </form>
+                                    <button type="submit" form="move-photo-down-{{ $photo->id }}" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
+                                        <i class="fa-solid fa-chevron-right fa-xs"></i>
+                                    </button>
                                 @endif
                             </div>
                         </div>
@@ -269,6 +259,16 @@
             <form id="delete-photo-{{ $photo->id }}" method="POST" action="{{ route('host.rooms.photos.destroy', [$room, $photo]) }}">
                 @csrf
                 @method('DELETE')
+            </form>
+            <form id="move-photo-up-{{ $photo->id }}" method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="direction" value="up">
+            </form>
+            <form id="move-photo-down-{{ $photo->id }}" method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="direction" value="down">
             </form>
         @endforeach
     @endif
