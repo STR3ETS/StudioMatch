@@ -160,9 +160,9 @@
                     @foreach ($room->photos as $photo)
                         <div class="group relative">
                             <img src="{{ $photo->url() }}" alt="" class="aspect-[4/3] w-full rounded-xl object-cover">
-                            @if ($loop->first)
-                                <span class="absolute left-2 top-2 rounded-full bg-white/90 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-prussian-blue shadow">{{ __('host.rooms.main_photo') }}</span>
-                            @endif
+                            <span class="absolute left-2 top-2 rounded-full bg-prussian-blue/80 px-2 py-0.5 text-[10px] font-bold text-white shadow">
+                                {{ $loop->iteration }}@if ($loop->first) &middot; {{ __('host.rooms.main_photo') }}@endif
+                            </span>
                             <button type="submit" form="delete-photo-{{ $photo->id }}" title="{{ __('host.rooms.photo_delete') }}"
                                     class="absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-ruby-red shadow transition sm:opacity-0 sm:group-hover:opacity-100">
                                 <i class="fa-solid fa-trash fa-xs"></i>

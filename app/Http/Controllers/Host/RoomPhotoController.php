@@ -32,15 +32,17 @@ class RoomPhotoController extends Controller
 
         $direction = $request->validate(['direction' => ['required', 'in:up,down']])['direction'];
 
-        $neighbor = $room->photos()
-            ->where('sort_order', $direction === 'up' ? '<' : '>', $photo->sort_order)
-            ->orderBy('sort_order', $direction === 'up' ? 'desc' : 'asc')
-            ->first();
+        $photos = $room->photos()->orderBy('sort_order')->orderBy('id')->get()->values();
+        $index = $photos->search(fn ($item) => $item->id === $photo->id);
+        $target = $direction === 'up' ? $index - 1 : $index + 1;
 
-        if ($neighbor !== null) {
-            [$photoOrder, $neighborOrder] = [$photo->sort_order, $neighbor->sort_order];
-            $photo->update(['sort_order' => $neighborOrder]);
-            $neighbor->update(['sort_order' => $photoOrder]);
+        if ($index !== false && $target >= 0 && $target < $photos->count()) {
+            $items = $photos->all();
+            [$items[$index], $items[$target]] = [$items[$target], $items[$index]];
+
+            foreach ($items as $order => $item) {
+                $item->update(['sort_order' => $order]);
+            }
         }
 
         return redirect()->route('host.rooms.edit', $room)->with('status', __('host.rooms.photo_moved'));
