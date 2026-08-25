@@ -156,7 +156,7 @@
             <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.rooms.photos_hint') }}</p>
 
             @if ($room->exists && $room->photos->isNotEmpty())
-                <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div data-photos-grid class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 transition-opacity duration-200">
                     @foreach ($room->photos as $photo)
                         <div class="group relative">
                             <img src="{{ $photo->url() }}" alt="" class="aspect-[4/3] w-full rounded-xl object-cover">
@@ -271,6 +271,41 @@
                 <input type="hidden" name="direction" value="down">
             </form>
         @endforeach
+
+        <script>
+            (() => {
+                const grid = document.querySelector('[data-photos-grid]');
+                if (! grid) return;
+
+                document.querySelectorAll('form[id^="move-photo-"]').forEach((form) => {
+                    form.addEventListener('submit', async (event) => {
+                        event.preventDefault();
+                        grid.classList.add('opacity-50', 'pointer-events-none');
+
+                        try {
+                            const response = await fetch(form.action, {
+                                method: 'POST',
+                                body: new FormData(form),
+                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                            });
+                            if (! response.ok) throw new Error('move failed');
+
+                            const page = await fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                            const doc = new DOMParser().parseFromString(await page.text(), 'text/html');
+                            const fresh = doc.querySelector('[data-photos-grid]');
+                            if (! fresh) throw new Error('missing grid');
+
+                            grid.innerHTML = fresh.innerHTML;
+                        } catch (error) {
+                            window.location.reload();
+                            return;
+                        } finally {
+                            grid.classList.remove('opacity-50', 'pointer-events-none');
+                        }
+                    });
+                });
+            })();
+        </script>
     @endif
 
 </x-host-layout>
