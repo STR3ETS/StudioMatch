@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\HostWelcome;
+use App\Rules\FullName;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class RegisteredUserController extends Controller
     {
         $validated = $request->validate([
             'role' => ['required', Rule::in(UserRole::registerable())],
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', new FullName],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
             'terms' => ['accepted'],
@@ -44,6 +45,9 @@ class RegisteredUserController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route($user->role->dashboardRoute()));
+        // Brand new account: the dashboard should not greet them with "welcome back".
+        $request->session()->put('sm.just_registered', true);
+
+        return redirect()->route('verification.notice');
     }
 }

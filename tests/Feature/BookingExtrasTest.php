@@ -333,6 +333,7 @@ class BookingExtrasTest extends TestCase
     {
         Notification::fake();
         \Illuminate\Support\Facades\Storage::fake('public');
+        config(['studio.contact_email' => '']);
         $admin = User::factory()->create(['role' => 'admin']);
         $booking = $this->booking(['date' => today()->subDays(2), 'status' => 'completed']);
 

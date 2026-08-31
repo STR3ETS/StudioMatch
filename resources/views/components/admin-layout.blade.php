@@ -1,13 +1,16 @@
 @props(['title', 'active' => null])
 
 @php
+    $openTickets = \App\Models\Booking::where('status', \App\Enums\BookingStatus::Disputed)->count()
+        + \App\Models\Booking::whereNotNull('damage_reported_at')->whereNull('damage_resolved_at')->count();
+
     $items = [
         ['key' => 'overview', 'icon' => 'fa-gauge-high', 'url' => route('dashboard.admin'), 'mobile' => true],
         ['key' => 'queue', 'icon' => 'fa-clipboard-check', 'url' => route('admin.queue.index'), 'mobile' => true],
         ['key' => 'bookings', 'icon' => 'fa-calendar-check', 'url' => route('admin.bookings.index'), 'mobile' => true],
         ['key' => 'users', 'icon' => 'fa-users', 'url' => route('admin.users.index')],
         ['key' => 'revenue', 'icon' => 'fa-chart-line', 'url' => route('admin.revenue')],
-        ['key' => 'tickets', 'icon' => 'fa-life-ring', 'url' => route('admin.tickets.index'), 'mobile' => true],
+        ['key' => 'tickets', 'icon' => 'fa-life-ring', 'url' => route('admin.tickets.index'), 'mobile' => true, 'badge' => $openTickets],
         ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit')],
     ];
 @endphp

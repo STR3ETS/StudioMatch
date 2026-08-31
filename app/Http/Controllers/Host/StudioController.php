@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Host;
 
 use App\Enums\RoomStatus;
 use App\Http\Controllers\Concerns\HandlesRoomForm;
+use App\Http\Controllers\Concerns\VerifiesAddress;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\Studio;
@@ -11,12 +12,11 @@ use App\Support\Geocoder;
 use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class StudioController extends Controller
 {
-    use HandlesRoomForm;
+    use HandlesRoomForm, VerifiesAddress;
 
     public function index(Request $request): View
     {
@@ -40,7 +40,7 @@ class StudioController extends Controller
     {
         $validated = $this->validateStudio($request);
 
-        $coords = $this->verifiedCoords($validated);
+        $coords = $this->verifiedCoords($validated, __('host.studios.address_invalid'));
 
         $withRoom = $request->filled('title');
 
@@ -93,7 +93,7 @@ class StudioController extends Controller
             || $validated['city'] !== $studio->city;
 
         if ($addressChanged || $studio->lat === null) {
-            $coords = $this->verifiedCoords($validated);
+            $coords = $this->verifiedCoords($validated, __('host.studios.address_invalid'));
             $validated['lat'] = $coords['lat'] ?? null;
             $validated['lng'] = $coords['lng'] ?? null;
         }
@@ -135,17 +135,6 @@ class StudioController extends Controller
         return response()->json([
             'found' => Geocoder::verify($validated['street'], $validated['postal_code'], $validated['city']) !== false,
         ]);
-    }
-
-    private function verifiedCoords(array $validated): ?array
-    {
-        $result = Geocoder::verify($validated['street'], $validated['postal_code'], $validated['city']);
-
-        if ($result === false) {
-            throw ValidationException::withMessages(['street' => __('host.studios.address_invalid')]);
-        }
-
-        return $result;
     }
 
     private function authorizeStudio(Request $request, Studio $studio): void

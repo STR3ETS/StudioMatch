@@ -1,7 +1,7 @@
 <x-host-layout :title="__('dashboard.host.meta_title')" active="overview">
     <div data-reveal>
         <span class="inline-flex items-center gap-1.5 rounded-full bg-ruby-red/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-ruby-red"><i class="fa-solid fa-door-open fa-xs"></i> {{ __('dashboard.host.badge') }}</span>
-        <h1 class="mt-3 text-3xl font-bold text-prussian-blue">{{ __('dashboard.greeting', ['name' => auth()->user()->firstName()]) }}</h1>
+        <x-dashboard-greeting />
         <p class="mt-2 text-prussian-blue/60">{{ __('dashboard.host.subtitle') }}</p>
     </div>
 

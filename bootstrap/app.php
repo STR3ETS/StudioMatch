@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'profile.complete' => \App\Http\Middleware\EnsureProfileIsComplete::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));

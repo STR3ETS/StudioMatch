@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Notifications\DamageResponded;
 use App\Notifications\DisputeResolved;
 use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
@@ -23,10 +24,37 @@ class TicketController extends Controller
                 ->get(),
             'damages' => Booking::whereNotNull('damage_reported_at')
                 ->with(['room.studio.user', 'user'])
+                ->orderByRaw('damage_resolved_at is null desc')
                 ->latest('damage_reported_at')
                 ->take(20)
                 ->get(),
         ]);
+    }
+
+    /**
+     * Reply to a problem report from a host and close the ticket. The host gets the
+     * reply by mail and sees it back on their bookings page.
+     */
+    public function respondDamage(Request $request, Booking $booking): RedirectResponse
+    {
+        abort_if($booking->damage_reported_at === null, 404);
+
+        if ($booking->damage_resolved_at !== null) {
+            return redirect()->route('admin.tickets.index')->with('status', __('admin.tickets.already_resolved'));
+        }
+
+        $validated = $request->validate([
+            'damage_response' => ['required', 'string', 'min:10', 'max:2000'],
+        ]);
+
+        $booking->update([
+            'damage_response' => $validated['damage_response'],
+            'damage_resolved_at' => now(),
+        ]);
+
+        $booking->room->studio->user->notify(new DamageResponded($booking));
+
+        return redirect()->route('admin.tickets.index')->with('status', __('admin.tickets.damage_responded'));
     }
 
     public function resolve(Request $request, Booking $booking): RedirectResponse

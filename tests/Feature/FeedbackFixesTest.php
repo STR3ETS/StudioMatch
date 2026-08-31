@@ -186,11 +186,23 @@ class FeedbackFixesTest extends TestCase
         $second = $this->room->photos()->create(['path' => 'rooms/1/b.jpg', 'sort_order' => 1]);
 
         $this->actingAs($this->host)
-            ->patch('/dashboard/verhuurder/ruimtes/' . $this->room->id . '/fotos/' . $second->id . '/volgorde', ['direction' => 'up'])
-            ->assertRedirect(route('host.rooms.edit', $this->room));
+            ->patch(route('host.rooms.photos.reorder', $this->room), ['order' => [$second->id, $first->id]])
+            ->assertOk();
 
         $this->assertSame(1, (int) $first->fresh()->sort_order);
         $this->assertSame(0, (int) $second->fresh()->sort_order);
+    }
+
+    public function test_reordering_photos_rejects_an_incomplete_order(): void
+    {
+        $first = $this->room->photos()->create(['path' => 'rooms/1/a.jpg', 'sort_order' => 0]);
+        $this->room->photos()->create(['path' => 'rooms/1/b.jpg', 'sort_order' => 1]);
+
+        $this->actingAs($this->host)
+            ->patch(route('host.rooms.photos.reorder', $this->room), ['order' => [$first->id]])
+            ->assertStatus(422);
+
+        $this->assertSame(0, (int) $first->fresh()->sort_order);
     }
 
     public function test_wizard_creates_studio_with_first_room_in_one_go(): void

@@ -10,6 +10,19 @@
     <h1 class="text-2xl font-bold text-prussian-blue">{{ __('account.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('account.subtitle') }}</p>
 
+    @if ($user->isArtist() && ! $user->hasCompleteAddress())
+        <div class="mt-6 rounded-2xl border-2 border-ruby-red bg-ruby-red/5 p-6">
+            <div class="flex items-start gap-3">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ruby-red text-white"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                <div>
+                    <h2 class="text-lg font-bold text-ruby-red">{{ __('account.profile.address_required_title') }}</h2>
+                    <p class="mt-1 text-sm leading-relaxed text-prussian-blue/70">{{ __('account.profile.address_required_text') }}</p>
+                </div>
+            </div>
+            <x-auth-steps :current="3" class="mt-5 !bg-white" />
+        </div>
+    @endif
+
     <div class="mt-8 space-y-8">
         <form method="POST" action="{{ route('account.profile.update') }}" class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             @csrf
@@ -19,6 +32,7 @@
                 <div>
                     <label for="name" class="{{ $label }}">{{ __('account.profile.name') }}</label>
                     <input id="name" type="text" name="name" value="{{ old('name', $user->name) }}" class="{{ $field }}" required>
+                    <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('auth.fields.name_hint') }}</p>
                     <x-input-error field="name" />
                 </div>
                 <div>
@@ -29,19 +43,19 @@
                 @if ($user->isArtist())
                     <div>
                         <label for="street" class="{{ $label }}">{{ __('account.profile.street') }}</label>
-                        <input id="street" type="text" name="street" value="{{ old('street', $user->street) }}" class="{{ $field }}">
+                        <input id="street" type="text" name="street" value="{{ old('street', $user->street) }}" class="{{ $field }}" required>
                         <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('account.profile.address_hint') }}</p>
                         <x-input-error field="street" />
                     </div>
                     <div class="grid gap-5 sm:grid-cols-2">
                         <div>
                             <label for="postal_code" class="{{ $label }}">{{ __('account.profile.postal_code') }}</label>
-                            <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code', $user->postal_code) }}" class="{{ $field }}">
+                            <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code', $user->postal_code) }}" class="{{ $field }}" required>
                             <x-input-error field="postal_code" />
                         </div>
                         <div>
                             <label for="city" class="{{ $label }}">{{ __('account.profile.city') }}</label>
-                            <input id="city" type="text" name="city" value="{{ old('city', $user->city) }}" class="{{ $field }}">
+                            <input id="city" type="text" name="city" value="{{ old('city', $user->city) }}" class="{{ $field }}" required>
                             <x-input-error field="city" />
                         </div>
                     </div>

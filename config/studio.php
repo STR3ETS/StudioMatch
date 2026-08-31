@@ -12,7 +12,7 @@ return [
 
     'booking_horizon_days' => 365,
 
-    'contact_email' => env('CONTACT_EMAIL'),
+    'contact_email' => env('CONTACT_EMAIL', 'info@studiomatch.nl'),
 
     'equipment' => [
         'mic_condenser',

@@ -207,7 +207,8 @@
                 <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" data-photo-input data-selected-label="{{ __('host.rooms.photos_selected') }}" required>
                 <span data-file-count class="mt-2 text-xs font-bold text-ruby-red"></span>
             </label>
-            <div data-photo-preview class="mt-4 hidden grid-cols-3 gap-2 sm:grid-cols-5"></div>
+            <div data-photo-preview data-drag-label="{{ __('host.rooms.photo_move') }}" data-remove-label="{{ __('host.rooms.photo_delete') }}" class="mt-4 hidden grid-cols-3 gap-2 sm:grid-cols-5"></div>
+            <p class="mt-2 text-xs text-prussian-blue/50">{{ __('host.rooms.photo_order_hint') }}</p>
             <x-input-error field="photos" />
             <x-input-error field="photos.*" />
         </div>

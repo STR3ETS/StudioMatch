@@ -76,4 +76,9 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     {
         return Str::before(trim($this->name), ' ');
     }
+
+    public function hasCompleteAddress(): bool
+    {
+        return filled($this->street) && filled($this->postal_code) && filled($this->city);
+    }
 }

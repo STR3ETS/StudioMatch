@@ -132,6 +132,11 @@ return [
         'damage_reason' => 'Report: :reason',
         'damage_host_contact' => 'Host: :name (:email)',
         'damage_artist_contact' => 'Artist: :name (:email)',
-        'damage_note' => 'Share the artist\'s details with the host. The damage itself is settled outside the platform.',
+        'damage_note' => 'Pick up the report and reply from the admin portal under Tickets.',
+        'damage_response_subject' => 'Reply to your report about :room',
+        'damage_response_line' => 'We have handled your problem report for the booking of :room on :date.',
+        'damage_response_reason' => 'Your report: :reason',
+        'damage_response_body' => 'Reply from StudioMatch: :response',
+        'damage_response_action' => 'View your bookings',
     ],
 ];

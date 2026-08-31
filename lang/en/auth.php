@@ -11,11 +11,14 @@ return [
     'fields' => [
         'name' => 'Name',
         'name_placeholder' => 'Your first and last name',
+        'name_hint' => 'Enter both your first and last name, each at least two letters.',
+        'name_invalid' => 'Enter your full first and last name (each at least two letters, no digits).',
         'email' => 'Email address',
         'email_placeholder' => 'you@example.com',
         'password' => 'Password',
         'password_confirmation' => 'Repeat password',
         'password_placeholder' => '••••••••',
+        'password_show' => 'Show or hide password',
     ],
 
     'login' => [
@@ -60,12 +63,25 @@ return [
         'submit' => 'Save password',
     ],
 
+    'steps' => [
+        'label' => 'How signing up works',
+        'account' => 'Create account',
+        'verify' => 'Confirm email',
+        'profile' => 'Complete details',
+    ],
+
     'failed' => 'These credentials do not match our records.',
     'verify' => [
         'banner' => 'Please confirm your email address via the email we sent you.',
         'resend' => 'Resend email',
         'sent' => 'The confirmation email has been resent.',
         'done' => 'Your email address has been confirmed.',
+        'title' => 'Confirm your email address',
+        'subtitle' => 'We sent a confirmation link to :email. Click that link to activate your account.',
+        'blocked' => 'Until your email address is confirmed you cannot access your dashboard or make bookings.',
+        'spam_hint' => 'No email? Please also check your spam or junk folder.',
+        'wrong_email' => 'Used the wrong email address?',
+        'logout' => 'Log out and sign up again',
     ],
 
     'password' => 'The provided password is incorrect.',

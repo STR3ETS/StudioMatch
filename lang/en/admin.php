@@ -14,6 +14,7 @@ return [
         'to_queue' => 'To the queue',
         'tickets_pending' => '{1}1 open ticket is waiting to be handled|[2,*]:count open tickets are waiting to be handled',
         'tickets_text' => 'The payouts of these bookings are paused until you mediate.',
+        'tickets_damage' => '{1}Including 1 problem report from a host that still needs a reply.|[2,*]Including :count problem reports from hosts that still need a reply.',
         'to_tickets' => 'To the tickets',
     ],
 
@@ -90,7 +91,12 @@ return [
         'resolved' => 'The ticket has been handled and both parties have been emailed.',
         'already_resolved' => 'This ticket has already been handled.',
         'damage_title' => 'Problem reports from hosts',
-        'damage_text' => 'Reports filed after a session. Share the artist details with the host, settlement happens outside the platform.',
+        'damage_text' => 'Reports filed after a session. Reply to the host below; your reply is emailed and shown on their bookings page.',
+        'damage_handled' => 'Answered',
+        'damage_response_label' => 'Reply to the host',
+        'damage_response_placeholder' => 'Let the host know what you are doing with the report and which steps follow...',
+        'damage_response_button' => 'Send reply',
+        'damage_responded' => 'Your reply has been sent to the host.',
     ],
 
     'queue' => [

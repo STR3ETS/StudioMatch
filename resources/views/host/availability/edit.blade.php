@@ -32,7 +32,7 @@
             </label>
             <div>
                 <label for="vacation_until" class="{{ $label }}">{{ __('host.availability.vacation_until') }}</label>
-                <input id="vacation_until" type="date" name="vacation_until" min="{{ today()->toDateString() }}" value="{{ old('vacation_until', $room->vacation_until?->toDateString()) }}" class="{{ $field }}">
+                <x-date-field id="vacation_until" name="vacation_until" :value="old('vacation_until', $room->vacation_until?->toDateString())" clearable class="w-56" />
             </div>
             <button type="submit" class="cursor-pointer rounded-full bg-prussian-blue px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-prussian-blue/90">{{ __('host.availability.save') }}</button>
         </form>
@@ -100,7 +100,7 @@
             @csrf
             <div>
                 <label for="ex-date" class="{{ $label }}">{{ __('host.availability.fields.date') }}</label>
-                <input id="ex-date" type="date" name="date" min="{{ today()->toDateString() }}" value="{{ old('date') }}" class="{{ $field }}" required>
+                <x-date-field id="ex-date" name="date" :value="old('date')" />
                 <x-input-error field="date" />
             </div>
             <div>

@@ -22,7 +22,7 @@
 
         <div>
             <label for="password" class="{{ $label }}">{{ __('auth.fields.password') }}</label>
-            <input id="password" type="password" name="password" placeholder="{{ __('auth.fields.password_placeholder') }}" class="{{ $field }}" required>
+            <x-password-field id="password" name="password" />
             <x-input-error field="password" />
         </div>
 

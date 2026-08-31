@@ -15,11 +15,14 @@ class UserFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
+            'name' => fake()->firstName() . ' ' . fake()->lastName(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'street' => fake()->streetName() . ' ' . fake()->buildingNumber(),
+            'postal_code' => fake()->numberBetween(1000, 9999) . ' ' . strtoupper(fake()->lexify('??')),
+            'city' => fake()->city(),
         ];
     }
 
@@ -27,6 +30,15 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function withoutAddress(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'street' => null,
+            'postal_code' => null,
+            'city' => null,
         ]);
     }
 }

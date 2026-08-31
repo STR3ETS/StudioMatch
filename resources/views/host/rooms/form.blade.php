@@ -156,31 +156,22 @@
             <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.rooms.photos_hint') }}</p>
 
             @if ($room->exists && $room->photos->isNotEmpty())
-                <div data-photos-grid class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4 transition-opacity duration-200">
+                <div data-photos-grid data-reorder-url="{{ route('host.rooms.photos.reorder', $room) }}"
+                     class="mt-5 grid grid-cols-2 gap-3 transition-opacity duration-200 sm:grid-cols-4">
                     @foreach ($room->photos as $photo)
-                        <div class="group relative">
-                            <img src="{{ $photo->url() }}" alt="" class="aspect-[4/3] w-full rounded-xl object-cover">
+                        <div data-sortable-item data-photo-id="{{ $photo->id }}" class="group relative select-none">
+                            <img src="{{ $photo->url() }}" alt="" class="pointer-events-none aspect-[4/3] w-full rounded-xl object-cover">
                             <span class="absolute left-2 top-2 rounded-full bg-prussian-blue/80 px-2 py-0.5 text-[10px] font-bold text-white shadow">
-                                {{ $loop->iteration }}@if ($loop->first) &middot; {{ __('host.rooms.main_photo') }}@endif
+                                <span data-photo-number>{{ $loop->iteration }}</span><span data-photo-main class="{{ $loop->first ? '' : 'hidden' }}"> &middot; {{ __('host.rooms.main_photo') }}</span>
                             </span>
                             <button type="submit" form="delete-photo-{{ $photo->id }}" title="{{ __('host.rooms.photo_delete') }}"
                                     class="absolute right-2 top-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-ruby-red shadow transition sm:opacity-0 sm:group-hover:opacity-100">
                                 <i class="fa-solid fa-trash fa-xs"></i>
                             </button>
-                            <div class="absolute inset-x-2 bottom-2 flex justify-between transition sm:opacity-0 sm:group-hover:opacity-100">
-                                @if (! $loop->first)
-                                    <button type="submit" form="move-photo-up-{{ $photo->id }}" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
-                                        <i class="fa-solid fa-chevron-left fa-xs"></i>
-                                    </button>
-                                @else
-                                    <span></span>
-                                @endif
-                                @if (! $loop->last)
-                                    <button type="submit" form="move-photo-down-{{ $photo->id }}" title="{{ __('host.rooms.photo_move') }}" class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full bg-white/90 text-prussian-blue shadow transition hover:bg-white">
-                                        <i class="fa-solid fa-chevron-right fa-xs"></i>
-                                    </button>
-                                @endif
-                            </div>
+                            <button type="button" data-sortable-handle title="{{ __('host.rooms.photo_move') }}"
+                                    class="sm-drag-handle absolute inset-x-2 bottom-2 flex h-7 items-center justify-center gap-1.5 rounded-full bg-white/90 text-xs font-semibold text-prussian-blue shadow transition hover:bg-white">
+                                <i class="fa-solid fa-grip-lines fa-xs"></i>{{ __('host.rooms.photo_drag') }}
+                            </button>
                         </div>
                     @endforeach
                 </div>
@@ -194,7 +185,7 @@
                 <input type="file" name="photos[]" multiple accept="image/jpeg,image/png,image/webp" class="sr-only" data-photo-input data-selected-label="{{ __('host.rooms.photos_selected') }}">
                 <span data-file-count class="mt-2 text-xs font-bold text-ruby-red"></span>
             </label>
-            <div data-photo-preview class="mt-4 hidden grid-cols-3 gap-2 sm:grid-cols-5"></div>
+            <div data-photo-preview data-drag-label="{{ __('host.rooms.photo_move') }}" data-remove-label="{{ __('host.rooms.photo_delete') }}" class="mt-4 hidden grid-cols-3 gap-2 sm:grid-cols-5"></div>
             <x-input-error field="photos" />
             <x-input-error field="photos.*" />
         </div>
@@ -260,49 +251,39 @@
                 @csrf
                 @method('DELETE')
             </form>
-            <form id="move-photo-up-{{ $photo->id }}" method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
-                @csrf
-                @method('PATCH')
-                <input type="hidden" name="direction" value="up">
-            </form>
-            <form id="move-photo-down-{{ $photo->id }}" method="POST" action="{{ route('host.rooms.photos.move', [$room, $photo]) }}">
-                @csrf
-                @method('PATCH')
-                <input type="hidden" name="direction" value="down">
-            </form>
         @endforeach
 
         <script>
             (() => {
                 const grid = document.querySelector('[data-photos-grid]');
-                if (! grid) return;
+                if (! grid || ! window.initSortable) return;
 
-                document.querySelectorAll('form[id^="move-photo-"]').forEach((form) => {
-                    form.addEventListener('submit', async (event) => {
-                        event.preventDefault();
-                        grid.classList.add('opacity-50', 'pointer-events-none');
+                const renumber = (items) => items.forEach((item, index) => {
+                    item.querySelector('[data-photo-number]').textContent = index + 1;
+                    item.querySelector('[data-photo-main]').classList.toggle('hidden', index > 0);
+                });
 
-                        try {
-                            const response = await fetch(form.action, {
-                                method: 'POST',
-                                body: new FormData(form),
-                                headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                            });
-                            if (! response.ok) throw new Error('move failed');
+                window.initSortable(grid, async (items) => {
+                    renumber(items);
+                    grid.classList.add('opacity-60', 'pointer-events-none');
 
-                            const page = await fetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                            const doc = new DOMParser().parseFromString(await page.text(), 'text/html');
-                            const fresh = doc.querySelector('[data-photos-grid]');
-                            if (! fresh) throw new Error('missing grid');
+                    const body = new FormData();
+                    body.append('_token', @js(csrf_token()));
+                    body.append('_method', 'PATCH');
+                    items.forEach((item) => body.append('order[]', item.dataset.photoId));
 
-                            grid.innerHTML = fresh.innerHTML;
-                        } catch (error) {
-                            window.location.reload();
-                            return;
-                        } finally {
-                            grid.classList.remove('opacity-50', 'pointer-events-none');
-                        }
-                    });
+                    try {
+                        const response = await fetch(grid.dataset.reorderUrl, {
+                            method: 'POST',
+                            body,
+                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                        });
+                        if (! response.ok) throw new Error('reorder failed');
+                    } catch (error) {
+                        window.location.reload();
+                    } finally {
+                        grid.classList.remove('opacity-60', 'pointer-events-none');
+                    }
                 });
             })();
         </script>

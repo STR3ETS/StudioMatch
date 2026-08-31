@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\BookingStatus;
 use App\Enums\UserRole;
+use App\Http\Controllers\Concerns\VerifiesAddress;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
@@ -21,6 +22,7 @@ use Illuminate\View\View;
 
 class BookingController extends Controller
 {
+    use VerifiesAddress;
 
     public function create(Request $request, Room $room): View|RedirectResponse
     {
@@ -49,12 +51,14 @@ class BookingController extends Controller
         $request->validate(['terms' => ['accepted']]);
 
         $user = $request->user();
-        if ($user->street === null || $user->postal_code === null || $user->city === null) {
+        if (! $user->hasCompleteAddress()) {
             $address = $request->validate([
                 'street' => ['required', 'string', 'max:255'],
                 'postal_code' => ['required', 'string', 'max:10'],
                 'city' => ['required', 'string', 'max:100'],
             ]);
+
+            $this->verifiedCoords($address, __('account.profile.address_invalid'));
 
             $user->update($address);
         }

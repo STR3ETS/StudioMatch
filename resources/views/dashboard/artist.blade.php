@@ -7,7 +7,7 @@
 <x-artist-layout :title="__('dashboard.artist.meta_title')" active="overview">
     <div data-reveal>
         <span class="inline-flex items-center gap-1.5 rounded-full bg-ruby-red/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-ruby-red"><i class="fa-solid fa-music fa-xs"></i> {{ __('dashboard.artist.badge') }}</span>
-        <h1 class="mt-3 text-3xl font-bold text-prussian-blue">{{ __('dashboard.greeting', ['name' => auth()->user()->firstName()]) }}</h1>
+        <x-dashboard-greeting />
         <p class="mt-2 text-prussian-blue/60">{{ __('dashboard.artist.subtitle') }}</p>
     </div>
 

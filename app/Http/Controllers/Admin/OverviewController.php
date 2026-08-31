@@ -18,7 +18,8 @@ class OverviewController extends Controller
     public function __invoke(): View
     {
         return view('admin.overview', [
-            'openTickets' => Booking::where('status', BookingStatus::Disputed)->count(),
+            'openDisputes' => Booking::where('status', BookingStatus::Disputed)->count(),
+            'openDamages' => Booking::whereNotNull('damage_reported_at')->whereNull('damage_resolved_at')->count(),
             'inReviewCount' => Room::where('status', RoomStatus::InReview)->count(),
             'liveCount' => Room::where('status', RoomStatus::Live)->count(),
             'studioCount' => Studio::count(),

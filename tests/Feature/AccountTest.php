@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Http;
 use Tests\TestCase;
 
 class AccountTest extends TestCase
@@ -24,28 +25,49 @@ class AccountTest extends TestCase
         }
     }
 
+    private function fakeAddressLookup(): void
+    {
+        Http::fake([
+            'api.pdok.nl/*' => Http::response([
+                'response' => ['docs' => [[
+                    'postcode' => '1016GV',
+                    'centroide_ll' => 'POINT(4.8836 52.3752)',
+                ]]],
+            ]),
+        ]);
+    }
+
     public function test_user_can_update_profile(): void
     {
+        $this->fakeAddressLookup();
         $user = User::factory()->create(['role' => 'artiest']);
 
         $this->actingAs($user)->put('/dashboard/account/profiel', [
             'name' => 'Nieuwe Naam',
             'email' => 'nieuw@example.com',
+            'street' => 'Prinsengracht 263',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
         ])->assertRedirect(route('account.edit'));
 
         $user->refresh();
         $this->assertSame('Nieuwe Naam', $user->name);
         $this->assertSame('nieuw@example.com', $user->email);
+        $this->assertSame('Prinsengracht 263', $user->street);
     }
 
     public function test_email_must_be_unique(): void
     {
+        $this->fakeAddressLookup();
         User::factory()->create(['email' => 'bezet@example.com']);
         $user = User::factory()->create(['role' => 'artiest']);
 
         $this->actingAs($user)->put('/dashboard/account/profiel', [
             'name' => $user->name,
             'email' => 'bezet@example.com',
+            'street' => 'Prinsengracht 263',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
         ])->assertSessionHasErrors('email');
     }
 

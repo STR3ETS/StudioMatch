@@ -85,7 +85,11 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/dashboard', DashboardController::class)->name('dashboard');
+    Route::get('/email/verifieren', function () {
+        return auth()->user()->hasVerifiedEmail()
+            ? redirect()->route('dashboard')
+            : view('auth.verify-email');
+    })->name('verification.notice');
 
     Route::get('/email/verifieren/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
         $request->fulfill();
@@ -99,10 +103,18 @@ Route::middleware('auth')->group(function () {
         return back()->with('status', __('auth.verify.sent'));
     })->middleware('throttle:3,1')->name('verification.send');
 
+    Route::post('/uitloggen', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+});
+
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/account', [AccountController::class, 'edit'])->name('account.edit');
     Route::put('/dashboard/account/profiel', [AccountController::class, 'updateProfile'])->name('account.profile.update');
     Route::put('/dashboard/account/wachtwoord', [AccountController::class, 'updatePassword'])->name('account.password.update');
     Route::delete('/dashboard/account', [AccountController::class, 'destroy'])->name('account.destroy');
+});
+
+Route::middleware(['auth', 'verified', 'profile.complete'])->group(function () {
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/dashboard/artiest', ArtistOverviewController::class)
         ->middleware('role:artiest')->name('dashboard.artist');
@@ -149,7 +161,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/ruimtes/{room}', [RoomController::class, 'update'])->name('host.rooms.update');
         Route::delete('/ruimtes/{room}', [RoomController::class, 'destroy'])->name('host.rooms.destroy');
         Route::delete('/ruimtes/{room}/fotos/{photo}', [RoomPhotoController::class, 'destroy'])->name('host.rooms.photos.destroy');
-        Route::patch('/ruimtes/{room}/fotos/{photo}/volgorde', [RoomPhotoController::class, 'move'])->name('host.rooms.photos.move');
+        Route::patch('/ruimtes/{room}/fotos/volgorde', [RoomPhotoController::class, 'reorder'])->name('host.rooms.photos.reorder');
 
         Route::get('/boekingen', [HostBookingController::class, 'index'])->name('host.bookings.index');
         Route::patch('/boekingen/{booking}/accepteren', [HostBookingController::class, 'accept'])->name('host.bookings.accept');
@@ -183,6 +195,7 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/tickets', [TicketController::class, 'index'])->name('admin.tickets.index');
         Route::patch('/tickets/{booking}/afhandelen', [TicketController::class, 'resolve'])->name('admin.tickets.resolve');
+        Route::patch('/tickets/{booking}/reageren', [TicketController::class, 'respondDamage'])->name('admin.tickets.respond');
 
         Route::get('/boekingen', [AdminBookingController::class, 'index'])->name('admin.bookings.index');
         Route::get('/boekingen/export', [AdminBookingController::class, 'export'])->name('admin.bookings.export');
@@ -193,8 +206,6 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/omzet', AdminRevenueController::class)->name('admin.revenue');
     });
-
-    Route::post('/uitloggen', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
 
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');

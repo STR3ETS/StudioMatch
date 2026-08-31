@@ -209,7 +209,7 @@ class PublicStudioController extends Controller
             ->map(function (Room $room) {
 
                 [$lat, $lng] = $room->studio->lat !== null
-                    ? [round($room->studio->lat, 3), round($room->studio->lng, 3)]
+                    ? $this->blurredCoords($room->studio->id, (float) $room->studio->lat, (float) $room->studio->lng)
                     : self::CITY_COORDS[mb_strtolower($room->studio->city)];
 
                 return [
@@ -237,6 +237,23 @@ class PublicStudioController extends Controller
             'url' => route('studios.show', $room),
             'distance' => isset($room->distance_km) ? number_format($room->distance_km, 1, ',', '.') : null,
         ], fn ($value) => $value !== null);
+    }
+
+    /**
+     * Shift a studio away from its real address by 60-160 metres in a fixed direction,
+     * so a public map pin never points at the front door. The offset is derived from the
+     * studio id, so it stays on the same spot between page loads and cannot be averaged away.
+     * Stays well inside the 250 m circle drawn on the studio page.
+     */
+    private function blurredCoords(int $studioId, float $lat, float $lng): array
+    {
+        $angle = (crc32('studiomatch-map-angle-' . $studioId) % 3600) / 3600 * 2 * M_PI;
+        $metres = 60 + crc32('studiomatch-map-offset-' . $studioId) % 100;
+
+        return [
+            round($lat + ($metres * cos($angle)) / 111320, 4),
+            round($lng + ($metres * sin($angle)) / (111320 * cos(deg2rad($lat))), 4),
+        ];
     }
 
     private function distanceKm(float $lat1, float $lng1, float $lat2, float $lng2): float

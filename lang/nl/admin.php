@@ -14,6 +14,7 @@ return [
         'to_queue' => 'Naar de wachtrij',
         'tickets_pending' => '{1}1 open ticket wacht op afhandeling|[2,*]:count open tickets wachten op afhandeling',
         'tickets_text' => 'De uitbetalingen van deze boekingen staan gepauzeerd totdat je bemiddelt.',
+        'tickets_damage' => '{1}Waarvan 1 probleemmelding van een verhuurder die nog een reactie nodig heeft.|[2,*]Waarvan :count probleemmeldingen van verhuurders die nog een reactie nodig hebben.',
         'to_tickets' => 'Naar de tickets',
     ],
 
@@ -90,7 +91,12 @@ return [
         'resolved' => 'Het ticket is afgehandeld en beide partijen zijn gemaild.',
         'already_resolved' => 'Dit ticket is al afgehandeld.',
         'damage_title' => 'Probleemmeldingen van verhuurders',
-        'damage_text' => 'Meldingen na afloop van een sessie. Deel de gegevens van de artiest met de verhuurder, de afhandeling gebeurt buiten het platform.',
+        'damage_text' => 'Meldingen na afloop van een sessie. Reageer hieronder op de verhuurder; je reactie wordt gemaild en is zichtbaar bij zijn boekingen.',
+        'damage_handled' => 'Beantwoord',
+        'damage_response_label' => 'Reactie aan de verhuurder',
+        'damage_response_placeholder' => 'Laat de verhuurder weten wat je met de melding doet en welke stappen er volgen...',
+        'damage_response_button' => 'Reactie versturen',
+        'damage_responded' => 'Je reactie is verstuurd naar de verhuurder.',
     ],
 
     'queue' => [

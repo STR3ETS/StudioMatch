@@ -141,7 +141,13 @@
 
                         @if ($booking->damage_reported_at)
                             <p class="mt-2 rounded-xl bg-prussian-blue/[0.03] px-4 py-3 text-sm leading-relaxed text-prussian-blue/70">{{ $booking->damage_reason }}</p>
-                            <p class="mt-2 text-sm text-prussian-blue/60"><i class="fa-solid fa-circle-info fa-sm mr-1.5 text-prussian-blue/40"></i>{{ __('host.damage.followup') }}</p>
+                            @if ($booking->damage_response)
+                                <p class="mt-2 rounded-xl bg-emerald-500/5 px-4 py-3 text-sm leading-relaxed text-prussian-blue/80">
+                                    <span class="font-semibold">{{ __('host.damage.response_label') }}:</span> {{ $booking->damage_response }}
+                                </p>
+                            @else
+                                <p class="mt-2 text-sm text-prussian-blue/60"><i class="fa-solid fa-circle-info fa-sm mr-1.5 text-prussian-blue/40"></i>{{ __('host.damage.in_progress') }}</p>
+                            @endif
                         @else
                             <details class="mt-3">
                                 <summary class="cursor-pointer text-sm font-semibold text-ruby-red hover:underline">
@@ -158,7 +164,7 @@
                                     </label>
                                     <x-input-error field="photos" />
                                     <x-input-error field="photos.*" />
-                                    <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.damage.window_note') }} {{ __('host.damage.note') }}</p>
+                                    <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.damage.window_note') }}</p>
                                     <button type="submit" class="mt-2 cursor-pointer rounded-full bg-ruby-red px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('host.damage.submit') }}</button>
                                 </form>
                             </details>

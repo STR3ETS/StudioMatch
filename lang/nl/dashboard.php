@@ -2,6 +2,7 @@
 
 return [
     'greeting' => 'Welkom terug, :name',
+    'greeting_new' => 'Welkom, :name',
     'soon' => 'Binnenkort',
 
     'nav' => [

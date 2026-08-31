@@ -132,6 +132,11 @@ return [
         'damage_reason' => 'Melding: :reason',
         'damage_host_contact' => 'Verhuurder: :name (:email)',
         'damage_artist_contact' => 'Artiest: :name (:email)',
-        'damage_note' => 'Deel de gegevens van de artiest met de verhuurder. De afhandeling van de schade gebeurt buiten het platform.',
+        'damage_note' => 'Neem de melding in behandeling en reageer vanuit het adminportaal bij Tickets.',
+        'damage_response_subject' => 'Reactie op je melding bij :room',
+        'damage_response_line' => 'We hebben je probleemmelding bij de boeking van :room op :date behandeld.',
+        'damage_response_reason' => 'Je melding: :reason',
+        'damage_response_body' => 'Reactie van StudioMatch: :response',
+        'damage_response_action' => 'Bekijk je boekingen',
     ],
 ];

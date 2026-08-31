@@ -11,11 +11,14 @@ return [
     'fields' => [
         'name' => 'Naam',
         'name_placeholder' => 'Je voor- en achternaam',
+        'name_hint' => 'Vul je voor- én achternaam in, allebei minimaal twee letters.',
+        'name_invalid' => 'Vul je volledige voor- en achternaam in (allebei minimaal twee letters, zonder cijfers).',
         'email' => 'E-mailadres',
         'email_placeholder' => 'jij@voorbeeld.nl',
         'password' => 'Wachtwoord',
         'password_confirmation' => 'Herhaal wachtwoord',
         'password_placeholder' => '••••••••',
+        'password_show' => 'Wachtwoord tonen of verbergen',
     ],
 
     'login' => [
@@ -60,12 +63,25 @@ return [
         'submit' => 'Wachtwoord opslaan',
     ],
 
+    'steps' => [
+        'label' => 'Zo werkt het aanmelden',
+        'account' => 'Account aanmaken',
+        'verify' => 'E-mail bevestigen',
+        'profile' => 'Gegevens invullen',
+    ],
+
     'failed' => 'De combinatie van e-mailadres en wachtwoord klopt niet.',
     'verify' => [
         'banner' => 'Bevestig je e-mailadres via de mail die we je hebben gestuurd.',
         'resend' => 'Mail opnieuw versturen',
         'sent' => 'De bevestigingsmail is opnieuw verstuurd.',
         'done' => 'Je e-mailadres is bevestigd.',
+        'title' => 'Bevestig je e-mailadres',
+        'subtitle' => 'We hebben een bevestigingslink gestuurd naar :email. Klik op die link om je account te activeren.',
+        'blocked' => 'Zolang je e-mailadres niet bevestigd is, kun je nog niet bij je dashboard en kun je niets boeken.',
+        'spam_hint' => 'Geen mail ontvangen? Kijk ook even in je spam- of ongewenste mail.',
+        'wrong_email' => 'Verkeerd e-mailadres gebruikt?',
+        'logout' => 'Uitloggen en opnieuw registreren',
     ],
 
     'password' => 'Het opgegeven wachtwoord is onjuist.',

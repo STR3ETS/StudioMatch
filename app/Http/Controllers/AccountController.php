@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\VerifiesAddress;
 use App\Models\User;
+use App\Rules\FullName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +14,7 @@ use Illuminate\View\View;
 
 class AccountController extends Controller
 {
+    use VerifiesAddress;
 
     public function edit(): View
     {
@@ -20,15 +23,22 @@ class AccountController extends Controller
 
     public function updateProfile(Request $request): RedirectResponse
     {
+        $user = $request->user();
+        $addressRule = $user->isArtist() ? 'required' : 'nullable';
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($request->user()->id)],
-            'street' => ['nullable', 'string', 'max:255'],
-            'postal_code' => ['nullable', 'string', 'max:10'],
-            'city' => ['nullable', 'string', 'max:100'],
+            'name' => ['required', 'string', 'max:255', new FullName],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
+            'street' => [$addressRule, 'string', 'max:255'],
+            'postal_code' => [$addressRule, 'string', 'max:10'],
+            'city' => [$addressRule, 'string', 'max:100'],
         ]);
 
-        $request->user()->update($validated);
+        if ($user->isArtist()) {
+            $this->verifiedCoords($validated, __('account.profile.address_invalid'));
+        }
+
+        $user->update($validated);
 
         return redirect()->route('account.edit')->with('status', __('account.profile.saved'));
     }

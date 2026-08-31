@@ -19,7 +19,7 @@ const initStudioMap = () => {
         boxZoom: false,
         keyboard: false,
         minZoom: 7,
-        maxZoom: 18,
+        maxZoom: 15,
         maxBounds: [[50.4, 2.6], [54.1, 7.8]],
         maxBoundsViscosity: 1.0,
     }).setView(center, zoom);
@@ -64,11 +64,16 @@ const initStudioMap = () => {
     if (mapEl.dataset.approx) {
         studios.forEach((studio) => {
             L.circle([studio.lat, studio.lng], {
-                radius: 400,
+                radius: 250,
                 color: '#AD0924',
-                weight: 2,
+                weight: 3,
                 fillColor: '#AD0924',
-                fillOpacity: 0.15,
+                fillOpacity: 0.85,
+                interactive: false,
+            }).addTo(map);
+            L.marker([studio.lat, studio.lng], {
+                interactive: false,
+                icon: L.divIcon({ className: 'map-mark-wrap', html: '<span class="map-mark"></span>', iconSize: null }),
             }).addTo(map);
         });
         return;
@@ -346,6 +351,18 @@ window.addEventListener('pageshow', () => {
     });
 });
 
+document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    const input = button.parentElement?.querySelector('input');
+    if (!input) return;
+
+    button.addEventListener('click', () => {
+        const hidden = input.type === 'password';
+        input.type = hidden ? 'text' : 'password';
+        button.querySelector('i')?.classList.toggle('fa-eye', !hidden);
+        button.querySelector('i')?.classList.toggle('fa-eye-slash', hidden);
+    });
+});
+
 const floatPanel = (toggle, panel, width) => {
     const rect = toggle.getBoundingClientRect();
     let left = rect.left + window.scrollX + rect.width / 2 - width / 2;
@@ -360,6 +377,7 @@ document.querySelectorAll('[data-datepicker]').forEach((wrap) => {
     const toggle = wrap.querySelector('[data-datepicker-toggle]');
     const label = wrap.querySelector('[data-datepicker-label]');
     const panel = wrap.querySelector('[data-datepicker-panel]');
+    const clear = wrap.querySelector('[data-datepicker-clear]');
     if (!input || !toggle || !label || !panel) return;
 
     const isFloat = panel.dataset.float !== undefined;
@@ -413,11 +431,21 @@ document.querySelectorAll('[data-datepicker]').forEach((wrap) => {
             input.value = day.dataset.dpDay;
             label.textContent = dayFmt.format(new Date(day.dataset.dpDay + 'T00:00:00'));
             label.classList.remove('text-prussian-blue/40');
+            clear?.classList.remove('hidden');
             panel.classList.add('hidden');
             input.dispatchEvent(new Event('change', { bubbles: true }));
             if (wrap.dataset.submit) input.form?.requestSubmit();
         }));
     };
+
+    clear?.addEventListener('click', () => {
+        input.value = '';
+        label.textContent = clear.dataset.placeholder || '';
+        label.classList.add('text-prussian-blue/40');
+        clear.classList.add('hidden');
+        panel.classList.add('hidden');
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
 
     toggle.addEventListener('click', () => {
         panel.classList.toggle('hidden');
@@ -470,6 +498,101 @@ document.addEventListener('sm:results-updated', () => {
     document.querySelectorAll('[data-carousel]').forEach(initCarousel);
 });
 
+/**
+ * Drag & drop reordering that works with mouse, pen and touch. Dragging starts on a
+ * [data-sortable-handle] inside a [data-sortable-item]; arrow keys move the focused
+ * handle one place. onChange receives the items in their new DOM order.
+ */
+const initSortable = (container, onChange) => {
+    if (!container || container.dataset.sortableReady) return;
+    container.dataset.sortableReady = '1';
+
+    const items = () => [...container.querySelectorAll('[data-sortable-item]')];
+    let dragged = null;
+    let active = false;
+    let startX = 0;
+    let startY = 0;
+
+    const onMove = (event) => {
+        if (!dragged) return;
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+        if (!active && Math.hypot(dx, dy) < 6) return;
+        if (!active) {
+            active = true;
+            dragged.classList.add('is-dragging');
+        }
+        event.preventDefault();
+        dragged.style.transform = `translate(${dx}px, ${dy}px)`;
+
+        const over = items().find((item) => {
+            if (item === dragged) return false;
+            const rect = item.getBoundingClientRect();
+            return event.clientX >= rect.left && event.clientX <= rect.right
+                && event.clientY >= rect.top && event.clientY <= rect.bottom;
+        });
+
+        if (over) {
+            const list = items();
+            if (list.indexOf(dragged) < list.indexOf(over)) over.after(dragged);
+            else over.before(dragged);
+            startX = event.clientX;
+            startY = event.clientY;
+            dragged.style.transform = '';
+        }
+    };
+
+    container.addEventListener('pointerdown', (event) => {
+        const handle = event.target.closest('[data-sortable-handle]');
+        if (!handle || event.button > 0) return;
+
+        dragged = handle.closest('[data-sortable-item]');
+        if (!dragged) return;
+
+        startX = event.clientX;
+        startY = event.clientY;
+        handle.setPointerCapture(event.pointerId);
+
+        const stop = () => {
+            handle.removeEventListener('pointermove', onMove);
+            handle.removeEventListener('pointerup', stop);
+            handle.removeEventListener('pointercancel', stop);
+
+            if (dragged) {
+                dragged.style.transform = '';
+                dragged.classList.remove('is-dragging');
+            }
+            const moved = active;
+            dragged = null;
+            active = false;
+            if (moved) onChange(items());
+        };
+
+        handle.addEventListener('pointermove', onMove);
+        handle.addEventListener('pointerup', stop);
+        handle.addEventListener('pointercancel', stop);
+    });
+
+    container.addEventListener('keydown', (event) => {
+        const handle = event.target.closest('[data-sortable-handle]');
+        const step = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 }[event.key];
+        if (!handle || !step) return;
+
+        const item = handle.closest('[data-sortable-item]');
+        const list = items();
+        const target = list[list.indexOf(item) + step];
+        if (!target) return;
+
+        event.preventDefault();
+        if (step < 0) target.before(item);
+        else target.after(item);
+        handle.focus();
+        onChange(items());
+    });
+};
+
+window.initSortable = initSortable;
+
 document.querySelectorAll('[data-photo-input]').forEach((input) => {
     const scope = input.closest('form') || document;
     const preview = scope.querySelector('[data-photo-preview]');
@@ -511,54 +634,56 @@ document.querySelectorAll('[data-photo-input]').forEach((input) => {
         try { input.files = transfer.files; } catch (error) {}
     };
 
-    const controlButton = (icon, onClick) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/90 text-[10px] text-prussian-blue shadow transition hover:bg-white';
-        button.innerHTML = `<i class="fa-solid ${icon}"></i>`;
-        button.addEventListener('click', onClick);
-        return button;
-    };
-
     const render = () => {
         preview.innerHTML = '';
         files.forEach((file, index) => {
             const wrap = document.createElement('div');
-            wrap.className = 'relative';
+            wrap.className = 'group relative select-none';
+            wrap.setAttribute('data-sortable-item', '');
+            wrap.__file = file;
+
             const img = document.createElement('img');
             img.src = URL.createObjectURL(file);
-            img.className = 'aspect-[4/3] w-full rounded-xl object-cover';
+            img.className = 'pointer-events-none aspect-[4/3] w-full rounded-xl object-cover';
             wrap.appendChild(img);
 
-            const controls = document.createElement('div');
-            controls.className = 'absolute inset-x-1 top-1 flex items-center justify-between gap-1';
-            const left = controlButton('fa-chevron-left', () => {
-                if (index === 0) return;
-                [files[index - 1], files[index]] = [files[index], files[index - 1]];
+            const number = document.createElement('span');
+            number.className = 'absolute left-1.5 top-1.5 rounded-full bg-prussian-blue/80 px-2 py-0.5 text-[10px] font-bold text-white shadow';
+            number.textContent = index + 1;
+            wrap.appendChild(number);
+
+            const remove = document.createElement('button');
+            remove.type = 'button';
+            remove.title = preview.dataset.removeLabel || '';
+            remove.className = 'absolute right-1.5 top-1.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full bg-white/90 text-[10px] text-ruby-red shadow transition hover:bg-white';
+            remove.innerHTML = '<i class="fa-solid fa-trash"></i>';
+            remove.addEventListener('click', () => {
+                files.splice(files.indexOf(file), 1);
                 syncInput();
                 render();
             });
-            const remove = controlButton('fa-trash', () => {
-                files.splice(index, 1);
-                syncInput();
-                render();
-            });
-            remove.classList.remove('text-prussian-blue');
-            remove.classList.add('text-ruby-red');
-            const right = controlButton('fa-chevron-right', () => {
-                if (index === files.length - 1) return;
-                [files[index + 1], files[index]] = [files[index], files[index + 1]];
-                syncInput();
-                render();
-            });
-            controls.append(left, remove, right);
-            wrap.appendChild(controls);
+            wrap.appendChild(remove);
+
+            const handle = document.createElement('button');
+            handle.type = 'button';
+            handle.title = preview.dataset.dragLabel || '';
+            handle.setAttribute('data-sortable-handle', '');
+            handle.className = 'sm-drag-handle absolute inset-x-1.5 bottom-1.5 flex h-6 items-center justify-center rounded-full bg-white/90 text-[10px] text-prussian-blue shadow transition hover:bg-white';
+            handle.innerHTML = '<i class="fa-solid fa-grip-lines"></i>';
+            wrap.appendChild(handle);
+
             preview.appendChild(wrap);
         });
         preview.classList.toggle('hidden', files.length === 0);
         preview.classList.toggle('grid', files.length > 0);
         count.textContent = files.length ? files.length + ' ' + selectedLabel : '';
     };
+
+    initSortable(preview, (items) => {
+        files = items.map((item) => item.__file).filter(Boolean);
+        syncInput();
+        render();
+    });
 
     input.addEventListener('change', async () => {
         if (!input.files.length) return;

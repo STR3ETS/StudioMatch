@@ -17,7 +17,7 @@
         <p class="mx-auto mt-3 max-w-xl text-white/60">{{ __('studios.hero_subtitle') }}</p>
     </x-hero>
 
-    <div class="py-16">
+    <div class="pb-32 pt-16 lg:pb-16">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col gap-8 lg:flex-row">
                 <aside data-reveal class="lg:w-72 lg:shrink-0">
@@ -137,13 +137,15 @@
                             </div>
                         </x-filter-group>
 
-                        <button type="submit" class="mt-5 w-full cursor-pointer rounded-full bg-ruby-red py-2.5 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('studios.filters.apply') }}</button>
+                        <div class="sticky bottom-0 -mx-5 mt-5 border-t border-prussian-blue/10 bg-white px-5 pb-1 pt-4">
+                            <button type="submit" class="w-full cursor-pointer rounded-full bg-ruby-red py-2.5 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('studios.filters.apply') }}</button>
+                        </div>
                     </form>
                 </aside>
 
                 <div data-reveal data-results style="--reveal-delay: .1s" class="flex-1 transition-opacity duration-200">
                     <div class="mb-5 flex items-center justify-between gap-4">
-                        <p class="text-sm font-medium text-prussian-blue/60">{{ __('studios.results', ['count' => $cards->count()]) }}</p>
+                        <p data-results-count class="text-sm font-medium text-prussian-blue/60">{{ __('studios.results', ['count' => $cards->count()]) }}</p>
                         <label class="flex items-center gap-2 text-sm text-prussian-blue">
                             <span class="hidden text-prussian-blue/50 sm:inline">{{ __('studios.sort.label') }}</span>
                             <select name="sort" form="studio-filters" onchange="document.getElementById('studio-filters').requestSubmit()" class="cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm font-medium text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
@@ -193,6 +195,13 @@
         </div>
     </div>
 
+    <div class="fixed inset-x-0 bottom-0 z-[1100] flex items-center justify-between gap-4 border-t border-prussian-blue/10 bg-white px-5 py-3 shadow-[0_-8px_30px_rgba(16,43,63,0.12)] lg:hidden">
+        <p data-sticky-count class="text-sm font-medium text-prussian-blue/60">{{ __('studios.results', ['count' => $cards->count()]) }}</p>
+        <button type="submit" form="studio-filters" class="shrink-0 cursor-pointer rounded-full bg-ruby-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-ruby-red/90">
+            {{ __('studios.filters.apply') }}
+        </button>
+    </div>
+
     <script>
         (() => {
             const form = document.getElementById('studio-filters');
@@ -227,6 +236,13 @@
                     results.innerHTML = newResults.innerHTML;
                     if (mapWrap && newMap) mapWrap.innerHTML = newMap.innerHTML;
                     history.replaceState({}, '', url);
+
+                    const stickyCount = document.querySelector('[data-sticky-count]');
+                    const freshCount = results.querySelector('[data-results-count]');
+                    if (stickyCount && freshCount) stickyCount.textContent = freshCount.textContent;
+
+                    // On mobile the filter panel sits above the results, so jump to them.
+                    if (window.innerWidth < 1024) results.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
                     const hasLocation = form.elements.location.value.trim() !== '' || form.elements.lat.value !== '';
                     radiusWrap?.classList.toggle('hidden', ! hasLocation);

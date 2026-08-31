@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\DB;
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_studio_response', 'dispute_photos', 'resolution_note', 'reminder_sent_at',
     'response_reminder_sent_at', 'damage_reported_at', 'damage_reason', 'damage_photos',
+    'damage_response', 'damage_resolved_at',
     'stripe_checkout_session_id', 'stripe_payment_intent_id', 'stripe_refund_id', 'refunded_cents',
     'stripe_transfer_id', 'transferred_at',
 ])]
@@ -41,6 +42,7 @@ class Booking extends Model
             'response_reminder_sent_at' => 'datetime',
             'damage_reported_at' => 'datetime',
             'damage_photos' => 'array',
+            'damage_resolved_at' => 'datetime',
             'transferred_at' => 'datetime',
         ];
     }

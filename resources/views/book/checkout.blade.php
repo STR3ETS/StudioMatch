@@ -60,7 +60,7 @@
                     </div>
                 </div>
 
-                @if (auth()->user()->street === null || auth()->user()->postal_code === null || auth()->user()->city === null)
+                @if (! auth()->user()->hasCompleteAddress())
                     @php $addressField = 'mt-2 w-full rounded-xl border border-prussian-blue/15 bg-white px-4 py-2.5 text-sm text-prussian-blue placeholder:text-prussian-blue/40 focus:border-prussian-blue/40 focus:outline-none'; @endphp
                     <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6">
                         <h2 class="font-bold text-prussian-blue">{{ __('booking.checkout.address_title') }}</h2>

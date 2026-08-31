@@ -49,9 +49,10 @@ class ScopeExtrasTest extends TestCase
         ]);
     }
 
-    public function test_contact_form_notifies_admins(): void
+    public function test_contact_form_notifies_admins_when_no_inbox_is_configured(): void
     {
         Notification::fake();
+        config(['studio.contact_email' => '']);
         $admin = User::factory()->create(['role' => 'admin']);
 
         $this->post('/contact', [

@@ -9,6 +9,8 @@
     <h1 class="text-3xl font-bold text-prussian-blue">{{ __('auth.register.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('auth.register.subtitle') }}</p>
 
+    <x-auth-steps :current="1" class="mt-6" />
+
     <form method="POST" action="{{ route('register.store') }}" class="mt-8 space-y-5">
         @csrf
 
@@ -36,6 +38,7 @@
         <div>
             <label for="name" class="{{ $label }}">{{ __('auth.fields.name') }}</label>
             <input id="name" type="text" name="name" value="{{ old('name') }}" placeholder="{{ __('auth.fields.name_placeholder') }}" class="{{ $field }}" required>
+            <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('auth.fields.name_hint') }}</p>
             <x-input-error field="name" />
         </div>
 
@@ -47,14 +50,14 @@
 
         <div>
             <label for="password" class="{{ $label }}">{{ __('auth.fields.password') }}</label>
-            <input id="password" type="password" name="password" placeholder="{{ __('auth.fields.password_placeholder') }}" class="{{ $field }}" required minlength="8">
+            <x-password-field id="password" name="password" autocomplete="new-password" minlength="8" />
             <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('auth.register.password_hint') }}</p>
             <x-input-error field="password" />
         </div>
 
         <div>
             <label for="password_confirmation" class="{{ $label }}">{{ __('auth.fields.password_confirmation') }}</label>
-            <input id="password_confirmation" type="password" name="password_confirmation" placeholder="{{ __('auth.fields.password_placeholder') }}" class="{{ $field }}" required minlength="8">
+            <x-password-field id="password_confirmation" name="password_confirmation" autocomplete="new-password" minlength="8" />
         </div>
 
         <label class="flex cursor-pointer items-start gap-2.5 text-sm text-prussian-blue/80">

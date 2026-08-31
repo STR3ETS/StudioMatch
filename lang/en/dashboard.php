@@ -2,6 +2,7 @@
 
 return [
     'greeting' => 'Welcome back, :name',
+    'greeting_new' => 'Welcome, :name',
     'soon' => 'Coming soon',
 
     'nav' => [

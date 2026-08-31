@@ -66,7 +66,15 @@
                                        'bg-white text-ruby-red shadow-sm' => $active === $item['key'],
                                        'text-white/75 hover:bg-white/10 hover:text-white' => $active !== $item['key'],
                                    ])>
-                                    <i class="fa-solid {{ $item['icon'] }} fa-sm w-4 text-center"></i> {{ __($langPrefix . $item['key']) }}
+                                    <i class="fa-solid {{ $item['icon'] }} fa-sm w-4 text-center"></i>
+                                    <span class="flex-1">{{ __($langPrefix . $item['key']) }}</span>
+                                    @if (($item['badge'] ?? 0) > 0)
+                                        <span @class([
+                                            'flex h-5 min-w-5 items-center justify-center rounded-full px-1 text-[10px] font-bold',
+                                            'bg-ruby-red text-white' => $active === $item['key'],
+                                            'bg-white text-ruby-red' => $active !== $item['key'],
+                                        ])>{{ $item['badge'] }}</span>
+                                    @endif
                                 </a>
                             @else
                                 <span class="flex cursor-default items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold text-white/30">
@@ -135,31 +143,8 @@
                 </header>
 
                 <main class="mx-auto w-full max-w-6xl px-5 py-6 pb-28 sm:px-6 lg:px-10 lg:py-10 lg:pb-10 [view-transition-name:dash-content]">
-                    @if (! auth()->user()->hasVerifiedEmail())
-                        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/5 px-5 py-4">
-                            <p class="text-sm text-prussian-blue/80">
-                                <i class="fa-solid fa-envelope mr-1.5 text-amber-600"></i>{{ __('auth.verify.banner') }}
-                            </p>
-                            <form method="POST" action="{{ route('verification.send') }}">
-                                @csrf
-                                <button type="submit" class="cursor-pointer rounded-full border border-prussian-blue/20 px-4 py-2 text-xs font-semibold text-prussian-blue transition hover:bg-prussian-blue/5">
-                                    {{ __('auth.verify.resend') }}
-                                </button>
-                            </form>
-                        </div>
-                    @endif
-
-                    @if (auth()->user()->isArtist() && ! request()->routeIs('account.edit') && (auth()->user()->street === null || auth()->user()->postal_code === null || auth()->user()->city === null))
-                        <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-prussian-blue/15 bg-white px-5 py-4">
-                            <p class="text-sm text-prussian-blue/80">
-                                <i class="fa-solid fa-location-dot mr-1.5 text-ruby-red"></i>{{ __('account.profile.address_banner') }}
-                            </p>
-                            <a href="{{ route('account.edit') }}" class="rounded-full bg-ruby-red px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
-                                {{ __('account.profile.address_banner_action') }}
-                            </a>
-                        </div>
-                    @endif
-
+                    {{-- E-mailverificatie en een compleet adres worden afgedwongen door de
+                         'verified' en 'profile.complete' middleware, niet door een banner. --}}
                     {{ $slot }}
                 </main>
             </div>

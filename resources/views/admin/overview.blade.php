@@ -1,9 +1,34 @@
+@php $openTickets = $openDisputes + $openDamages; @endphp
+
 <x-admin-layout :title="__('admin.overview.meta_title')" active="overview">
     <div data-reveal>
         <span class="inline-flex items-center gap-1.5 rounded-full bg-ruby-red/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-ruby-red"><i class="fa-solid fa-shield-halved fa-xs"></i> {{ __('admin.badge') }}</span>
-        <h1 class="mt-3 text-3xl font-bold text-prussian-blue">{{ __('dashboard.greeting', ['name' => auth()->user()->firstName()]) }}</h1>
+        <x-dashboard-greeting />
         <p class="mt-2 text-prussian-blue/60">{{ __('admin.overview.subtitle') }}</p>
     </div>
+
+    @if ($openTickets > 0)
+        <section data-reveal style="--reveal-delay: .05s" class="mt-8">
+            <a href="{{ route('admin.tickets.index') }}" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-ruby-red p-6 text-white shadow-xl shadow-ruby-red/25 transition hover:-translate-y-0.5 sm:flex-nowrap">
+                <div class="flex items-center gap-4">
+                    <span class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15">
+                        <i class="fa-solid fa-life-ring"></i>
+                        <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-ruby-red">{{ $openTickets }}</span>
+                    </span>
+                    <div>
+                        <h2 class="font-bold">{{ trans_choice('admin.overview.tickets_pending', $openTickets, ['count' => $openTickets]) }}</h2>
+                        <p class="mt-0.5 text-sm text-white/70">
+                            {{ __('admin.overview.tickets_text') }}
+                            @if ($openDamages > 0)
+                                <span class="block">{{ trans_choice('admin.overview.tickets_damage', $openDamages, ['count' => $openDamages]) }}</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+                <span class="flex shrink-0 items-center gap-2 text-sm font-semibold">{{ __('admin.overview.to_tickets') }} <i class="fa-solid fa-arrow-right fa-xs"></i></span>
+            </a>
+        </section>
+    @endif
 
     <section data-reveal style="--reveal-delay: .1s" class="mt-10">
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -29,24 +54,6 @@
             </div>
         </div>
     </section>
-
-    @if ($openTickets > 0)
-        <section data-reveal style="--reveal-delay: .05s" class="mt-10">
-            <a href="{{ route('admin.tickets.index') }}" class="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-ruby-red p-6 text-white shadow-xl shadow-ruby-red/25 transition hover:-translate-y-0.5 sm:flex-nowrap">
-                <div class="flex items-center gap-4">
-                    <span class="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15">
-                        <i class="fa-solid fa-life-ring"></i>
-                        <span class="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[10px] font-bold text-ruby-red">{{ $openTickets }}</span>
-                    </span>
-                    <div>
-                        <h2 class="font-bold">{{ trans_choice('admin.overview.tickets_pending', $openTickets, ['count' => $openTickets]) }}</h2>
-                        <p class="mt-0.5 text-sm text-white/70">{{ __('admin.overview.tickets_text') }}</p>
-                    </div>
-                </div>
-                <span class="flex shrink-0 items-center gap-2 text-sm font-semibold">{{ __('admin.overview.to_tickets') }} <i class="fa-solid fa-arrow-right fa-xs"></i></span>
-            </a>
-        </section>
-    @endif
 
     <section data-reveal style="--reveal-delay: .2s" class="mt-10">
         <a href="{{ route('admin.queue.index') }}" @class([

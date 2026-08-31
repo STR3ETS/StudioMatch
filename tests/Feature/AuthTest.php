@@ -10,7 +10,7 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registration_as_artist_redirects_to_artist_dashboard(): void
+    public function test_registration_as_artist_asks_to_verify_the_email_first(): void
     {
         $response = $this->post('/registreren', [
             'role' => 'artiest',
@@ -20,12 +20,12 @@ class AuthTest extends TestCase
             'terms' => '1',
         ]);
 
-        $response->assertRedirect(route('dashboard.artist'));
+        $response->assertRedirect(route('verification.notice'));
         $this->assertAuthenticated();
         $this->assertSame('artiest', User::first()->role->value);
     }
 
-    public function test_registration_as_host_redirects_to_host_dashboard(): void
+    public function test_registration_as_host_asks_to_verify_the_email_first(): void
     {
         $response = $this->post('/registreren', [
             'role' => 'verhuurder',
@@ -35,7 +35,7 @@ class AuthTest extends TestCase
             'terms' => '1',
         ]);
 
-        $response->assertRedirect(route('dashboard.host'));
+        $response->assertRedirect(route('verification.notice'));
         $this->assertAuthenticated();
         $this->assertSame('verhuurder', User::first()->role->value);
     }
