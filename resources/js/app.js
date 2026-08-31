@@ -13,7 +13,6 @@ const initStudioMap = () => {
 
     const map = L.map(mapEl, {
         zoomControl: false,
-        attributionControl: false,
         scrollWheelZoom: true,
         doubleClickZoom: true,
         boxZoom: false,
@@ -24,8 +23,15 @@ const initStudioMap = () => {
         maxBoundsViscosity: 1.0,
     }).setView(center, zoom);
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    map.attributionControl.setPrefix(false);
+
+    // CARTO serves these tiles behind an API key; without one every tile carries a watermark.
+    const tileUrl = mapEl.dataset.tiles || 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+    const tileKey = mapEl.dataset.tileKey;
+
+    L.tileLayer(tileKey && !tileUrl.includes('api_key=') ? `${tileUrl}?api_key=${tileKey}` : tileUrl, {
         maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
     }).addTo(map);
 
     const nlFallback = [

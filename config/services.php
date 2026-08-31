@@ -14,6 +14,16 @@ return [
     |
     */
 
+    /*
+     * Basemap tiles. CARTO serves the dark basemap and requires an API key; without
+     * one the tiles come back with an "API key required" watermark across the map.
+     * CARTO_TILE_URL is only needed when CARTO hands you a different tile endpoint.
+     */
+    'carto' => [
+        'tiles' => env('CARTO_TILE_URL', 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'),
+        'key' => env('CARTO_API_KEY'),
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
