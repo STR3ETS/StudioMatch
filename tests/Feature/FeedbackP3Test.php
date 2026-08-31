@@ -380,6 +380,7 @@ class FeedbackP3Test extends TestCase
             ->assertOk()
             ->assertSee('data-sortable-handle', escape: false)
             ->assertSee('data-reorder-url', escape: false)
+            ->assertSee('data-token', escape: false)
             ->assertDontSee('move-photo-up-', escape: false);
     }
 

@@ -605,7 +605,34 @@ const initSortable = (container, onChange) => {
     });
 };
 
-window.initSortable = initSortable;
+document.querySelectorAll('[data-photos-grid]').forEach((grid) => {
+    initSortable(grid, async (items) => {
+        items.forEach((item, index) => {
+            item.querySelector('[data-photo-number]').textContent = index + 1;
+            item.querySelector('[data-photo-main]')?.classList.toggle('hidden', index > 0);
+        });
+
+        const body = new FormData();
+        body.append('_token', grid.dataset.token);
+        body.append('_method', 'PATCH');
+        items.forEach((item) => body.append('order[]', item.dataset.photoId));
+
+        grid.classList.add('opacity-60', 'pointer-events-none');
+
+        try {
+            const response = await fetch(grid.dataset.reorderUrl, {
+                method: 'POST',
+                body,
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            });
+            if (!response.ok) throw new Error('reorder failed');
+        } catch (error) {
+            window.location.reload();
+        } finally {
+            grid.classList.remove('opacity-60', 'pointer-events-none');
+        }
+    });
+});
 
 document.querySelectorAll('[data-photo-input]').forEach((input) => {
     const scope = input.closest('form') || document;

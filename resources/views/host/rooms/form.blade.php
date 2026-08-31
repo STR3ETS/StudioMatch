@@ -156,7 +156,7 @@
             <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.rooms.photos_hint') }}</p>
 
             @if ($room->exists && $room->photos->isNotEmpty())
-                <div data-photos-grid data-reorder-url="{{ route('host.rooms.photos.reorder', $room) }}"
+                <div data-photos-grid data-reorder-url="{{ route('host.rooms.photos.reorder', $room) }}" data-token="{{ csrf_token() }}"
                      class="mt-5 grid grid-cols-2 gap-3 transition-opacity duration-200 sm:grid-cols-4">
                     @foreach ($room->photos as $photo)
                         <div data-sortable-item data-photo-id="{{ $photo->id }}" class="group relative select-none">
@@ -252,41 +252,6 @@
                 @method('DELETE')
             </form>
         @endforeach
-
-        <script>
-            (() => {
-                const grid = document.querySelector('[data-photos-grid]');
-                if (! grid || ! window.initSortable) return;
-
-                const renumber = (items) => items.forEach((item, index) => {
-                    item.querySelector('[data-photo-number]').textContent = index + 1;
-                    item.querySelector('[data-photo-main]').classList.toggle('hidden', index > 0);
-                });
-
-                window.initSortable(grid, async (items) => {
-                    renumber(items);
-                    grid.classList.add('opacity-60', 'pointer-events-none');
-
-                    const body = new FormData();
-                    body.append('_token', @js(csrf_token()));
-                    body.append('_method', 'PATCH');
-                    items.forEach((item) => body.append('order[]', item.dataset.photoId));
-
-                    try {
-                        const response = await fetch(grid.dataset.reorderUrl, {
-                            method: 'POST',
-                            body,
-                            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-                        });
-                        if (! response.ok) throw new Error('reorder failed');
-                    } catch (error) {
-                        window.location.reload();
-                    } finally {
-                        grid.classList.remove('opacity-60', 'pointer-events-none');
-                    }
-                });
-            })();
-        </script>
     @endif
 
 </x-host-layout>
