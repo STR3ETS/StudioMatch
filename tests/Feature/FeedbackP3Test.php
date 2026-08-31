@@ -111,39 +111,47 @@ class FeedbackP3Test extends TestCase
 
     /* Account: naam en begroeting */
 
-    public function test_registration_requires_a_first_and_last_name(): void
+    public function test_registration_requires_a_separate_first_and_last_name(): void
     {
-        foreach (['Piet', 'P K', 'Jan 2'] as $name) {
-            $this->post('/registreren', [
-                'role' => 'artiest',
-                'name' => $name,
-                'email' => 'test@example.com',
-                'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
-                'terms' => '1',
-            ])->assertSessionHasErrors('name');
-        }
+        $base = [
+            'role' => 'artiest',
+            'email' => 'test@example.com',
+            'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
+            'terms' => '1',
+        ];
+
+        $this->post('/registreren', $base + ['first_name' => 'Piet'])
+            ->assertSessionHasErrors('last_name');
+
+        $this->post('/registreren', $base + ['first_name' => 'P', 'last_name' => 'Klaassen'])
+            ->assertSessionHasErrors('first_name');
+
+        $this->post('/registreren', $base + ['first_name' => 'Piet', 'last_name' => 'K2'])
+            ->assertSessionHasErrors('last_name');
 
         $this->assertSame(0, User::count());
     }
 
-    public function test_tussenvoegsels_are_accepted_as_a_full_name(): void
+    public function test_first_and_last_name_are_stored_as_one_full_name(): void
     {
         $this->post('/registreren', [
             'role' => 'artiest',
-            'name' => "Jan van 't Hof",
+            'first_name' => 'Jan',
+            'last_name' => "van 't Hof",
             'email' => 'jan@example.com',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
         ])->assertSessionHasNoErrors();
 
-        $this->assertSame(1, User::count());
+        $this->assertSame("Jan van 't Hof", User::first()->name);
     }
 
     public function test_registration_marks_the_session_as_brand_new(): void
     {
         $this->post('/registreren', [
             'role' => 'verhuurder',
-            'name' => 'Nieuwe Verhuurder',
+            'first_name' => 'Nieuwe',
+            'last_name' => 'Verhuurder',
             'email' => 'nieuw@example.com',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
@@ -336,13 +344,12 @@ class FeedbackP3Test extends TestCase
 
     /* Inlogproces visueel duidelijker */
 
-    public function test_signup_pages_explain_the_steps_and_allow_showing_the_password(): void
+    public function test_signup_pages_allow_showing_the_password(): void
     {
         $this->get('/registreren')
             ->assertOk()
-            ->assertSee(__('auth.steps.label'))
-            ->assertSee(__('auth.steps.verify'))
-            ->assertSee(__('auth.fields.name_hint'))
+            ->assertSee(__('auth.fields.first_name'))
+            ->assertSee(__('auth.fields.last_name'))
             ->assertSee('data-password-toggle', escape: false);
 
         $this->get('/inloggen')

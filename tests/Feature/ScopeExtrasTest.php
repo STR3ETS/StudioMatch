@@ -127,7 +127,8 @@ class ScopeExtrasTest extends TestCase
 
         $this->post('/registreren', [
             'role' => 'verhuurder',
-            'name' => 'Nieuwe Verhuurder',
+            'first_name' => 'Nieuwe',
+            'last_name' => 'Verhuurder',
             'email' => 'nieuw@voorbeeld.nl',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
@@ -142,7 +143,8 @@ class ScopeExtrasTest extends TestCase
 
         $this->post('/registreren', [
             'role' => 'artiest',
-            'name' => 'Nieuwe Artiest',
+            'first_name' => 'Nieuwe',
+            'last_name' => 'Artiest',
             'email' => 'artiest-nieuw@voorbeeld.nl',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',

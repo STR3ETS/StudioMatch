@@ -6,7 +6,7 @@ use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\HostWelcome;
-use App\Rules\FullName;
+use App\Rules\NamePart;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,14 +21,15 @@ class RegisteredUserController extends Controller
     {
         $validated = $request->validate([
             'role' => ['required', Rule::in(UserRole::registerable())],
-            'name' => ['required', 'string', 'max:255', new FullName],
+            'first_name' => ['required', 'string', 'max:120', new NamePart],
+            'last_name' => ['required', 'string', 'max:120', new NamePart],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)],
             'password' => ['required', 'string', 'confirmed', Password::defaults()],
             'terms' => ['accepted'],
         ]);
 
         $user = User::create([
-            'name' => $validated['name'],
+            'name' => trim($validated['first_name']) . ' ' . trim($validated['last_name']),
             'email' => $validated['email'],
             'password' => $validated['password'],
             'role' => $validated['role'],

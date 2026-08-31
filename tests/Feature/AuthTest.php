@@ -14,7 +14,8 @@ class AuthTest extends TestCase
     {
         $response = $this->post('/registreren', [
             'role' => 'artiest',
-            'name' => 'Test Artiest',
+            'first_name' => 'Test',
+            'last_name' => 'Artiest',
             'email' => 'artiest@example.com',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
@@ -29,7 +30,8 @@ class AuthTest extends TestCase
     {
         $response = $this->post('/registreren', [
             'role' => 'verhuurder',
-            'name' => 'Test Verhuurder',
+            'first_name' => 'Test',
+            'last_name' => 'Verhuurder',
             'email' => 'verhuurder@example.com',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',
@@ -44,7 +46,8 @@ class AuthTest extends TestCase
     {
         $response = $this->post('/registreren', [
             'role' => 'admin',
-            'name' => 'Test',
+            'first_name' => 'Test',
+            'last_name' => 'Gebruiker',
             'email' => 'test@example.com',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
         ]);

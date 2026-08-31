@@ -13,6 +13,11 @@ return [
         'name_placeholder' => 'Je voor- en achternaam',
         'name_hint' => 'Vul je voor- én achternaam in, allebei minimaal twee letters.',
         'name_invalid' => 'Vul je volledige voor- en achternaam in (allebei minimaal twee letters, zonder cijfers).',
+        'name_part_invalid' => 'Vul minimaal twee letters in, zonder cijfers.',
+        'first_name' => 'Voornaam',
+        'first_name_placeholder' => 'Je voornaam',
+        'last_name' => 'Achternaam',
+        'last_name_placeholder' => 'Je achternaam',
         'email' => 'E-mailadres',
         'email_placeholder' => 'jij@voorbeeld.nl',
         'password' => 'Wachtwoord',
@@ -61,13 +66,6 @@ return [
         'password' => 'Nieuw wachtwoord',
         'password_confirm' => 'Herhaal wachtwoord',
         'submit' => 'Wachtwoord opslaan',
-    ],
-
-    'steps' => [
-        'label' => 'Zo werkt het aanmelden',
-        'account' => 'Account aanmaken',
-        'verify' => 'E-mail bevestigen',
-        'profile' => 'Gegevens invullen',
     ],
 
     'failed' => 'De combinatie van e-mailadres en wachtwoord klopt niet.',

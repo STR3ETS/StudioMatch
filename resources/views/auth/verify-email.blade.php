@@ -6,8 +6,6 @@
     <h1 class="mt-6 text-center text-3xl font-bold text-prussian-blue">{{ __('auth.verify.title') }}</h1>
     <p class="mt-3 text-center text-prussian-blue/60">{{ __('auth.verify.subtitle', ['email' => auth()->user()->email]) }}</p>
 
-    <x-auth-steps :current="2" class="mt-8" />
-
     @if (session('status'))
         <p class="mt-6 rounded-xl bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-700">{{ session('status') }}</p>
     @endif

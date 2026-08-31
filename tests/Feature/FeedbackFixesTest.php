@@ -129,7 +129,8 @@ class FeedbackFixesTest extends TestCase
     {
         $this->withSession(['locale' => 'en'])->post('/registreren', [
             'role' => 'artiest',
-            'name' => 'New Artist',
+            'first_name' => 'New',
+            'last_name' => 'Artist',
             'email' => 'new-artist@example.com',
             'password' => 'Wachtwoord123', 'password_confirmation' => 'Wachtwoord123',
             'terms' => '1',

@@ -9,8 +9,6 @@
     <h1 class="text-3xl font-bold text-prussian-blue">{{ __('auth.register.title') }}</h1>
     <p class="mt-2 text-prussian-blue/60">{{ __('auth.register.subtitle') }}</p>
 
-    <x-auth-steps :current="1" class="mt-6" />
-
     <form method="POST" action="{{ route('register.store') }}" class="mt-8 space-y-5">
         @csrf
 
@@ -35,11 +33,17 @@
             <x-input-error field="role" />
         </div>
 
-        <div>
-            <label for="name" class="{{ $label }}">{{ __('auth.fields.name') }}</label>
-            <input id="name" type="text" name="name" value="{{ old('name') }}" placeholder="{{ __('auth.fields.name_placeholder') }}" class="{{ $field }}" required>
-            <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('auth.fields.name_hint') }}</p>
-            <x-input-error field="name" />
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+                <label for="first_name" class="{{ $label }}">{{ __('auth.fields.first_name') }}</label>
+                <input id="first_name" type="text" name="first_name" value="{{ old('first_name') }}" placeholder="{{ __('auth.fields.first_name_placeholder') }}" class="{{ $field }}" autocomplete="given-name" required>
+                <x-input-error field="first_name" />
+            </div>
+            <div>
+                <label for="last_name" class="{{ $label }}">{{ __('auth.fields.last_name') }}</label>
+                <input id="last_name" type="text" name="last_name" value="{{ old('last_name') }}" placeholder="{{ __('auth.fields.last_name_placeholder') }}" class="{{ $field }}" autocomplete="family-name" required>
+                <x-input-error field="last_name" />
+            </div>
         </div>
 
         <div>

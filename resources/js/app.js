@@ -351,16 +351,21 @@ window.addEventListener('pageshow', () => {
     });
 });
 
-document.querySelectorAll('[data-password-toggle]').forEach((button) => {
-    const input = button.parentElement?.querySelector('input');
+document.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-password-toggle]');
+    if (!button) return;
+
+    const input = button.closest('div')?.querySelector('input');
     if (!input) return;
 
-    button.addEventListener('click', () => {
-        const hidden = input.type === 'password';
-        input.type = hidden ? 'text' : 'password';
-        button.querySelector('i')?.classList.toggle('fa-eye', !hidden);
-        button.querySelector('i')?.classList.toggle('fa-eye-slash', hidden);
-    });
+    event.preventDefault();
+
+    const hidden = input.type === 'password';
+    input.type = hidden ? 'text' : 'password';
+
+    const icon = button.querySelector('i');
+    icon?.classList.toggle('fa-eye', !hidden);
+    icon?.classList.toggle('fa-eye-slash', hidden);
 });
 
 const floatPanel = (toggle, panel, width) => {

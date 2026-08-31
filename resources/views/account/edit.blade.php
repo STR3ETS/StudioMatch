@@ -19,7 +19,6 @@
                     <p class="mt-1 text-sm leading-relaxed text-prussian-blue/70">{{ __('account.profile.address_required_text') }}</p>
                 </div>
             </div>
-            <x-auth-steps :current="3" class="mt-5 !bg-white" />
         </div>
     @endif
 

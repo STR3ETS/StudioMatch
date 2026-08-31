@@ -13,6 +13,11 @@ return [
         'name_placeholder' => 'Your first and last name',
         'name_hint' => 'Enter both your first and last name, each at least two letters.',
         'name_invalid' => 'Enter your full first and last name (each at least two letters, no digits).',
+        'name_part_invalid' => 'Enter at least two letters, without digits.',
+        'first_name' => 'First name',
+        'first_name_placeholder' => 'Your first name',
+        'last_name' => 'Last name',
+        'last_name_placeholder' => 'Your last name',
         'email' => 'Email address',
         'email_placeholder' => 'you@example.com',
         'password' => 'Password',
@@ -61,13 +66,6 @@ return [
         'password' => 'New password',
         'password_confirm' => 'Repeat password',
         'submit' => 'Save password',
-    ],
-
-    'steps' => [
-        'label' => 'How signing up works',
-        'account' => 'Create account',
-        'verify' => 'Confirm email',
-        'profile' => 'Complete details',
     ],
 
     'failed' => 'These credentials do not match our records.',
