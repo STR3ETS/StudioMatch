@@ -15,13 +15,16 @@ return [
     */
 
     /*
-     * Basemap tiles. CARTO serves the dark basemap and requires an API key; without
-     * one the tiles come back with an "API key required" watermark across the map.
-     * CARTO_TILE_URL is only needed when CARTO hands you a different tile endpoint.
+     * Basemap tiles. We used CARTO's dark basemap, but CARTO now stamps an
+     * "API key required" watermark on every tile of that endpoint, also with a key.
+     * Esri's Dark Gray Canvas is the closest look-alike that serves clean tiles.
+     * The label layer is drawn on top of the base layer; leave it empty to skip it.
+     * Switching provider is a matter of setting these three in .env.
      */
-    'carto' => [
-        'tiles' => env('CARTO_TILE_URL', 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'),
-        'key' => env('CARTO_API_KEY'),
+    'basemap' => [
+        'tiles' => env('BASEMAP_TILE_URL', 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'),
+        'labels' => env('BASEMAP_LABEL_URL', 'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}'),
+        'attribution' => env('BASEMAP_ATTRIBUTION', 'Esri, HERE, Garmin, &copy; OpenStreetMap'),
     ],
 
     'mailgun' => [

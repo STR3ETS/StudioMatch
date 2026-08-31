@@ -25,14 +25,17 @@ const initStudioMap = () => {
 
     map.attributionControl.setPrefix(false);
 
-    // CARTO serves these tiles behind an API key; without one every tile carries a watermark.
-    const tileUrl = mapEl.dataset.tiles || 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-    const tileKey = mapEl.dataset.tileKey;
+    // Base layer plus a separate label layer, see config/services.php for the provider.
+    if (mapEl.dataset.tiles) {
+        L.tileLayer(mapEl.dataset.tiles, {
+            maxZoom: 16,
+            attribution: mapEl.dataset.attribution || '',
+        }).addTo(map);
+    }
 
-    L.tileLayer(tileKey && !tileUrl.includes('api_key=') ? `${tileUrl}?api_key=${tileKey}` : tileUrl, {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>',
-    }).addTo(map);
+    if (mapEl.dataset.labels) {
+        L.tileLayer(mapEl.dataset.labels, { maxZoom: 16 }).addTo(map);
+    }
 
     const nlFallback = [
         [3.38, 51.37], [3.44, 51.53], [4.12, 51.98], [4.28, 52.10], [4.60, 52.46],
