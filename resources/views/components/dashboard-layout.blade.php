@@ -122,12 +122,17 @@
                                 <p class="truncate text-sm font-semibold text-white">{{ auth()->user()->firstName() }}</p>
                                 <p class="truncate text-[11px] text-white/50">{{ auth()->user()->email }}</p>
                             </div>
-                            <form method="POST" action="{{ route('logout') }}">
-                                @csrf
-                                <button type="submit" title="{{ __('dashboard.nav.logout') }}" class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-white/60 transition hover:bg-white/15 hover:text-white">
-                                    <i class="fa-solid fa-arrow-right-from-bracket fa-sm"></i>
-                                </button>
-                            </form>
+                            <div class="group relative shrink-0">
+                                <form method="POST" action="{{ route('logout') }}">
+                                    @csrf
+                                    <button type="submit" aria-label="{{ __('dashboard.nav.logout') }}" class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-white/60 transition hover:bg-white/15 hover:text-white">
+                                        <i class="fa-solid fa-arrow-right-from-bracket fa-sm"></i>
+                                    </button>
+                                </form>
+                                <span class="pointer-events-none absolute bottom-full right-0 mb-2 whitespace-nowrap rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-prussian-blue opacity-0 shadow-lg transition group-focus-within:opacity-100 group-hover:opacity-100">
+                                    {{ __('dashboard.nav.logout') }}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
