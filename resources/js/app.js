@@ -1,5 +1,6 @@
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import Sortable from 'sortablejs';
 
 const initStudioMap = () => {
     const mapEl = document.getElementById('studio-map');
@@ -513,78 +514,27 @@ document.addEventListener('sm:results-updated', () => {
 });
 
 /**
- * Drag & drop reordering that works with mouse, pen and touch. Dragging starts on a
- * [data-sortable-handle] inside a [data-sortable-item]; arrow keys move the focused
- * handle one place. onChange receives the items in their new DOM order.
+ * Drag & drop reordering for mouse, pen and touch, plus arrow keys on the focused
+ * handle. onChange receives the items in their new DOM order.
  */
 const initSortable = (container, onChange) => {
     if (!container || container.dataset.sortableReady) return;
     container.dataset.sortableReady = '1';
 
     const items = () => [...container.querySelectorAll('[data-sortable-item]')];
-    let dragged = null;
-    let active = false;
-    let startX = 0;
-    let startY = 0;
 
-    const onMove = (event) => {
-        if (!dragged) return;
-        const dx = event.clientX - startX;
-        const dy = event.clientY - startY;
-        if (!active && Math.hypot(dx, dy) < 6) return;
-        if (!active) {
-            active = true;
-            dragged.classList.add('is-dragging');
-        }
-        event.preventDefault();
-        dragged.style.transform = `translate(${dx}px, ${dy}px)`;
-
-        const over = items().find((item) => {
-            if (item === dragged) return false;
-            const rect = item.getBoundingClientRect();
-            return event.clientX >= rect.left && event.clientX <= rect.right
-                && event.clientY >= rect.top && event.clientY <= rect.bottom;
-        });
-
-        if (over) {
-            const list = items();
-            if (list.indexOf(dragged) < list.indexOf(over)) over.after(dragged);
-            else over.before(dragged);
-            startX = event.clientX;
-            startY = event.clientY;
-            dragged.style.transform = '';
-        }
-    };
-
-    container.addEventListener('pointerdown', (event) => {
-        const handle = event.target.closest('[data-sortable-handle]');
-        if (!handle || event.button > 0) return;
-
-        dragged = handle.closest('[data-sortable-item]');
-        if (!dragged) return;
-
-        startX = event.clientX;
-        startY = event.clientY;
-        handle.setPointerCapture(event.pointerId);
-
-        const stop = () => {
-            handle.removeEventListener('pointermove', onMove);
-            handle.removeEventListener('pointerup', stop);
-            handle.removeEventListener('pointercancel', stop);
-
-            if (dragged) {
-                dragged.style.transform = '';
-                dragged.classList.remove('is-dragging');
-            }
-            const moved = active;
-            dragged = null;
-            active = false;
-            if (moved) onChange(items());
-        };
-
-        handle.addEventListener('pointermove', onMove);
-        handle.addEventListener('pointerup', stop);
-        handle.addEventListener('pointercancel', stop);
+    Sortable.create(container, {
+        animation: 150,
+        handle: '[data-sortable-handle]',
+        draggable: '[data-sortable-item]',
+        forceFallback: true,
+        fallbackTolerance: 4,
+        ghostClass: 'is-drag-placeholder',
+        fallbackClass: 'is-drag-floating',
+        chosenClass: 'is-dragging',
+        onEnd: (event) => {
+            if (event.oldIndex !== event.newIndex) onChange(items());
+        },
     });
 
     container.addEventListener('keydown', (event) => {
@@ -689,6 +639,7 @@ document.querySelectorAll('[data-photo-input]').forEach((input) => {
             wrap.appendChild(img);
 
             const number = document.createElement('span');
+            number.setAttribute('data-preview-number', '');
             number.className = 'absolute left-1.5 top-1.5 rounded-full bg-prussian-blue/80 px-2 py-0.5 text-[10px] font-bold text-white shadow';
             number.textContent = index + 1;
             wrap.appendChild(number);
@@ -720,10 +671,14 @@ document.querySelectorAll('[data-photo-input]').forEach((input) => {
         count.textContent = files.length ? files.length + ' ' + selectedLabel : '';
     };
 
+    // Renumber in place rather than re-rendering, so Sortable keeps its own state intact.
     initSortable(preview, (items) => {
         files = items.map((item) => item.__file).filter(Boolean);
         syncInput();
-        render();
+        items.forEach((item, index) => {
+            const badge = item.querySelector('[data-preview-number]');
+            if (badge) badge.textContent = index + 1;
+        });
     });
 
     input.addEventListener('change', async () => {
