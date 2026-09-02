@@ -30,7 +30,10 @@ class AccountTest extends TestCase
         Http::fake([
             'api.pdok.nl/*' => Http::response([
                 'response' => ['docs' => [[
+                    'straatnaam' => 'Prinsengracht',
+                    'huis_nlt' => '263',
                     'postcode' => '1016GV',
+                    'woonplaatsnaam' => 'Amsterdam',
                     'centroide_ll' => 'POINT(4.8836 52.3752)',
                 ]]],
             ]),

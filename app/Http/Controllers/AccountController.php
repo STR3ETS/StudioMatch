@@ -24,17 +24,21 @@ class AccountController extends Controller
     public function updateProfile(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $addressRule = $user->isArtist() ? 'required' : 'nullable';
+
+        // The address stays optional here and is only required at checkout, but as soon
+        // as one field is filled the whole address has to be real.
+        $partial = $user->isArtist() && $request->hasAny(['street', 'postal_code', 'city'])
+            && ($request->filled('street') || $request->filled('postal_code') || $request->filled('city'));
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255', new FullName],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
-            'street' => [$addressRule, 'string', 'max:255'],
-            'postal_code' => [$addressRule, 'string', 'max:10'],
-            'city' => [$addressRule, 'string', 'max:100'],
+            'street' => [$partial ? 'required' : 'nullable', 'string', 'max:255'],
+            'postal_code' => [$partial ? 'required' : 'nullable', 'string', 'max:10'],
+            'city' => [$partial ? 'required' : 'nullable', 'string', 'max:100'],
         ]);
 
-        if ($user->isArtist()) {
+        if ($partial) {
             $this->verifiedCoords($validated, __('account.profile.address_invalid'));
         }
 

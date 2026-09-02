@@ -66,20 +66,21 @@
                         <h2 class="font-bold text-prussian-blue">{{ __('booking.checkout.address_title') }}</h2>
                         <p class="mt-1 text-sm text-prussian-blue/60">{{ __('booking.checkout.address_note') }}</p>
                         <div class="mt-4 space-y-4">
-                            <div>
+                            <div data-address-autocomplete data-url="{{ route('address.suggest') }}" class="relative">
                                 <label for="street" class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('account.profile.street') }}</label>
-                                <input id="street" type="text" name="street" value="{{ old('street', auth()->user()->street) }}" class="{{ $addressField }}" required>
+                                <input id="street" type="text" name="street" value="{{ old('street', auth()->user()->street) }}" class="{{ $addressField }}" autocomplete="off" data-address-street required>
+                                <div data-address-suggestions class="absolute left-0 right-0 top-full z-30 mt-1 hidden overflow-hidden rounded-xl border border-prussian-blue/10 bg-white shadow-xl"></div>
                                 <x-input-error field="street" />
                             </div>
                             <div class="grid gap-4 sm:grid-cols-2">
                                 <div>
                                     <label for="postal_code" class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('account.profile.postal_code') }}</label>
-                                    <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code', auth()->user()->postal_code) }}" class="{{ $addressField }}" required>
+                                    <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code', auth()->user()->postal_code) }}" class="{{ $addressField }}" data-address-postal required>
                                     <x-input-error field="postal_code" />
                                 </div>
                                 <div>
                                     <label for="city" class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('account.profile.city') }}</label>
-                                    <input id="city" type="text" name="city" value="{{ old('city', auth()->user()->city) }}" class="{{ $addressField }}" required>
+                                    <input id="city" type="text" name="city" value="{{ old('city', auth()->user()->city) }}" class="{{ $addressField }}" data-address-city required>
                                     <x-input-error field="city" />
                                 </div>
                             </div>

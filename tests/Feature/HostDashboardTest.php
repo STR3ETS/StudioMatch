@@ -80,10 +80,16 @@ class HostDashboardTest extends TestCase
     public function test_host_can_create_multiple_studios_including_same_address(): void
     {
         Http::fake(function ($request) {
-            $postcode = str_contains(urldecode($request->url()), '1073') ? '1073LL' : '1016GV';
+            $zuid = str_contains(urldecode($request->url()), '1073');
 
             return Http::response([
-                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)', 'postcode' => $postcode]]],
+                'response' => ['docs' => [[
+                    'centroide_ll' => 'POINT(4.8840 52.3752)',
+                    'postcode' => $zuid ? '1073LL' : '1016GV',
+                    'straatnaam' => $zuid ? 'Van Woustraat' : 'Prinsengracht',
+                    'huis_nlt' => $zuid ? '12' : '263',
+                    'woonplaatsnaam' => 'Amsterdam',
+                ]]],
             ]);
         });
         $host = $this->host();
@@ -112,7 +118,13 @@ class HostDashboardTest extends TestCase
     {
         Http::fake([
             'api.pdok.nl/*' => Http::response([
-                'response' => ['docs' => [['centroide_ll' => 'POINT(5.92976488 51.98858137)', 'postcode' => '6824BG']]],
+                'response' => ['docs' => [[
+                    'centroide_ll' => 'POINT(5.92976488 51.98858137)',
+                    'postcode' => '6824BG',
+                    'straatnaam' => 'Velperweg',
+                    'huis_nlt' => '49-103',
+                    'woonplaatsnaam' => 'Arnhem',
+                ]]],
             ]),
         ]);
 

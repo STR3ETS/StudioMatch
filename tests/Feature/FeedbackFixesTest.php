@@ -212,7 +212,13 @@ class FeedbackFixesTest extends TestCase
         \Illuminate\Support\Facades\Storage::fake('public');
         \Illuminate\Support\Facades\Http::fake([
             'api.pdok.nl/*' => \Illuminate\Support\Facades\Http::response([
-                'response' => ['docs' => [['centroide_ll' => 'POINT(4.8840 52.3752)', 'postcode' => '1016GV']]],
+                'response' => ['docs' => [[
+                    'centroide_ll' => 'POINT(4.8840 52.3752)',
+                    'postcode' => '1016GV',
+                    'straatnaam' => 'Prinsengracht',
+                    'huis_nlt' => '263',
+                    'woonplaatsnaam' => 'Amsterdam',
+                ]]],
             ]),
         ]);
 

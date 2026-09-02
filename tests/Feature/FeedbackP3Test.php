@@ -22,7 +22,10 @@ class FeedbackP3Test extends TestCase
         Http::fake([
             'api.pdok.nl/*' => Http::response([
                 'response' => ['docs' => $found ? [[
+                    'straatnaam' => 'Prinsengracht',
+                    'huis_nlt' => '263',
                     'postcode' => '1016GV',
+                    'woonplaatsnaam' => 'Amsterdam',
                     'centroide_ll' => 'POINT(4.8836 52.3752)',
                 ]] : []],
             ]),
@@ -40,7 +43,7 @@ class FeedbackP3Test extends TestCase
             'lng' => 4.8836,
         ]);
 
-        return $studio->rooms()->create([
+        $room = $studio->rooms()->create([
             'title' => 'Live room A',
             'description' => 'Fijne ruimte.',
             'type' => 'opname',
@@ -49,6 +52,10 @@ class FeedbackP3Test extends TestCase
             'capacity' => 6,
             'status' => 'live',
         ]);
+
+        $room->seedDefaultHours();
+
+        return $room->fresh();
     }
 
     /* Account: e-mailverificatie en adres verplicht */
@@ -71,26 +78,42 @@ class FeedbackP3Test extends TestCase
             ->assertSee(__('auth.verify.blocked'));
     }
 
-    public function test_artist_without_address_is_pushed_to_the_account_page(): void
+    public function test_artist_without_address_can_use_the_dashboard_and_only_sees_a_reminder(): void
     {
+        $artist = User::factory()->withoutAddress()->create(['role' => 'artiest']);
+
+        $this->actingAs($artist)->get('/dashboard')->assertRedirect(route('dashboard.artist'));
+
+        $this->actingAs($artist)->get(route('dashboard.artist'))
+            ->assertOk()
+            ->assertSee(__('account.profile.address_banner'));
+    }
+
+    public function test_booking_still_requires_a_real_address(): void
+    {
+        $this->fakeAddressLookup(found: false);
         $artist = User::factory()->withoutAddress()->create(['role' => 'artiest']);
         $host = User::factory()->create(['role' => 'verhuurder']);
         $room = $this->liveRoom($host);
 
-        $this->actingAs($artist)->get('/dashboard')->assertRedirect(route('account.edit'));
-        $this->actingAs($artist)->get('/dashboard/artiest')->assertRedirect(route('account.edit'));
-        $this->actingAs($artist)->get('/studios/' . $room->slug . '/boeken')->assertRedirect(route('account.edit'));
+        // Standaardrooster is doordeweeks open van 09:00 tot 21:00.
+        $date = today()->next(\Illuminate\Support\Carbon::WEDNESDAY)->toDateString();
 
-        $this->actingAs($artist)->get(route('account.edit'))
+        $this->actingAs($artist)->get('/studios/' . $room->slug . '/boeken?date=' . $date . '&start=10&hours=2')
             ->assertOk()
-            ->assertSee(__('account.profile.address_required_title'));
-    }
+            ->assertSee(__('booking.checkout.address_title'));
 
-    public function test_host_without_address_keeps_access_to_the_dashboard(): void
-    {
-        $host = User::factory()->withoutAddress()->create(['role' => 'verhuurder']);
+        $this->actingAs($artist)->post('/studios/' . $room->slug . '/boeken', [
+            'date' => $date,
+            'start' => 10,
+            'hours' => 2,
+            'terms' => '1',
+            'street' => 'Verzonnenstraat 999',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
+        ])->assertSessionHasErrors('street');
 
-        $this->actingAs($host)->get('/dashboard')->assertRedirect(route('dashboard.host'));
+        $this->assertNull($artist->fresh()->street);
     }
 
     public function test_artist_address_is_checked_against_the_address_register(): void
@@ -107,6 +130,99 @@ class FeedbackP3Test extends TestCase
         ])->assertSessionHasErrors('street');
 
         $this->assertNull($artist->fresh()->street);
+    }
+
+    public function test_an_artist_may_leave_the_address_empty(): void
+    {
+        $artist = User::factory()->withoutAddress()->create(['role' => 'artiest']);
+
+        $this->actingAs($artist)->put('/dashboard/account/profiel', [
+            'name' => 'Nieuwe Naam',
+            'email' => $artist->email,
+            'street' => '',
+            'postal_code' => '',
+            'city' => '',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('Nieuwe Naam', $artist->fresh()->name);
+    }
+
+    public function test_a_wrong_street_with_a_real_postcode_is_rejected(): void
+    {
+        // PDOK answers a made up street with the real address for that postcode.
+        Http::fake([
+            'api.pdok.nl/*' => Http::response([
+                'response' => ['docs' => [[
+                    'straatnaam' => 'Prinsengracht',
+                    'huis_nlt' => '263',
+                    'postcode' => '1016GV',
+                    'woonplaatsnaam' => 'Amsterdam',
+                    'centroide_ll' => 'POINT(4.8836 52.3752)',
+                ]]],
+            ]),
+        ]);
+
+        $artist = User::factory()->withoutAddress()->create(['role' => 'artiest']);
+
+        $this->actingAs($artist)->put('/dashboard/account/profiel', [
+            'name' => $artist->name,
+            'email' => $artist->email,
+            'street' => 'Verzonnenstraat 999',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
+        ])->assertSessionHasErrors('street');
+
+        $this->assertNull($artist->fresh()->street);
+    }
+
+    public function test_the_matching_street_and_number_is_accepted(): void
+    {
+        $this->fakeAddressLookup();
+        $artist = User::factory()->withoutAddress()->create(['role' => 'artiest']);
+
+        $this->actingAs($artist)->put('/dashboard/account/profiel', [
+            'name' => $artist->name,
+            'email' => $artist->email,
+            'street' => 'Prinsengracht 263',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
+        ])->assertSessionHasNoErrors();
+
+        $this->assertSame('Prinsengracht 263', $artist->fresh()->street);
+    }
+
+    public function test_address_suggestions_come_from_the_register(): void
+    {
+        Http::fake([
+            'api.pdok.nl/*' => Http::response([
+                'response' => ['docs' => [[
+                    'weergavenaam' => 'Prinsengracht 263, 1016GV Amsterdam',
+                    'straatnaam' => 'Prinsengracht',
+                    'huis_nlt' => '263',
+                    'postcode' => '1016GV',
+                    'woonplaatsnaam' => 'Amsterdam',
+                ]]],
+            ]),
+        ]);
+
+        $this->actingAs(User::factory()->create(['role' => 'artiest']))
+            ->getJson(route('address.suggest', ['q' => 'Prinsengracht 263']))
+            ->assertOk()
+            ->assertJsonPath('0.street', 'Prinsengracht 263')
+            ->assertJsonPath('0.postal_code', '1016 GV')
+            ->assertJsonPath('0.city', 'Amsterdam');
+    }
+
+    public function test_short_queries_do_not_hit_the_register(): void
+    {
+        Http::fake();
+
+        $this->actingAs(User::factory()->create(['role' => 'artiest']))
+            ->getJson(route('address.suggest', ['q' => 'Pri']))
+            ->assertOk()
+            ->assertExactJson([]);
+
+        Http::assertNothingSent();
     }
 
     /* Account: naam en begroeting */
@@ -359,12 +475,16 @@ class FeedbackP3Test extends TestCase
 
     /* Zoekpagina */
 
-    public function test_search_page_keeps_the_show_results_button_in_view(): void
+    public function test_search_page_has_one_floating_show_results_button(): void
     {
-        $this->get('/studios')
-            ->assertOk()
-            ->assertSee('data-sticky-count', escape: false)
-            ->assertSee(__('studios.filters.apply'));
+        $response = $this->get('/studios')->assertOk();
+
+        $this->assertSame(
+            1,
+            substr_count($response->getContent(), __('studios.filters.apply')),
+            'De zoekpagina hoort precies een "Toon resultaten"-knop te hebben.'
+        );
+        $this->assertStringContainsString('form="studio-filters"', $response->getContent());
     }
 
     /* Foto's slepen */

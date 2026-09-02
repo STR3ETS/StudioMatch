@@ -361,6 +361,81 @@ window.addEventListener('pageshow', () => {
     });
 });
 
+/**
+ * Type-ahead on the street field. Suggestions come from the Dutch address register, so
+ * picking one guarantees a real address and fills postcode and city along with it.
+ */
+document.querySelectorAll('[data-address-autocomplete]').forEach((wrap) => {
+    const input = wrap.querySelector('[data-address-street]');
+    const panel = wrap.querySelector('[data-address-suggestions]');
+    if (!input || !panel) return;
+
+    const scope = wrap.closest('form') || document;
+    const postal = scope.querySelector('[data-address-postal]');
+    const city = scope.querySelector('[data-address-city]');
+
+    let timer = null;
+    let controller = null;
+
+    const close = () => {
+        panel.classList.add('hidden');
+        panel.replaceChildren();
+    };
+
+    const show = (items) => {
+        if (!items.length) return close();
+
+        panel.replaceChildren(...items.map((item) => {
+            const option = document.createElement('button');
+            option.type = 'button';
+            option.className = 'block w-full cursor-pointer px-4 py-2.5 text-left text-sm text-prussian-blue transition hover:bg-prussian-blue/5';
+            option.textContent = item.label;
+            option.addEventListener('click', () => {
+                input.value = item.street;
+                if (postal) postal.value = item.postal_code;
+                if (city) city.value = item.city;
+                close();
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
+            return option;
+        }));
+
+        panel.classList.remove('hidden');
+    };
+
+    input.addEventListener('input', () => {
+        clearTimeout(timer);
+
+        const typed = input.value.trim();
+        if (typed.length < 4) return close();
+
+        timer = setTimeout(async () => {
+            const query = postal?.value.trim() ? `${typed} ${postal.value.trim()}` : typed;
+            controller?.abort();
+            controller = new AbortController();
+
+            try {
+                const response = await fetch(`${wrap.dataset.url}?q=${encodeURIComponent(query)}`, {
+                    signal: controller.signal,
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                });
+                if (!response.ok) return close();
+                show(await response.json());
+            } catch (error) {
+                // Afgebroken zoekopdracht of geen verbinding: gewoon niets tonen.
+            }
+        }, 250);
+    });
+
+    input.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') close();
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!wrap.contains(event.target)) close();
+    });
+});
+
 document.addEventListener('click', (event) => {
     const button = event.target.closest('[data-password-toggle]');
     if (!button) return;

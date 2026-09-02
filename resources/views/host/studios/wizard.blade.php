@@ -46,20 +46,21 @@
                     <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.studios.fields.phone_hint') }}</p>
                     <x-input-error field="phone" />
                 </div>
-                <div>
+                <div data-address-autocomplete data-url="{{ route('address.suggest') }}" class="relative">
                     <label for="street" class="{{ $label }}">{{ __('host.studios.fields.street') }}</label>
-                    <input id="street" type="text" name="street" value="{{ old('street') }}" placeholder="Prinsengracht 263" class="{{ $field }}" required>
+                    <input id="street" type="text" name="street" value="{{ old('street') }}" placeholder="Prinsengracht 263" class="{{ $field }}" autocomplete="off" data-address-street required>
+                    <div data-address-suggestions class="absolute left-0 right-0 top-full z-30 mt-1 hidden overflow-hidden rounded-xl border border-prussian-blue/10 bg-white shadow-xl"></div>
                     <x-input-error field="street" />
                 </div>
                 <div class="grid gap-5 sm:grid-cols-2">
                     <div>
                         <label for="postal_code" class="{{ $label }}">{{ __('host.studios.fields.postal_code') }}</label>
-                        <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code') }}" placeholder="1234 AB" class="{{ $field }}" required>
+                        <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code') }}" placeholder="1234 AB" class="{{ $field }}" data-address-postal required>
                         <x-input-error field="postal_code" />
                     </div>
                     <div>
                         <label for="city" class="{{ $label }}">{{ __('host.studios.fields.city') }}</label>
-                        <input id="city" type="text" name="city" value="{{ old('city') }}" placeholder="Amsterdam" class="{{ $field }}" required>
+                        <input id="city" type="text" name="city" value="{{ old('city') }}" placeholder="Amsterdam" class="{{ $field }}" data-address-city required>
                         <x-input-error field="city" />
                     </div>
                 </div>

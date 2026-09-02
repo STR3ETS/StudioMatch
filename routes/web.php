@@ -104,6 +104,9 @@ Route::middleware('auth')->group(function () {
     })->middleware('throttle:3,1')->name('verification.send');
 
     Route::post('/uitloggen', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
+
+    Route::get('/adres/suggesties', [\App\Http\Controllers\AddressController::class, 'suggest'])
+        ->middleware('throttle:60,1')->name('address.suggest');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -113,7 +116,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/dashboard/account', [AccountController::class, 'destroy'])->name('account.destroy');
 });
 
-Route::middleware(['auth', 'verified', 'profile.complete'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('/dashboard/artiest', ArtistOverviewController::class)
