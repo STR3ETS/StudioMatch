@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Notifications\BookingCancelled;
 use App\Notifications\BookingRescheduled;
 use App\Notifications\ProblemReported;
+use App\Support\Hours;
 use App\Support\StripeService;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\RedirectResponse;
@@ -67,10 +68,7 @@ class BookingController extends Controller
         $prices = $this->prices($room, $endHour - $startHour, $withEngineer);
 
         $booking = DB::transaction(function () use ($request, $room, $date, $startHour, $endHour, $withEngineer, $prices) {
-            $taken = $room->bookings()
-                ->whereDate('date', $date)
-                ->where('start_hour', '<', $endHour)
-                ->where('end_hour', '>', $startHour)
+            $taken = $room->overlappingBookings($date, $startHour, $endHour)
                 ->lockForUpdate()
                 ->get()
                 ->contains(fn (Booking $booking) => $booking->isActive());
@@ -222,15 +220,11 @@ class BookingController extends Controller
         $startHour = (int) $validated['start'];
         $endHour = $startHour + $booking->hours();
 
-        $available = $endHour <= 24
-            && ! ($date->isToday() && $startHour <= now()->hour)
+        $available = $endHour <= Hours::max()
+            && ! $date->copy()->startOfDay()->addHours($startHour)->isPast()
             && $booking->room->isAvailableOn($date->copy(), $startHour, $endHour)
-            && ! $booking->room->bookings()
-                ->active()
+            && ! $booking->room->overlappingBookings($date, $startHour, $endHour)
                 ->whereKeyNot($booking->id)
-                ->whereDate('date', $date)
-                ->where('start_hour', '<', $endHour)
-                ->where('end_hour', '>', $startHour)
                 ->exists();
 
         if (! $available) {
@@ -317,7 +311,7 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'date' => ['required', 'date', 'after_or_equal:today'],
-            'start' => ['required', 'integer', 'between:0,23'],
+            'start' => ['required', 'integer', 'between:0,' . (Hours::max() - 1)],
             'hours' => ['required', 'integer', 'min:' . $room->min_hours, 'max:' . config('studio.booking_max_hours')],
         ]);
 
@@ -325,11 +319,12 @@ class BookingController extends Controller
         $startHour = (int) $validated['start'];
         $endHour = $startHour + (int) $validated['hours'];
 
-        if ($endHour > 24) {
+        // Hours above 24 fall on the next morning, so a night session stays one booking.
+        if ($endHour > Hours::max()) {
             throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
         }
 
-        if ($date->isToday() && $startHour <= now()->hour) {
+        if ($date->copy()->startOfDay()->addHours($startHour)->isPast()) {
             throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
         }
 

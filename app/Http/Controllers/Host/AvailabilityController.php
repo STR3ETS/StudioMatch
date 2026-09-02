@@ -6,6 +6,7 @@ use App\Enums\ExceptionType;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
 use App\Models\RoomException;
+use App\Support\Hours;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -42,7 +43,7 @@ class AvailabilityController extends Controller
             'days' => ['required', 'array', 'size:7'],
             'days.*.is_open' => ['nullable', 'boolean'],
             'days.*.open_hour' => ['required', 'integer', 'between:0,23'],
-            'days.*.close_hour' => ['required', 'integer', 'between:1,24', 'gt:days.*.open_hour'],
+            'days.*.close_hour' => ['required', 'integer', 'between:1,' . Hours::max(), 'gt:days.*.open_hour'],
         ], [
             'days.*.close_hour.gt' => __('host.availability.close_after_open'),
         ]);
@@ -87,7 +88,7 @@ class AvailabilityController extends Controller
             'date' => ['required', 'date', 'after_or_equal:today'],
             'type' => ['required', Rule::enum(ExceptionType::class)],
             'start_hour' => ['nullable', 'integer', 'between:0,23', 'required_unless:type,closed'],
-            'end_hour' => ['nullable', 'integer', 'between:1,24', 'required_unless:type,closed', 'gt:start_hour'],
+            'end_hour' => ['nullable', 'integer', 'between:1,' . Hours::max(), 'required_unless:type,closed', 'gt:start_hour'],
             'label' => ['nullable', 'string', 'max:100'],
         ], [
             'date.after_or_equal' => __('host.availability.date_in_past'),

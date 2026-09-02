@@ -62,8 +62,8 @@
                             </select>
                             <span>{{ __('host.availability.until') }}</span>
                             <select name="days[{{ $day->weekday }}][close_hour]" class="cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
-                                @for ($h = 1; $h <= 24; $h++)
-                                    <option value="{{ $h }}" @selected((int) old('days.' . $day->weekday . '.close_hour', $day->close_hour) === $h)>{{ sprintf('%02d:00', $h % 24) === '00:00' && $h === 24 ? '24:00' : sprintf('%02d:00', $h) }}</option>
+                                @for ($h = 1; $h <= \App\Support\Hours::max(); $h++)
+                                    <option value="{{ $h }}" @selected((int) old('days.' . $day->weekday . '.close_hour', $day->close_hour) === $h)>{{ \App\Support\Hours::label($h) }}</option>
                                 @endfor
                             </select>
                         </div>
@@ -126,8 +126,8 @@
                 <label for="ex-end" class="{{ $label }}">{{ __('host.availability.fields.end') }}</label>
                 <select id="ex-end" name="end_hour" class="{{ $field }} cursor-pointer">
                     <option value="">—</option>
-                    @for ($h = 1; $h <= 24; $h++)
-                        <option value="{{ $h }}" @selected(old('end_hour') !== null && old('end_hour') !== '' && (int) old('end_hour') === $h)>{{ $h === 24 ? '24:00' : sprintf('%02d:00', $h) }}</option>
+                    @for ($h = 1; $h <= \App\Support\Hours::max(); $h++)
+                        <option value="{{ $h }}" @selected(old('end_hour') !== null && old('end_hour') !== '' && (int) old('end_hour') === $h)>{{ \App\Support\Hours::label($h) }}</option>
                     @endfor
                 </select>
                 <x-input-error field="end_hour" />
@@ -163,7 +163,7 @@
                                 {{ $exception->date->translatedFormat('D j M Y') }}
                                 <span class="ml-1 font-normal text-prussian-blue/60">{{ __('host.availability.types.' . $exception->type->value) }}</span>
                                 @if ($exception->start_hour !== null)
-                                    <span class="ml-1 font-normal text-prussian-blue/60">{{ sprintf('%02d:00', $exception->start_hour) }} – {{ $exception->end_hour === 24 ? '24:00' : sprintf('%02d:00', $exception->end_hour) }}</span>
+                                    <span class="ml-1 font-normal text-prussian-blue/60">{{ \App\Support\Hours::range($exception->start_hour, $exception->end_hour) }}</span>
                                 @endif
                             </p>
                             @if ($exception->label)

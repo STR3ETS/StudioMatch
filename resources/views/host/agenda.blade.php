@@ -43,7 +43,7 @@
                                         <p class="font-bold text-prussian-blue">
                                             {{ $entry['kind'] === 'closed'
                                                 ? __('host.agenda.closed_all_day')
-                                                : sprintf('%02d:00', $item->start_hour) . ' – ' . ($item->end_hour == 24 ? '24:00' : sprintf('%02d:00', $item->end_hour)) }}
+                                                : \App\Support\Hours::range((int) $item->start_hour, (int) $item->end_hour) }}
                                         </p>
                                         <p class="mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
                                             <span><i class="fa-solid fa-door-open fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $item->room->title }}</span>

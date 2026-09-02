@@ -33,7 +33,7 @@
                         <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
                             <span><i class="fa-solid fa-building fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $room->studio->name }} ({{ $room->studio->city }})</span>
                             <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $date->translatedFormat('l j F Y') }}</span>
-                            <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ sprintf('%02d:00', $startHour) }} – {{ $endHour === 24 ? '24:00' : sprintf('%02d:00', $endHour) }}</span>
+                            <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ \App\Support\Hours::range($startHour, $endHour) }}</span>
                         </p>
                     </div>
                 </div>

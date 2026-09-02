@@ -10,6 +10,12 @@ return [
 
     'booking_max_hours' => 12,
 
+    /*
+     * Studios may stay open past midnight. Hours are counted from midnight of the starting
+     * date, so 30 means a session can run until 06:00 the next morning.
+     */
+    'latest_close_hour' => 30,
+
     'booking_horizon_days' => 365,
 
     'contact_email' => env('CONTACT_EMAIL', 'info@studiomatch.nl'),

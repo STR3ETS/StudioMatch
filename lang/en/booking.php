@@ -22,6 +22,9 @@ return [
         'submit' => 'Reschedule my booking',
     ],
 
+    'next_day_label' => '(next day)',
+    'next_day_short' => '(+1)',
+
     'problem' => [
         'dismissed' => 'Your report of :date has been handled. The booking has been completed and the payout to the studio has been released.',
         'partial' => 'Your report of :date has been handled with a partial refund of :amount.',

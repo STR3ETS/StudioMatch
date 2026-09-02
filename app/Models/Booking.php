@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\BookingStatus;
 use App\Notifications\BookingReceived;
 use App\Notifications\BookingRequested;
+use App\Support\Hours;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -108,7 +109,12 @@ class Booking extends Model
 
     public function timeRange(): string
     {
-        return sprintf('%02d:00', $this->start_hour) . ' – ' . ($this->end_hour == 24 ? '24:00' : sprintf('%02d:00', $this->end_hour));
+        return Hours::range((int) $this->start_hour, (int) $this->end_hour);
+    }
+
+    public function runsPastMidnight(): bool
+    {
+        return (int) $this->end_hour > 24;
     }
 
     public function canReschedule(): bool

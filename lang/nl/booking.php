@@ -22,6 +22,9 @@ return [
         'submit' => 'Verzet mijn boeking',
     ],
 
+    'next_day_label' => '(volgende dag)',
+    'next_day_short' => '(+1)',
+
     'problem' => [
         'dismissed' => 'Je melding van :date is afgehandeld. De boeking is afgerond en de uitbetaling aan de studio is vrijgegeven.',
         'partial' => 'Je melding van :date is afgehandeld met een gedeeltelijke terugbetaling van :amount.',

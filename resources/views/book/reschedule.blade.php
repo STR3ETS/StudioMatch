@@ -100,7 +100,7 @@
                 if (! free || ! free.length) return [];
                 const set = new Set(free);
                 return free.filter((s) => {
-                    if (s + DURATION > 24) return false;
+                    // Uren boven 24 vallen op de volgende ochtend en staan al in de vrije uren.
                     for (let i = 1; i < DURATION; i++) if (! set.has(s + i)) return false;
                     return true;
                 });
@@ -155,7 +155,8 @@
                     const classes = sel
                         ? 'border-ruby-red bg-ruby-red font-bold text-white'
                         : 'border-prussian-blue/15 font-semibold text-prussian-blue hover:border-ruby-red/60';
-                    return `<button type="button" data-slot="${s}" class="cursor-pointer rounded-xl border px-2 py-2 text-sm transition ${classes}">${String(s).padStart(2, '0')}:00</button>`;
+                    const clock = String(s === 24 ? 24 : s % 24).padStart(2, '0') + ':00';
+                    return `<button type="button" data-slot="${s}" class="cursor-pointer rounded-xl border px-2 py-2 text-sm transition ${classes}">${clock}${s >= 24 ? ' <span class="text-[10px] opacity-60">+1</span>' : ''}</button>`;
                 }).join('');
             };
 

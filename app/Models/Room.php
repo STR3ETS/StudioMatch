@@ -147,7 +147,7 @@ class Room extends Model
             ->contains(fn ($exception) => $exception->start_hour < $endHour && $exception->end_hour > $startHour);
     }
 
-    public function freeHoursOn(CarbonInterface $date, $dayBookings = null): array
+    public function freeHoursOn(CarbonInterface $date, $dayBookings = null, $previousDayBookings = null): array
     {
         $dayExceptions = $this->exceptions->filter(fn ($exception) => $exception->date->isSameDay($date));
 
@@ -180,6 +180,13 @@ class Room extends Model
             }
         }
 
+        // Yesterday's late session runs into this morning: hour 25 there is hour 1 here.
+        foreach ($previousDayBookings ?? [] as $booking) {
+            for ($h = max(0, (int) $booking->start_hour - 24); $h < (int) $booking->end_hour - 24; $h++) {
+                unset($free[$h]);
+            }
+        }
+
         if ($date->isToday()) {
             foreach (array_keys($free) as $h) {
                 if ($h <= now()->hour) {
@@ -204,14 +211,18 @@ class Room extends Model
 
         $bookings = $this->bookings()
             ->active()
-            ->whereBetween('date', [$from->toDateString(), $from->copy()->addDays($days)->toDateString()])
+            ->whereBetween('date', [$from->copy()->subDay()->toDateString(), $from->copy()->addDays($days)->toDateString()])
             ->get()
             ->groupBy(fn (Booking $booking) => $booking->date->toDateString());
 
         $result = [];
         for ($i = 0; $i < $days; $i++) {
             $date = $from->copy()->addDays($i);
-            $result[$date->toDateString()] = $this->freeHoursOn($date, $bookings->get($date->toDateString()));
+            $result[$date->toDateString()] = $this->freeHoursOn(
+                $date,
+                $bookings->get($date->toDateString()),
+                $bookings->get($date->copy()->subDay()->toDateString()),
+            );
         }
 
         return $result;
@@ -228,12 +239,28 @@ class Room extends Model
             return false;
         }
 
-        return ! $this->bookings()
+        return ! $this->overlappingBookings($date, $startHour, $endHour)->exists();
+    }
+
+    /**
+     * Bookings that occupy any part of the requested block. A session that runs past
+     * midnight stays on its starting date with an hour above 24, so the day before has to
+     * be checked as well: its hours 24 and up land on this day.
+     */
+    public function overlappingBookings(CarbonInterface $date, int $startHour, int $endHour): HasMany
+    {
+        return $this->bookings()
             ->active()
-            ->whereDate('date', $date)
-            ->where('start_hour', '<', $endHour)
-            ->where('end_hour', '>', $startHour)
-            ->exists();
+            ->where(function (Builder $query) use ($date, $startHour, $endHour) {
+                $query->where(function (Builder $query) use ($date, $startHour, $endHour) {
+                    $query->whereDate('date', $date)
+                        ->where('start_hour', '<', $endHour)
+                        ->where('end_hour', '>', $startHour);
+                })->orWhere(function (Builder $query) use ($date, $startHour) {
+                    $query->whereDate('date', $date->copy()->subDay())
+                        ->where('end_hour', '>', $startHour + 24);
+                });
+            });
     }
 
     public function seedDefaultHours(): void

@@ -327,12 +327,15 @@
                 if (! free || ! free.length) return [];
                 const set = new Set(free);
                 const d = duration();
+                // Uren boven 24 vallen op de volgende ochtend, dus alleen de vrije uren tellen.
                 return free.filter((s) => {
-                    if (s + d > 24) return false;
                     for (let i = 1; i < d; i++) if (! set.has(s + i)) return false;
                     return true;
                 });
             };
+
+            // 25 is 01:00 de volgende ochtend.
+            const clock = (h) => String(h === 24 ? 24 : h % 24).padStart(2, '0') + ':00';
 
             let view = new Date(firstMonth);
             let selectedDate = dateInput.value && AVAIL[dateInput.value] ? dateInput.value : null;
@@ -384,7 +387,7 @@
                     const classes = sel
                         ? 'border-ruby-red bg-ruby-red font-bold text-white'
                         : 'border-prussian-blue/15 font-semibold text-prussian-blue hover:border-ruby-red/60';
-                    return `<button type="button" data-slot="${s}" class="cursor-pointer rounded-xl border px-2 py-2 text-sm transition ${classes}">${String(s).padStart(2, '0')}:00</button>`;
+                    return `<button type="button" data-slot="${s}" class="cursor-pointer rounded-xl border px-2 py-2 text-sm transition ${classes}">${clock(s)}${s >= 24 ? ' <span class="text-[10px] opacity-60">+1</span>' : ''}</button>`;
                 }).join('');
             };
 
