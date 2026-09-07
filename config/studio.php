@@ -16,6 +16,9 @@ return [
      */
     'latest_close_hour' => 30,
 
+    // Bovengrens voor een meerdaagse boeking op dagtarief.
+    'booking_max_days' => 14,
+
     'booking_horizon_days' => 365,
 
     'contact_email' => env('CONTACT_EMAIL', 'info@studiomatch.nl'),

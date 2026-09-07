@@ -24,6 +24,7 @@ return [
 
     'next_day_label' => '(volgende dag)',
     'next_day_short' => '(+1)',
+    'day_count' => '{1}1 hele dag|[2,*]:count hele dagen',
 
     'problem' => [
         'dismissed' => 'Je melding van :date is afgehandeld. De boeking is afgerond en de uitbetaling aan de studio is vrijgegeven.',

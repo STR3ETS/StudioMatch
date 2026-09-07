@@ -197,6 +197,7 @@ class PublicStudioController extends Controller
         return view('studio-show', [
             'room' => $room,
             'freeHours' => $room->freeHoursByDate(),
+            'freeDays' => $room->allowsMultiDay() ? $room->freeWholeDays() : [],
             'mapStudios' => $this->mapData(collect([$room])),
         ]);
     }

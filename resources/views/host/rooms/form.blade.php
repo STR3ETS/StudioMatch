@@ -110,6 +110,27 @@
                 </div>
             </div>
 
+            <div class="mt-5 grid gap-5 sm:grid-cols-3">
+                <div>
+                    <label for="day_rate" class="{{ $label }}">{{ __('host.rooms.fields.day_rate') }}</label>
+                    <div class="relative">
+                        <span class="pointer-events-none absolute left-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-prussian-blue/50">&euro;</span>
+                        <input id="day_rate" type="number" name="day_rate" step="0.50" min="1" max="10000" value="{{ old('day_rate', $room->day_rate_cents !== null ? number_format($room->day_rate_cents / 100, 2, '.', '') : '') }}" class="{{ $field }} pl-9">
+                    </div>
+                    <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.rooms.fields.day_rate_hint') }}</p>
+                    <x-input-error field="day_rate" />
+                </div>
+                <div>
+                    <label for="min_days" class="{{ $label }}">{{ __('host.rooms.fields.min_days') }}</label>
+                    <select id="min_days" name="min_days" class="{{ $field }} cursor-pointer">
+                        @for ($d = 2; $d <= 7; $d++)
+                            <option value="{{ $d }}" @selected((int) old('min_days', $room->min_days ?? 2) === $d)>{{ trans_choice('booking.day_count', $d, ['count' => $d]) }}</option>
+                        @endfor
+                    </select>
+                    <x-input-error field="min_days" />
+                </div>
+            </div>
+
             @php
                 $engineerOption = old('engineer_option', $room->engineer_included ? 'included' : ($room->engineer_rate_cents !== null ? 'optional' : 'none'));
             @endphp

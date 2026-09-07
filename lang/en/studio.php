@@ -25,6 +25,11 @@ return [
     'booking' => [
         'engineer_toggle' => 'Add engineer (+ :amount per hour)',
         'from' => 'from',
+        'mode_hours' => 'Per hour',
+        'mode_days' => 'Per day',
+        'per_day' => 'per day',
+        'selected_days' => 'Selected period',
+        'pick_range' => 'Pick a start and end date in the calendar',
         'per_hour' => 'per hour',
         'date' => 'Date',
         'time' => 'Start time',

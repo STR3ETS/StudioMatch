@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 #[Fillable([
-    'title', 'description', 'type', 'hourly_rate_cents', 'min_hours', 'capacity',
+    'title', 'description', 'type', 'hourly_rate_cents', 'day_rate_cents', 'min_hours', 'min_days', 'capacity',
     'engineer_included', 'engineer_rate_cents', 'house_rules', 'equipment', 'equipment_extra', 'daws', 'facilities', 'status',
     'rejection_reason', 'on_vacation', 'vacation_until',
 ])]
@@ -147,12 +147,19 @@ class Room extends Model
             ->contains(fn ($exception) => $exception->start_hour < $endHour && $exception->end_hour > $startHour);
     }
 
-    public function freeHoursOn(CarbonInterface $date, $dayBookings = null, $previousDayBookings = null): array
+    public function freeHoursOn(CarbonInterface $date, $dayBookings = null, $previousDayBookings = null, $multiDayBookings = null): array
     {
         $dayExceptions = $this->exceptions->filter(fn ($exception) => $exception->date->isSameDay($date));
 
         if ($dayExceptions->contains(fn ($exception) => $exception->type === ExceptionType::Closed)) {
             return [];
+        }
+
+        // Een meerdaagse boeking legt beslag op de hele dag.
+        foreach ($multiDayBookings ?? [] as $booking) {
+            if ($booking->date->lte($date) && $booking->end_date->gte($date)) {
+                return [];
+            }
         }
 
         $free = [];
@@ -209,23 +216,84 @@ class Room extends Model
 
         $from = today();
 
+        $until = $from->copy()->addDays($days);
+
         $bookings = $this->bookings()
             ->active()
-            ->whereBetween('date', [$from->copy()->subDay()->toDateString(), $from->copy()->addDays($days)->toDateString()])
-            ->get()
-            ->groupBy(fn (Booking $booking) => $booking->date->toDateString());
+            ->whereBetween('date', [$from->copy()->subDay()->toDateString(), $until->toDateString()])
+            ->get();
+
+        $multiDay = $this->bookings()
+            ->active()
+            ->whereNotNull('end_date')
+            ->whereDate('date', '<=', $until)
+            ->whereDate('end_date', '>=', $from)
+            ->get();
+
+        $byDate = $bookings->groupBy(fn (Booking $booking) => $booking->date->toDateString());
 
         $result = [];
         for ($i = 0; $i < $days; $i++) {
             $date = $from->copy()->addDays($i);
             $result[$date->toDateString()] = $this->freeHoursOn(
                 $date,
-                $bookings->get($date->toDateString()),
-                $bookings->get($date->copy()->subDay()->toDateString()),
+                $byDate->get($date->toDateString()),
+                $byDate->get($date->copy()->subDay()->toDateString()),
+                $multiDay,
             );
         }
 
         return $result;
+    }
+
+    /**
+     * Dates that are free for a whole day booking: the room is open and nothing touches
+     * that day, including a night session that spills over from the day before.
+     *
+     * @return array<int, string>
+     */
+    public function freeWholeDays(?int $days = null): array
+    {
+        $days ??= (int) config('studio.booking_horizon_days');
+
+        $this->loadMissing(['hours', 'exceptions']);
+
+        $from = today();
+        $until = $from->copy()->addDays($days);
+
+        $occupied = [];
+        $bookings = $this->bookings()
+            ->active()
+            ->where(function (Builder $query) use ($from, $until) {
+                $query->whereBetween('date', [$from->copy()->subDay()->toDateString(), $until->toDateString()])
+                    ->orWhere(function (Builder $query) use ($from) {
+                        $query->whereNotNull('end_date')->whereDate('end_date', '>=', $from);
+                    });
+            })
+            ->get();
+
+        foreach ($bookings as $booking) {
+            $last = $booking->end_date?->copy() ?? $booking->date->copy();
+
+            if (! $booking->isMultiDay() && (int) $booking->end_hour > 24) {
+                $last->addDay();
+            }
+
+            for ($date = $booking->date->copy(); $date->lte($last); $date->addDay()) {
+                $occupied[$date->toDateString()] = true;
+            }
+        }
+
+        $free = [];
+        for ($i = 0; $i < $days; $i++) {
+            $date = $from->copy()->addDays($i);
+
+            if (! isset($occupied[$date->toDateString()]) && $this->isAvailableOn($date)) {
+                $free[] = $date->toDateString();
+            }
+        }
+
+        return $free;
     }
 
     public function hasOptionalEngineer(): bool
@@ -259,6 +327,11 @@ class Room extends Model
                 })->orWhere(function (Builder $query) use ($date, $startHour) {
                     $query->whereDate('date', $date->copy()->subDay())
                         ->where('end_hour', '>', $startHour + 24);
+                })->orWhere(function (Builder $query) use ($date) {
+                    // Een meerdaagse boeking bezet de hele dag.
+                    $query->whereNotNull('end_date')
+                        ->whereDate('date', '<=', $date)
+                        ->whereDate('end_date', '>=', $date);
                 });
             });
     }
@@ -276,6 +349,59 @@ class Room extends Model
     public function hourlyRateEuros(): float
     {
         return $this->hourly_rate_cents / 100;
+    }
+
+    public function dayRateEuros(): ?float
+    {
+        return $this->day_rate_cents === null ? null : $this->day_rate_cents / 100;
+    }
+
+    /**
+     * Only rooms with a day rate can be booked for whole days.
+     */
+    public function allowsMultiDay(): bool
+    {
+        return $this->day_rate_cents !== null && $this->day_rate_cents > 0;
+    }
+
+    /**
+     * A whole day counts as booked when the room is closed that day, or when any booking
+     * touches it. Hourly bookings and multi day bookings both block the day.
+     */
+    public function isBookableForDays(CarbonInterface $from, CarbonInterface $until): bool
+    {
+        $from = $from->copy()->startOfDay();
+        $until = $until->copy()->startOfDay();
+
+        for ($date = $from->copy(); $date->lte($until); $date->addDay()) {
+            if (! $this->isAvailableOn($date)) {
+                return false;
+            }
+        }
+
+        return ! $this->bookingsBetween($from, $until)->exists();
+    }
+
+    /**
+     * Bookings that touch any day in the range, including a night session that started the
+     * day before and a multi day booking that started earlier.
+     */
+    public function bookingsBetween(CarbonInterface $from, CarbonInterface $until): HasMany
+    {
+        return $this->bookings()
+            ->active()
+            ->where(function (Builder $query) use ($from, $until) {
+                $query->whereBetween('date', [$from->toDateString(), $until->toDateString()])
+                    ->orWhere(function (Builder $query) use ($from) {
+                        $query->whereDate('date', $from->copy()->subDay())
+                            ->where('end_hour', '>', 24);
+                    })
+                    ->orWhere(function (Builder $query) use ($from, $until) {
+                        $query->whereNotNull('end_date')
+                            ->whereDate('date', '<=', $until)
+                            ->whereDate('end_date', '>=', $from);
+                    });
+            });
     }
 
 }

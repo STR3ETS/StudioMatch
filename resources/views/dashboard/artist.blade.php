@@ -38,7 +38,7 @@
                                     <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $status->badgeClasses() }}">{{ __('booking.status.' . $status->value) }}</span>
                                 </div>
                                 <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
-                                    <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->date->translatedFormat('D j M Y') }}</span>
+                                    <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->dateRange() }}</span>
                                     <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->timeRange() }}</span>
                                     <span><i class="fa-solid fa-euro-sign fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
                                 </p>
@@ -125,7 +125,7 @@
                                 <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $status->badgeClasses() }}">{{ __('booking.status.' . $status->value) }}</span>
                             </div>
                             <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
-                                <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->date->translatedFormat('D j M Y') }}</span>
+                                <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->dateRange() }}</span>
                                 <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->timeRange() }}</span>
                                 <span><i class="fa-solid fa-euro-sign fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
                             </p>

@@ -177,6 +177,11 @@
                 <div data-reveal style="--reveal-delay: .15s" class="lg:w-[360px] lg:shrink-0">
                     <form method="GET" action="{{ route('studios.book', $room) }}" id="boeken"
                           data-availability='@json($freeHours)'
+                          data-free-days='@json($freeDays)'
+                          data-day-price-cents="{{ (int) $room->day_rate_cents }}"
+                          data-min-days="{{ (int) ($room->min_days ?? 2) }}"
+                          data-max-days="{{ config('studio.booking_max_days') }}"
+                          data-days-label="{{ trans_choice('booking.day_count', 2, ['count' => ':count']) }}"
                           data-price-cents="{{ $room->hourly_rate_cents }}"
                           data-engineer-rate-cents="{{ $room->hasOptionalEngineer() ? $room->engineer_rate_cents : 0 }}"
                           data-rent-label="{{ __('studio.booking.rent', ['count' => ':count']) }}"
@@ -185,9 +190,16 @@
                           data-max-hours="{{ config('studio.booking_max_hours') }}"
                           class="custom-scrollbar scroll-mt-28 rounded-2xl border border-prussian-blue/10 bg-white p-6 shadow-lg lg:sticky lg:top-28 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto">
                         <p class="text-prussian-blue">
-                            <span class="text-2xl font-bold">{{ $money($room->hourlyRateEuros()) }}</span>
-                            <span class="text-sm text-prussian-blue/50">{{ __('studio.booking.per_hour') }}</span>
+                            <span data-price-headline class="text-2xl font-bold">{{ $money($room->hourlyRateEuros()) }}</span>
+                            <span data-price-unit class="text-sm text-prussian-blue/50">{{ __('studio.booking.per_hour') }}</span>
                         </p>
+
+                        @if ($room->allowsMultiDay())
+                            <div class="mt-4 grid grid-cols-2 gap-1 rounded-full bg-prussian-blue/5 p-1" data-mode-switch>
+                                <button type="button" data-mode="hours" class="cursor-pointer rounded-full bg-white px-3 py-2 text-sm font-semibold text-prussian-blue shadow-sm transition">{{ __('studio.booking.mode_hours') }}</button>
+                                <button type="button" data-mode="days" class="cursor-pointer rounded-full px-3 py-2 text-sm font-semibold text-prussian-blue/60 transition">{{ __('studio.booking.mode_days') }}</button>
+                            </div>
+                        @endif
 
                         @if ($errors->has('slot'))
                             <p class="mt-4 rounded-xl bg-ruby-red/10 px-4 py-3 text-sm font-semibold text-ruby-red">{{ $errors->first('slot') }}</p>
@@ -205,8 +217,13 @@
                             <div data-cal-grid class="mt-2 grid grid-cols-7 gap-1"></div>
                         </div>
 
+                        <div data-days-block class="mt-4 hidden">
+                            <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.selected_days') }}</span>
+                            <p data-days-summary class="mt-2 rounded-xl bg-prussian-blue/[0.03] px-3 py-2.5 text-sm text-prussian-blue/50">{{ __('studio.booking.pick_range') }}</p>
+                        </div>
+
                         @php $initialHours = min((int) config('studio.booking_max_hours'), max($room->min_hours, (int) old('hours', request('hours', $hours)))); @endphp
-                        <div class="mt-4">
+                        <div data-hours-block class="mt-4">
                             <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.duration') }}</span>
                             <div class="mt-1 flex items-center justify-between rounded-xl border border-prussian-blue/15 px-3 py-2">
                                 <span class="text-sm font-semibold text-prussian-blue" data-hours-label>{{ __('studio.booking.hours', ['count' => $initialHours]) }}</span>
@@ -218,7 +235,7 @@
                             <input type="hidden" name="hours" value="{{ $initialHours }}">
                         </div>
 
-                        <div class="mt-4">
+                        <div data-slots-block class="mt-4">
                             <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.time') }}</span>
                             <p data-slots-hint class="mt-2 rounded-xl bg-prussian-blue/[0.03] px-3 py-2.5 text-sm text-prussian-blue/50">{{ __('studio.booking.pick_date_first') }}</p>
                             <div data-slots class="mt-2 hidden grid-cols-4 gap-1.5"></div>
@@ -226,6 +243,7 @@
 
                         <input type="hidden" name="date" value="{{ old('date', request('date')) }}">
                         <input type="hidden" name="start" value="{{ old('start', request('start')) }}">
+                        <input type="hidden" name="end_date" value="" data-end-date disabled>
 
                         @if ($room->hasOptionalEngineer())
                             <label class="mt-4 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-prussian-blue/15 px-3 py-2.5 transition hover:border-prussian-blue/30">
@@ -320,6 +338,41 @@
             const monthFmt = new Intl.DateTimeFormat(locale, { month: 'long', year: 'numeric' });
             const weekdayFmt = new Intl.DateTimeFormat(locale, { weekday: 'short' });
 
+            // Per dag boeken: hele dagen op dagtarief, zonder starttijd.
+            const FREE_DAYS = new Set(JSON.parse(form.dataset.freeDays || '[]'));
+            const DAY_PRICE = parseInt(form.dataset.dayPriceCents || '0', 10);
+            const MIN_DAYS = parseInt(form.dataset.minDays || '2', 10);
+            const MAX_DAYS = parseInt(form.dataset.maxDays || '14', 10);
+            const DAYS_LABEL = form.dataset.daysLabel || ':count';
+            const modeSwitch = form.querySelector('[data-mode-switch]');
+            const daysBlock = form.querySelector('[data-days-block]');
+            const daysSummary = form.querySelector('[data-days-summary]');
+            const hoursBlock = form.querySelector('[data-hours-block]');
+            const slotsBlock = form.querySelector('[data-slots-block]');
+            const endDateInput = form.querySelector('[data-end-date]');
+            const priceHeadline = form.querySelector('[data-price-headline]');
+            const priceUnit = form.querySelector('[data-price-unit]');
+            const PER_DAY_LABEL = @json(__('studio.booking.per_day'));
+            const PER_HOUR_LABEL = @json(__('studio.booking.per_hour'));
+            const PICK_RANGE = @json(__('studio.booking.pick_range'));
+            const dayFmt = new Intl.DateTimeFormat(locale, { day: 'numeric', month: 'short' });
+
+            let mode = 'hours';
+            let rangeStart = null;
+            let rangeEnd = null;
+
+            const daysBetween = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 86400000) + 1;
+
+            const rangeIsFree = (a, b) => {
+                const cursor = parseKey(a);
+                const last = parseKey(b);
+                while (cursor <= last) {
+                    if (! FREE_DAYS.has(dayKey(cursor))) return false;
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+                return true;
+            };
+
             const duration = () => parseInt(hoursInput.value, 10);
 
             const startsFor = (k) => {
@@ -356,11 +409,14 @@
                 const daysInMonth = new Date(view.getFullYear(), view.getMonth() + 1, 0).getDate();
                 for (let d = 1; d <= daysInMonth; d++) {
                     const k = dayKey(new Date(view.getFullYear(), view.getMonth(), d));
-                    const enabled = startsFor(k).length > 0;
-                    const sel = k === selectedDate;
+                    const enabled = mode === 'days' ? FREE_DAYS.has(k) : startsFor(k).length > 0;
+                    const inRange = mode === 'days' && rangeStart && rangeEnd && k >= rangeStart && k <= rangeEnd;
+                    const sel = mode === 'days' ? (k === rangeStart || k === rangeEnd) : k === selectedDate;
                     const classes = sel
                         ? 'bg-ruby-red font-bold text-white'
-                        : (enabled ? 'cursor-pointer font-semibold text-prussian-blue hover:bg-ruby-red/10' : 'cursor-default text-prussian-blue/25');
+                        : inRange
+                            ? 'bg-ruby-red/15 font-semibold text-prussian-blue'
+                            : (enabled ? 'cursor-pointer font-semibold text-prussian-blue hover:bg-ruby-red/10' : 'cursor-default text-prussian-blue/25');
                     html += `<button type="button" data-day="${k}" ${enabled ? '' : 'disabled'} class="aspect-square rounded-lg text-sm transition ${classes}">${d}</button>`;
                 }
                 grid.innerHTML = html;
@@ -391,7 +447,28 @@
                 }).join('');
             };
 
+            const renderDays = () => {
+                if (mode !== 'days') return;
+                daysSummary.textContent = rangeStart && rangeEnd
+                    ? `${dayFmt.format(parseKey(rangeStart))} – ${dayFmt.format(parseKey(rangeEnd))} · ${DAYS_LABEL.replace(':count', daysBetween(rangeStart, rangeEnd))}`
+                    : PICK_RANGE;
+            };
+
             const sync = () => {
+                if (mode === 'days') {
+                    dateInput.value = rangeStart ?? '';
+                    startInput.value = '';
+                    endDateInput.value = rangeEnd ?? '';
+                    endDateInput.disabled = ! (rangeStart && rangeEnd);
+
+                    const count = rangeStart && rangeEnd ? daysBetween(rangeStart, rangeEnd) : 0;
+                    totalEl.textContent = money.format(DAY_PRICE * count / 100);
+                    rentText.textContent = DAYS_LABEL.replace(':count', count);
+                    submit.disabled = count < MIN_DAYS || count > MAX_DAYS;
+                    return;
+                }
+
+                endDateInput.disabled = true;
                 dateInput.value = selectedDate ?? '';
                 startInput.value = selectedStart ?? '';
                 totalEl.textContent = money.format(hourlyPrice() * duration() / 100);
@@ -399,13 +476,59 @@
                 submit.disabled = ! (selectedDate && selectedStart !== null);
             };
 
+            const pickDay = (key) => {
+                // Eerste klik zet het begin, tweede klik het einde. Daarna begint hij opnieuw.
+                if (! rangeStart || rangeEnd || key < rangeStart || ! rangeIsFree(rangeStart, key)) {
+                    rangeStart = key;
+                    rangeEnd = null;
+                } else {
+                    rangeEnd = key;
+                }
+            };
+
             grid.addEventListener('click', (event) => {
                 const day = event.target.closest('[data-day]');
                 if (! day || day.disabled) return;
+
+                if (mode === 'days') {
+                    pickDay(day.dataset.day);
+                    renderCalendar();
+                    renderDays();
+                    sync();
+                    return;
+                }
+
                 selectedDate = day.dataset.day;
                 selectedStart = null;
                 renderCalendar();
                 renderSlots();
+                sync();
+            });
+
+            modeSwitch?.addEventListener('click', (event) => {
+                const button = event.target.closest('[data-mode]');
+                if (! button || button.dataset.mode === mode) return;
+
+                mode = button.dataset.mode;
+                rangeStart = rangeEnd = selectedDate = selectedStart = null;
+
+                modeSwitch.querySelectorAll('[data-mode]').forEach((item) => {
+                    const active = item.dataset.mode === mode;
+                    item.classList.toggle('bg-white', active);
+                    item.classList.toggle('shadow-sm', active);
+                    item.classList.toggle('text-prussian-blue', active);
+                    item.classList.toggle('text-prussian-blue/60', ! active);
+                });
+
+                daysBlock.classList.toggle('hidden', mode !== 'days');
+                hoursBlock.classList.toggle('hidden', mode === 'days');
+                slotsBlock.classList.toggle('hidden', mode === 'days');
+                priceHeadline.textContent = mode === 'days' ? money.format(DAY_PRICE / 100) : money.format(PRICE / 100);
+                priceUnit.textContent = mode === 'days' ? PER_DAY_LABEL : PER_HOUR_LABEL;
+
+                renderCalendar();
+                renderSlots();
+                renderDays();
                 sync();
             });
 

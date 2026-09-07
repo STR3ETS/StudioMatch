@@ -24,6 +24,7 @@ return [
 
     'next_day_label' => '(next day)',
     'next_day_short' => '(+1)',
+    'day_count' => '{1}1 full day|[2,*]:count full days',
 
     'problem' => [
         'dismissed' => 'Your report of :date has been handled. The booking has been completed and the payout to the studio has been released.',

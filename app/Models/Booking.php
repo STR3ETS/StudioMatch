@@ -14,8 +14,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 #[Fillable([
-    'room_id', 'user_id', 'date', 'start_hour', 'end_hour', 'with_engineer',
-    'hourly_rate_cents', 'rent_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
+    'room_id', 'user_id', 'date', 'end_date', 'start_hour', 'end_hour', 'with_engineer',
+    'hourly_rate_cents', 'day_rate_cents', 'rent_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_studio_response', 'dispute_photos', 'resolution_note', 'reminder_sent_at',
     'response_reminder_sent_at', 'damage_reported_at', 'damage_reason', 'damage_photos',
@@ -30,6 +30,7 @@ class Booking extends Model
     {
         return [
             'date' => 'date',
+            'end_date' => 'date',
             'with_engineer' => 'boolean',
             'status' => BookingStatus::class,
             'expires_at' => 'datetime',
@@ -79,14 +80,30 @@ class Booking extends Model
         return $this->start_hour < $endHour && $this->end_hour > $startHour;
     }
 
+    public function isMultiDay(): bool
+    {
+        return $this->end_date !== null;
+    }
+
+    public function dayCount(): int
+    {
+        return $this->isMultiDay()
+            ? $this->date->diffInDays($this->end_date) + 1
+            : 1;
+    }
+
     public function startsAt(): Carbon
     {
-        return $this->date->copy()->startOfDay()->addHours((int) $this->start_hour);
+        return $this->isMultiDay()
+            ? $this->date->copy()->startOfDay()
+            : $this->date->copy()->startOfDay()->addHours((int) $this->start_hour);
     }
 
     public function endsAt(): Carbon
     {
-        return $this->date->copy()->startOfDay()->addHours((int) $this->end_hour);
+        return $this->isMultiDay()
+            ? $this->end_date->copy()->startOfDay()->addDay()
+            : $this->date->copy()->startOfDay()->addHours((int) $this->end_hour);
     }
 
     public function effectiveStatus(): BookingStatus
@@ -107,9 +124,21 @@ class Booking extends Model
         return (int) $this->end_hour - (int) $this->start_hour;
     }
 
+    /**
+     * Bij een meerdaagse boeking is er geen starttijd, dan tonen we het aantal dagen.
+     */
     public function timeRange(): string
     {
-        return Hours::range((int) $this->start_hour, (int) $this->end_hour);
+        return $this->isMultiDay()
+            ? trans_choice('booking.day_count', $this->dayCount(), ['count' => $this->dayCount()])
+            : Hours::range((int) $this->start_hour, (int) $this->end_hour);
+    }
+
+    public function dateRange(): string
+    {
+        return $this->isMultiDay()
+            ? $this->date->translatedFormat('j M Y') . ' – ' . $this->end_date->translatedFormat('j M Y')
+            : $this->date->translatedFormat('j M Y');
     }
 
     public function runsPastMidnight(): bool
@@ -120,6 +149,7 @@ class Booking extends Model
     public function canReschedule(): bool
     {
         return in_array($this->status, [BookingStatus::PendingConfirmation, BookingStatus::Confirmed], true)
+            && ! $this->isMultiDay()
             && $this->rescheduled_at === null
             && now()->addHours(48)->isBefore($this->startsAt());
     }

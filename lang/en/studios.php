@@ -32,6 +32,7 @@ return [
         'facilities' => 'Amenities',
         'daw' => 'DAWs',
         'apply' => 'Show results',
+        'loading' => 'Updating results...',
         'start' => 'Start time',
         'end' => 'End time',
         'groups' => [

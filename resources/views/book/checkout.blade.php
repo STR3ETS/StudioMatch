@@ -18,8 +18,12 @@
             <form method="POST" action="{{ route('bookings.store', $room) }}" data-reveal style="--reveal-delay: .1s" class="mt-8 space-y-6">
                 @csrf
                 <input type="hidden" name="date" value="{{ request('date') }}">
-                <input type="hidden" name="start" value="{{ request('start') }}">
-                <input type="hidden" name="hours" value="{{ request('hours') }}">
+                @if ($endDate)
+                    <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+                @else
+                    <input type="hidden" name="start" value="{{ request('start') }}">
+                    <input type="hidden" name="hours" value="{{ request('hours') }}">
+                @endif
                 @if ($withEngineer)
                     <input type="hidden" name="engineer" value="1">
                 @endif
@@ -32,8 +36,13 @@
                         <h2 class="font-bold text-prussian-blue">{{ $room->title }}</h2>
                         <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
                             <span><i class="fa-solid fa-building fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $room->studio->name }} ({{ $room->studio->city }})</span>
-                            <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $date->translatedFormat('l j F Y') }}</span>
-                            <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ \App\Support\Hours::range($startHour, $endHour) }}</span>
+                            @if ($endDate)
+                                <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $date->translatedFormat('j F Y') }} &ndash; {{ $endDate->translatedFormat('j F Y') }}</span>
+                                <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ trans_choice('booking.day_count', $days, ['count' => $days]) }}</span>
+                            @else
+                                <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $date->translatedFormat('l j F Y') }}</span>
+                                <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ \App\Support\Hours::range($startHour, $endHour) }}</span>
+                            @endif
                         </p>
                     </div>
                 </div>

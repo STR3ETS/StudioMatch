@@ -32,6 +32,7 @@ return [
         'facilities' => 'Voorzieningen',
         'daw' => "DAW's",
         'apply' => 'Toon resultaten',
+        'loading' => 'Resultaten bijwerken...',
         'start' => 'Starttijd',
         'end' => 'Eindtijd',
         'groups' => [

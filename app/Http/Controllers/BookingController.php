@@ -29,13 +29,30 @@ class BookingController extends Controller
     {
         abort_unless($room->isPubliclyVisible(), 404);
 
-        [$date, $startHour, $endHour] = $this->validateSlot($request, $room);
-
         $withEngineer = $room->hasOptionalEngineer() && $request->boolean('engineer');
+
+        if ($request->filled('end_date')) {
+            [$date, $endDate, $days] = $this->validateDayRange($request, $room);
+
+            return view('book.checkout', [
+                'room' => $room->load(['studio', 'photos']),
+                'date' => $date,
+                'endDate' => $endDate,
+                'days' => $days,
+                'startHour' => null,
+                'endHour' => null,
+                'withEngineer' => $withEngineer,
+                'prices' => $this->dayPrices($room, $days, $withEngineer),
+            ]);
+        }
+
+        [$date, $startHour, $endHour] = $this->validateSlot($request, $room);
 
         return view('book.checkout', [
             'room' => $room->load(['studio', 'photos']),
             'date' => $date,
+            'endDate' => null,
+            'days' => null,
             'startHour' => $startHour,
             'endHour' => $endHour,
             'withEngineer' => $withEngineer,
@@ -47,7 +64,16 @@ class BookingController extends Controller
     {
         abort_unless($room->isPubliclyVisible(), 404);
 
-        [$date, $startHour, $endHour] = $this->validateSlot($request, $room);
+        $multiDay = $request->filled('end_date');
+
+        if ($multiDay) {
+            [$date, $endDate, $days] = $this->validateDayRange($request, $room);
+            $startHour = null;
+            $endHour = null;
+        } else {
+            [$date, $startHour, $endHour] = $this->validateSlot($request, $room);
+            $endDate = null;
+        }
 
         $request->validate(['terms' => ['accepted']]);
 
@@ -65,10 +91,14 @@ class BookingController extends Controller
         }
 
         $withEngineer = $room->hasOptionalEngineer() && $request->boolean('engineer');
-        $prices = $this->prices($room, $endHour - $startHour, $withEngineer);
+        $prices = $multiDay
+            ? $this->dayPrices($room, $days, $withEngineer)
+            : $this->prices($room, $endHour - $startHour, $withEngineer);
 
-        $booking = DB::transaction(function () use ($request, $room, $date, $startHour, $endHour, $withEngineer, $prices) {
-            $taken = $room->overlappingBookings($date, $startHour, $endHour)
+        $booking = DB::transaction(function () use ($request, $room, $date, $endDate, $startHour, $endHour, $multiDay, $withEngineer, $prices) {
+            $taken = ($multiDay
+                ? $room->bookingsBetween($date, $endDate)
+                : $room->overlappingBookings($date, $startHour, $endHour))
                 ->lockForUpdate()
                 ->get()
                 ->contains(fn (Booking $booking) => $booking->isActive());
@@ -80,8 +110,9 @@ class BookingController extends Controller
             return $room->bookings()->create([
                 'user_id' => $request->user()->id,
                 'date' => $date,
-                'start_hour' => $startHour,
-                'end_hour' => $endHour,
+                'end_date' => $endDate,
+                'start_hour' => $multiDay ? 0 : $startHour,
+                'end_hour' => $multiDay ? 24 : $endHour,
                 'with_engineer' => $withEngineer,
                 'status' => BookingStatus::PendingPayment,
                 'expires_at' => now()->addMinutes((int) config('studio.checkout_hold_minutes')),
@@ -349,6 +380,53 @@ class BookingController extends Controller
             'vat_cents' => $vat,
             'total_cents' => $rent + $fee + $vat,
         ];
+    }
+
+    /**
+     * Meerdaagse boekingen rekenen af per hele dag, zonder starttijd en zonder uurtarief.
+     */
+    private function dayPrices(Room $room, int $days, bool $withEngineer = false): array
+    {
+        $daily = (int) $room->day_rate_cents + ($withEngineer ? (int) $room->engineer_rate_cents * 8 : 0);
+        $rent = $daily * $days;
+        $fee = (int) round($rent * config('studio.service_fee_percent') / 100);
+        $vat = (int) round($fee * config('studio.vat_percent') / 100);
+
+        return [
+            'hourly_rate_cents' => $room->hourly_rate_cents,
+            'day_rate_cents' => $daily,
+            'rent_cents' => $rent,
+            'service_fee_cents' => $fee,
+            'vat_cents' => $vat,
+            'total_cents' => $rent + $fee + $vat,
+        ];
+    }
+
+    /**
+     * @return array{0: Carbon, 1: Carbon, 2: int}
+     */
+    private function validateDayRange(Request $request, Room $room): array
+    {
+        abort_unless($room->allowsMultiDay(), 404);
+
+        $validated = $request->validate([
+            'date' => ['required', 'date', 'after_or_equal:today'],
+            'end_date' => ['required', 'date', 'after_or_equal:date'],
+        ]);
+
+        $from = Carbon::parse($validated['date'])->startOfDay();
+        $until = Carbon::parse($validated['end_date'])->startOfDay();
+        $days = $from->diffInDays($until) + 1;
+
+        if ($days < max(2, (int) $room->min_days) || $days > (int) config('studio.booking_max_days')) {
+            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
+        }
+
+        if (! $room->isBookableForDays($from, $until)) {
+            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
+        }
+
+        return [$from, $until, $days];
     }
 
     private function authorizeBooking(Request $request, Booking $booking): void

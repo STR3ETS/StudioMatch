@@ -25,6 +25,11 @@ return [
     'booking' => [
         'engineer_toggle' => 'Engineer erbij (+ :amount per uur)',
         'from' => 'vanaf',
+        'mode_hours' => 'Per uur',
+        'mode_days' => 'Per dag',
+        'per_day' => 'per dag',
+        'selected_days' => 'Gekozen periode',
+        'pick_range' => 'Kies een begin- en einddatum in de kalender',
         'per_hour' => 'per uur',
         'date' => 'Datum',
         'time' => 'Starttijd',

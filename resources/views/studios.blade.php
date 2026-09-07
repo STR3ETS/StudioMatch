@@ -140,6 +140,12 @@
                     </form>
                 </aside>
 
+                <div data-results-loader class="pointer-events-none fixed inset-0 z-[1050] hidden items-center justify-center">
+                    <span class="flex items-center gap-3 rounded-full bg-white px-5 py-3 text-sm font-semibold text-prussian-blue shadow-xl shadow-prussian-blue/15">
+                        <i class="fa-solid fa-circle-notch fa-spin text-ruby-red"></i>{{ __('studios.filters.loading') }}
+                    </span>
+                </div>
+
                 <div data-reveal data-results style="--reveal-delay: .1s" class="flex-1 transition-opacity duration-200">
                     <div class="mb-5 flex items-center justify-between gap-4">
                         <p data-results-count class="text-sm font-medium text-prussian-blue/60">{{ __('studios.results', ['count' => $cards->count()]) }}</p>
@@ -207,6 +213,7 @@
             if (! form || ! results) return;
 
             let controller = null;
+            const overlay = document.querySelector('[data-results-loader]');
 
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
@@ -218,13 +225,22 @@
                 const url = form.action + (params.toString() ? '?' + params.toString() : '');
 
                 results.classList.add('opacity-40', 'pointer-events-none');
+                overlay?.classList.remove('hidden');
+                overlay?.classList.add('flex');
+
+                // De loader blijft minimaal een halve seconde staan, anders flitst hij voorbij.
+                const minimumWait = new Promise((resolve) => setTimeout(resolve, 500));
+
                 controller?.abort();
                 controller = new AbortController();
 
                 try {
                     const response = await fetch(url, { signal: controller.signal, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                     if (! response.ok) throw new Error('fetch failed');
-                    const doc = new DOMParser().parseFromString(await response.text(), 'text/html');
+                    const html = await response.text();
+                    await minimumWait;
+
+                    const doc = new DOMParser().parseFromString(html, 'text/html');
                     const newResults = doc.querySelector('[data-results]');
                     const newMap = doc.querySelector('[data-results-map]');
                     if (! newResults) throw new Error('missing results');
@@ -245,7 +261,22 @@
                     return;
                 } finally {
                     results.classList.remove('opacity-40', 'pointer-events-none');
+                    overlay?.classList.add('hidden');
+                    overlay?.classList.remove('flex');
                 }
+            });
+
+            // Elke filterwijziging herlaadt de lijst vanzelf. Tikken in een tekstveld
+            // wacht even af, zodat er niet per toetsaanslag een verzoek uitgaat.
+            let typing = null;
+            form.addEventListener('change', (event) => {
+                if (event.target.type === 'range') return;
+                form.requestSubmit();
+            });
+            form.addEventListener('input', (event) => {
+                if (! ['text', 'number', 'search'].includes(event.target.type)) return;
+                clearTimeout(typing);
+                typing = setTimeout(() => form.requestSubmit(), 500);
             });
         })();
 
