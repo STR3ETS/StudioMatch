@@ -154,6 +154,27 @@ class NightBookingTest extends TestCase
         $this->assertSame(28, (int) $this->room->hours()->where('weekday', 1)->value('close_hour'));
     }
 
+    public function test_visitors_see_the_opening_hours_on_the_room_page(): void
+    {
+        $this->get('/studios/' . $this->room->slug)
+            ->assertOk()
+            ->assertSee(__('studio.opening_hours'))
+            ->assertSee(__('host.availability.days.1'))
+            ->assertSee(__('host.availability.days.7'))
+            // Open van 20:00 tot 04:00, dus met de aanduiding voor de volgende dag.
+            ->assertSee(Hours::range(20, 28), escape: false)
+            ->assertSee(__('studio.opening_hours_night'));
+    }
+
+    public function test_a_closed_day_is_shown_as_closed(): void
+    {
+        $this->room->hours()->where('weekday', 7)->update(['is_open' => false]);
+
+        $this->get('/studios/' . $this->room->slug)
+            ->assertOk()
+            ->assertSee(__('studio.closed'));
+    }
+
     public function test_the_hour_notation_rolls_over(): void
     {
         $this->assertSame('22:00', Hours::clock(22));

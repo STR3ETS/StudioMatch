@@ -475,7 +475,7 @@ class FeedbackP3Test extends TestCase
 
     /* Zoekpagina */
 
-    public function test_search_page_has_one_floating_show_results_button(): void
+    public function test_search_page_has_one_show_results_button_inside_the_filters(): void
     {
         $response = $this->get('/studios')->assertOk();
 
@@ -484,7 +484,15 @@ class FeedbackP3Test extends TestCase
             substr_count($response->getContent(), __('studios.filters.apply')),
             'De zoekpagina hoort precies een "Toon resultaten"-knop te hebben.'
         );
-        $this->assertStringContainsString('form="studio-filters"', $response->getContent());
+
+        // De knop hoort in het filterformulier te staan, niet zwevend onderin het scherm.
+        $html = $response->getContent();
+        $this->assertStringNotContainsString('fixed bottom-6 left-1/2', $html);
+        $this->assertLessThan(
+            strpos($html, '</form>'),
+            strpos($html, __('studios.filters.apply')),
+            'De knop hoort binnen het filterformulier te staan.'
+        );
     }
 
     /* Foto's slepen */

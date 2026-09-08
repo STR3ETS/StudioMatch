@@ -17,7 +17,7 @@
         <p class="mx-auto mt-3 max-w-xl text-white/60">{{ __('studios.hero_subtitle') }}</p>
     </x-hero>
 
-    <div class="pb-28 pt-16">
+    <div class="py-16">
         <div class="max-w-7xl mx-auto px-6">
             <div class="flex flex-col gap-8 lg:flex-row">
                 <aside data-reveal class="lg:w-72 lg:shrink-0">
@@ -137,6 +137,9 @@
                             </div>
                         </x-filter-group>
 
+                        <button type="submit" class="mt-5 w-full cursor-pointer rounded-full bg-ruby-red py-2.5 text-sm font-semibold text-white transition hover:bg-ruby-red/90">
+                            {{ __('studios.filters.apply') }}
+                        </button>
                     </form>
                 </aside>
 
@@ -197,12 +200,6 @@
             </div>
         </div>
     </div>
-
-    {{-- Eén zwevende knop, geen tweede knop of balk eromheen. --}}
-    <button type="submit" form="studio-filters"
-            class="fixed bottom-6 left-1/2 z-[1100] -translate-x-1/2 cursor-pointer rounded-full bg-ruby-red px-8 py-3.5 text-sm font-semibold text-white shadow-xl shadow-ruby-red/30 transition hover:bg-ruby-red/90">
-        <i class="fa-solid fa-magnifying-glass fa-sm mr-1.5"></i>{{ __('studios.filters.apply') }}
-    </button>
 
     <script>
         (() => {

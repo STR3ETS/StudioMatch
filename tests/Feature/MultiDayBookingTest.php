@@ -125,6 +125,20 @@ class MultiDayBookingTest extends TestCase
         $this->assertSame(0, $this->room->bookings()->count());
     }
 
+    public function test_a_single_day_can_be_booked_on_the_day_rate(): void
+    {
+        $this->room->update(['min_days' => 1]);
+
+        $this->bookDays($this->monday()->toDateString(), $this->monday()->toDateString())
+            ->assertRedirect();
+
+        $booking = $this->room->bookings()->firstOrFail();
+
+        $this->assertTrue($booking->isMultiDay());
+        $this->assertSame(1, $booking->dayCount());
+        $this->assertSame(40000, (int) $booking->rent_cents);
+    }
+
     public function test_the_minimum_number_of_days_is_enforced(): void
     {
         $this->room->update(['min_days' => 3]);

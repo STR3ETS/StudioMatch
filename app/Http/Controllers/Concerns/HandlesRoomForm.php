@@ -25,7 +25,7 @@ trait HandlesRoomForm
             'hourly_rate' => ['required', 'numeric', 'min:1', 'max:1000'],
             'min_hours' => ['required', 'integer', 'min:2', 'max:8'],
             'day_rate' => ['nullable', 'numeric', 'min:1', 'max:10000'],
-            'min_days' => ['nullable', 'integer', 'min:2', 'max:7'],
+            'min_days' => ['nullable', 'integer', 'min:1', 'max:7'],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
             'engineer_option' => ['required', Rule::in(['none', 'included', 'optional'])],
             'engineer_rate' => ['nullable', 'numeric', 'min:1', 'max:500', 'required_if:engineer_option,optional'],
@@ -54,7 +54,7 @@ trait HandlesRoomForm
         $validated['day_rate_cents'] = isset($validated['day_rate']) && $validated['day_rate'] !== null
             ? (int) round($validated['day_rate'] * 100)
             : null;
-        $validated['min_days'] = (int) ($validated['min_days'] ?? 2);
+        $validated['min_days'] = (int) ($validated['min_days'] ?? 1);
         unset($validated['day_rate']);
 
         $option = $validated['engineer_option'];

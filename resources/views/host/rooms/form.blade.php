@@ -123,8 +123,8 @@
                 <div>
                     <label for="min_days" class="{{ $label }}">{{ __('host.rooms.fields.min_days') }}</label>
                     <select id="min_days" name="min_days" class="{{ $field }} cursor-pointer">
-                        @for ($d = 2; $d <= 7; $d++)
-                            <option value="{{ $d }}" @selected((int) old('min_days', $room->min_days ?? 2) === $d)>{{ trans_choice('booking.day_count', $d, ['count' => $d]) }}</option>
+                        @for ($d = 1; $d <= 7; $d++)
+                            <option value="{{ $d }}" @selected((int) old('min_days', $room->min_days ?? 1) === $d)>{{ trans_choice('booking.day_count', $d, ['count' => $d]) }}</option>
                         @endfor
                     </select>
                     <x-input-error field="min_days" />

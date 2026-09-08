@@ -418,7 +418,7 @@ class BookingController extends Controller
         $until = Carbon::parse($validated['end_date'])->startOfDay();
         $days = $from->diffInDays($until) + 1;
 
-        if ($days < max(2, (int) $room->min_days) || $days > (int) config('studio.booking_max_days')) {
+        if ($days < max(1, (int) $room->min_days) || $days > (int) config('studio.booking_max_days')) {
             throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
         }
 

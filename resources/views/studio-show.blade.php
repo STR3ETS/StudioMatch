@@ -111,6 +111,35 @@
                         <p class="mt-3 whitespace-pre-line leading-relaxed text-prussian-blue/70">{{ $room->description }}</p>
                     </section>
 
+                    @if ($room->hours->isNotEmpty())
+                    <section class="border-b border-prussian-blue/10 py-6">
+                        <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.opening_hours') }}</h2>
+                        <dl class="mt-3 divide-y divide-prussian-blue/5">
+                            @foreach ($room->hours->sortBy('weekday') as $day)
+                                <div @class([
+                                    'flex items-center justify-between py-2 text-sm',
+                                    'font-semibold text-prussian-blue' => $day->weekday === now()->isoWeekday(),
+                                    'text-prussian-blue/70' => $day->weekday !== now()->isoWeekday(),
+                                ])>
+                                    <dt class="capitalize">{{ __('host.availability.days.' . $day->weekday) }}</dt>
+                                    <dd>
+                                        @if ($day->is_open)
+                                            {{ \App\Support\Hours::range((int) $day->open_hour, (int) $day->close_hour) }}
+                                        @else
+                                            <span class="text-prussian-blue/40">{{ __('studio.closed') }}</span>
+                                        @endif
+                                    </dd>
+                                </div>
+                            @endforeach
+                        </dl>
+                        @if ($room->hours->contains(fn ($day) => $day->is_open && (int) $day->close_hour > 24))
+                            <p class="mt-3 text-xs text-prussian-blue/50">
+                                <i class="fa-solid fa-moon fa-xs mr-1.5 text-prussian-blue/30"></i>{{ __('studio.opening_hours_night') }}
+                            </p>
+                        @endif
+                    </section>
+                    @endif
+
                     @if ($room->equipment || $room->equipment_extra)
                         <section class="border-b border-prussian-blue/10 py-6">
                             <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.equipment') }}</h2>
@@ -360,6 +389,7 @@
             let mode = 'hours';
             let rangeStart = null;
             let rangeEnd = null;
+            let extending = false;
 
             const daysBetween = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 86400000) + 1;
 
@@ -477,13 +507,16 @@
             };
 
             const pickDay = (key) => {
-                // Eerste klik zet het begin, tweede klik het einde. Daarna begint hij opnieuw.
-                if (! rangeStart || rangeEnd || key < rangeStart || ! rangeIsFree(rangeStart, key)) {
-                    rangeStart = key;
-                    rangeEnd = null;
-                } else {
+                // Eerste klik kiest één dag. Klik daarna een latere dag om de periode te verlengen.
+                if (extending && key > rangeStart && rangeIsFree(rangeStart, key)) {
                     rangeEnd = key;
+                    extending = false;
+                    return;
                 }
+
+                rangeStart = key;
+                rangeEnd = key;
+                extending = true;
             };
 
             grid.addEventListener('click', (event) => {
@@ -511,6 +544,7 @@
 
                 mode = button.dataset.mode;
                 rangeStart = rangeEnd = selectedDate = selectedStart = null;
+                extending = false;
 
                 modeSwitch.querySelectorAll('[data-mode]').forEach((item) => {
                     const active = item.dataset.mode === mode;
