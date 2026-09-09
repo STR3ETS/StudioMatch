@@ -62,7 +62,13 @@
                                 </button>
                                 <div data-datepicker-panel class="mt-2 hidden rounded-2xl border border-prussian-blue/10 bg-white p-3"></div>
                             </div>
-                            <div class="mt-2 grid grid-cols-2 gap-2">
+                            <label class="{{ $checkLabel }} mt-3">
+                                <input type="checkbox" name="full_day" value="1" class="{{ $checkbox }}" @checked(request()->boolean('full_day'))>
+                                {{ __('studios.filters.full_day') }}
+                            </label>
+                            <p class="mt-1 text-xs text-prussian-blue/50">{{ __('studios.filters.full_day_hint') }}</p>
+
+                            <div @class(['mt-2 grid grid-cols-2 gap-2', 'hidden' => request()->boolean('full_day')]) data-hours-filter>
                                 <div class="min-w-0">
                                     <span class="{{ $subLabel }}">{{ __('studios.filters.start') }}</span>
                                     <select name="start" class="{{ $field }} mt-1 cursor-pointer">
@@ -260,6 +266,16 @@
                     results.classList.remove('opacity-40', 'pointer-events-none');
                     overlay?.classList.add('hidden');
                     overlay?.classList.remove('flex');
+                }
+            });
+
+            // Bij "hele dag" is een begin- en eindtijd niet van toepassing.
+            const fullDay = form.querySelector('input[name=full_day]');
+            const hoursFilter = form.querySelector('[data-hours-filter]');
+            fullDay?.addEventListener('change', () => {
+                hoursFilter?.classList.toggle('hidden', fullDay.checked);
+                if (fullDay.checked) {
+                    form.querySelectorAll('select[name=start], select[name=end]').forEach((select) => select.value = '');
                 }
             });
 

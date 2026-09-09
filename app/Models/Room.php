@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 
 #[Fillable([
     'title', 'description', 'type', 'hourly_rate_cents', 'day_rate_cents', 'min_hours', 'min_days', 'capacity',
-    'engineer_included', 'engineer_rate_cents', 'house_rules', 'equipment', 'equipment_extra', 'daws', 'facilities', 'status',
+    'engineer_included', 'engineer_rate_cents', 'engineer_day_rate_cents', 'house_rules', 'equipment', 'equipment_extra', 'daws', 'facilities', 'status',
     'rejection_reason', 'on_vacation', 'vacation_until',
 ])]
 class Room extends Model
@@ -362,6 +362,35 @@ class Room extends Model
     public function allowsMultiDay(): bool
     {
         return $this->day_rate_cents !== null && $this->day_rate_cents > 0;
+    }
+
+    /**
+     * Day rate for one weekday. Hosts may charge more in the weekend; without an override
+     * the base day rate of the room applies.
+     */
+    public function dayRateOn(int $weekday): int
+    {
+        $override = $this->hours->firstWhere('weekday', $weekday)?->day_rate_cents;
+
+        return (int) ($override ?: $this->day_rate_cents);
+    }
+
+    /**
+     * @return array<int, int> weekday (1-7) => day rate in cents
+     */
+    public function dayRatesByWeekday(): array
+    {
+        $this->loadMissing('hours');
+
+        return collect(range(1, 7))
+            ->mapWithKeys(fn (int $weekday) => [$weekday => $this->dayRateOn($weekday)])
+            ->all();
+    }
+
+    public function engineerDayRateCents(): int
+    {
+        // Zonder eigen dagprijs rekenen we de engineer voor acht uur per dag.
+        return (int) ($this->engineer_day_rate_cents ?: (int) $this->engineer_rate_cents * 8);
     }
 
     /**

@@ -26,6 +26,9 @@ trait HandlesRoomForm
             'min_hours' => ['required', 'integer', 'min:2', 'max:8'],
             'day_rate' => ['nullable', 'numeric', 'min:1', 'max:10000'],
             'min_days' => ['nullable', 'integer', 'min:1', 'max:7'],
+            'day_rates' => ['nullable', 'array'],
+            'day_rates.*' => ['nullable', 'numeric', 'min:1', 'max:10000'],
+            'engineer_day_rate' => ['nullable', 'numeric', 'min:1', 'max:5000'],
             'capacity' => ['required', 'integer', 'min:1', 'max:50'],
             'engineer_option' => ['required', Rule::in(['none', 'included', 'optional'])],
             'engineer_rate' => ['nullable', 'numeric', 'min:1', 'max:500', 'required_if:engineer_option,optional'],
@@ -57,12 +60,38 @@ trait HandlesRoomForm
         $validated['min_days'] = (int) ($validated['min_days'] ?? 1);
         unset($validated['day_rate']);
 
+        // Afwijkende dagtarieven per weekdag, bijvoorbeeld een hoger weekendtarief.
+        $dayRates = collect($validated['day_rates'] ?? [])
+            ->filter(fn ($rate) => $rate !== null && $rate !== '')
+            ->mapWithKeys(fn ($rate, $weekday) => [(int) $weekday => (int) round($rate * 100)])
+            ->all();
+        unset($validated['day_rates']);
+
         $option = $validated['engineer_option'];
         $validated['engineer_included'] = $option === 'included';
         $validated['engineer_rate_cents'] = $option === 'optional' ? (int) round($validated['engineer_rate'] * 100) : null;
-        unset($validated['engineer_option'], $validated['engineer_rate']);
+        $validated['engineer_day_rate_cents'] = $option === 'optional' && ! empty($validated['engineer_day_rate'])
+            ? (int) round($validated['engineer_day_rate'] * 100)
+            : null;
+        unset($validated['engineer_option'], $validated['engineer_rate'], $validated['engineer_day_rate']);
 
-        return [$validated, $photos];
+        return [$validated, $photos, $dayRates];
+    }
+
+    /**
+     * Bewaart de afwijkende dagtarieven op het weekrooster van de ruimte.
+     *
+     * @param  array<int, int>  $dayRates
+     */
+    protected function storeDayRates(Room $room, array $dayRates): void
+    {
+        $room->seedDefaultHours();
+
+        for ($weekday = 1; $weekday <= 7; $weekday++) {
+            $room->hours()->where('weekday', $weekday)->update([
+                'day_rate_cents' => $dayRates[$weekday] ?? null,
+            ]);
+        }
     }
 
     protected function storePhotos(Room $room, array $photos): void

@@ -45,7 +45,7 @@ class StudioController extends Controller
         $withRoom = $request->filled('title');
 
         if ($withRoom) {
-            [$roomData, $photos] = $this->validateRoom($request, isCreate: true);
+            [$roomData, $photos, $dayRates] = $this->validateRoom($request, isCreate: true);
         }
 
         $studio = $request->user()->studios()->create([...$validated, ...($coords ?? [])]);
@@ -56,6 +56,7 @@ class StudioController extends Controller
 
         $room = $studio->rooms()->create([...$roomData, 'status' => RoomStatus::InReview]);
         $room->seedDefaultHours();
+        $this->storeDayRates($room, $dayRates);
         $this->storePhotos($room, $photos);
         $this->notifySubmitted($request, $room);
 

@@ -42,7 +42,7 @@ class BookingController extends Controller
                 'startHour' => null,
                 'endHour' => null,
                 'withEngineer' => $withEngineer,
-                'prices' => $this->dayPrices($room, $days, $withEngineer),
+                'prices' => $this->dayPrices($room, $date, $endDate, $withEngineer),
             ]);
         }
 
@@ -92,7 +92,7 @@ class BookingController extends Controller
 
         $withEngineer = $room->hasOptionalEngineer() && $request->boolean('engineer');
         $prices = $multiDay
-            ? $this->dayPrices($room, $days, $withEngineer)
+            ? $this->dayPrices($room, $date, $endDate, $withEngineer)
             : $this->prices($room, $endHour - $startHour, $withEngineer);
 
         $booking = DB::transaction(function () use ($request, $room, $date, $endDate, $startHour, $endHour, $multiDay, $withEngineer, $prices) {
@@ -385,16 +385,24 @@ class BookingController extends Controller
     /**
      * Meerdaagse boekingen rekenen af per hele dag, zonder starttijd en zonder uurtarief.
      */
-    private function dayPrices(Room $room, int $days, bool $withEngineer = false): array
+    private function dayPrices(Room $room, Carbon $from, Carbon $until, bool $withEngineer = false): array
     {
-        $daily = (int) $room->day_rate_cents + ($withEngineer ? (int) $room->engineer_rate_cents * 8 : 0);
-        $rent = $daily * $days;
+        $engineer = $withEngineer ? $room->engineerDayRateCents() : 0;
+
+        // Per dag optellen, want een verhuurder mag bijvoorbeeld in het weekend meer vragen.
+        $rent = 0;
+        $days = 0;
+        for ($date = $from->copy(); $date->lte($until); $date->addDay()) {
+            $rent += $room->dayRateOn($date->isoWeekday()) + $engineer;
+            $days++;
+        }
+
         $fee = (int) round($rent * config('studio.service_fee_percent') / 100);
         $vat = (int) round($fee * config('studio.vat_percent') / 100);
 
         return [
             'hourly_rate_cents' => $room->hourly_rate_cents,
-            'day_rate_cents' => $daily,
+            'day_rate_cents' => $days > 0 ? (int) round($rent / $days) : (int) $room->day_rate_cents,
             'rent_cents' => $rent,
             'service_fee_cents' => $fee,
             'vat_cents' => $vat,

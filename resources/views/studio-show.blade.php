@@ -111,35 +111,6 @@
                         <p class="mt-3 whitespace-pre-line leading-relaxed text-prussian-blue/70">{{ $room->description }}</p>
                     </section>
 
-                    @if ($room->hours->isNotEmpty())
-                    <section class="border-b border-prussian-blue/10 py-6">
-                        <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.opening_hours') }}</h2>
-                        <dl class="mt-3 divide-y divide-prussian-blue/5">
-                            @foreach ($room->hours->sortBy('weekday') as $day)
-                                <div @class([
-                                    'flex items-center justify-between py-2 text-sm',
-                                    'font-semibold text-prussian-blue' => $day->weekday === now()->isoWeekday(),
-                                    'text-prussian-blue/70' => $day->weekday !== now()->isoWeekday(),
-                                ])>
-                                    <dt class="capitalize">{{ __('host.availability.days.' . $day->weekday) }}</dt>
-                                    <dd>
-                                        @if ($day->is_open)
-                                            {{ \App\Support\Hours::range((int) $day->open_hour, (int) $day->close_hour) }}
-                                        @else
-                                            <span class="text-prussian-blue/40">{{ __('studio.closed') }}</span>
-                                        @endif
-                                    </dd>
-                                </div>
-                            @endforeach
-                        </dl>
-                        @if ($room->hours->contains(fn ($day) => $day->is_open && (int) $day->close_hour > 24))
-                            <p class="mt-3 text-xs text-prussian-blue/50">
-                                <i class="fa-solid fa-moon fa-xs mr-1.5 text-prussian-blue/30"></i>{{ __('studio.opening_hours_night') }}
-                            </p>
-                        @endif
-                    </section>
-                    @endif
-
                     @if ($room->equipment || $room->equipment_extra)
                         <section class="border-b border-prussian-blue/10 py-6">
                             <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.equipment') }}</h2>
@@ -187,6 +158,35 @@
                         </section>
                     @endif
 
+                    @if ($room->hours->isNotEmpty())
+                        <section class="border-b border-prussian-blue/10 py-6">
+                            <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.opening_hours') }}</h2>
+                            <dl class="mt-3 divide-y divide-prussian-blue/5">
+                                @foreach ($room->hours->sortBy('weekday') as $day)
+                                    <div @class([
+                                        'flex items-center justify-between py-2 text-sm',
+                                        'font-semibold text-prussian-blue' => $day->weekday === now()->isoWeekday(),
+                                        'text-prussian-blue/70' => $day->weekday !== now()->isoWeekday(),
+                                    ])>
+                                        <dt class="capitalize">{{ __('host.availability.days.' . $day->weekday) }}</dt>
+                                        <dd>
+                                            @if ($day->is_open)
+                                                {{ \App\Support\Hours::range((int) $day->open_hour, (int) $day->close_hour) }}
+                                            @else
+                                                <span class="text-prussian-blue/40">{{ __('studio.closed') }}</span>
+                                            @endif
+                                        </dd>
+                                    </div>
+                                @endforeach
+                            </dl>
+                            @if ($room->hours->contains(fn ($day) => $day->is_open && (int) $day->close_hour > 24))
+                                <p class="mt-3 text-xs text-prussian-blue/50">
+                                    <i class="fa-solid fa-moon fa-xs mr-1.5 text-prussian-blue/30"></i>{{ __('studio.opening_hours_night') }}
+                                </p>
+                            @endif
+                        </section>
+                    @endif
+
                     <section class="pt-6">
                         <h2 class="text-lg font-bold text-prussian-blue">{{ __('studio.location') }}</h2>
                         <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/70">
@@ -208,6 +208,8 @@
                           data-availability='@json($freeHours)'
                           data-free-days='@json($freeDays)'
                           data-day-price-cents="{{ (int) $room->day_rate_cents }}"
+                          data-day-rates='@json($room->dayRatesByWeekday())'
+                          data-engineer-day-rate-cents="{{ $room->hasOptionalEngineer() ? $room->engineerDayRateCents() : 0 }}"
                           data-min-days="{{ (int) ($room->min_days ?? 2) }}"
                           data-max-days="{{ config('studio.booking_max_days') }}"
                           data-days-label="{{ trans_choice('booking.day_count', 2, ['count' => ':count']) }}"
@@ -277,7 +279,9 @@
                         @if ($room->hasOptionalEngineer())
                             <label class="mt-4 flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-prussian-blue/15 px-3 py-2.5 transition hover:border-prussian-blue/30">
                                 <span class="text-sm font-semibold text-prussian-blue">
-                                    <i class="fa-solid fa-headphones fa-sm mr-1.5 text-prussian-blue/40"></i>{{ __('studio.booking.engineer_toggle', ['amount' => $money($room->engineer_rate_cents / 100)]) }}
+                                    <i class="fa-solid fa-headphones fa-sm mr-1.5 text-prussian-blue/40"></i><span data-engineer-label
+                                        data-hours-text="{{ __('studio.booking.engineer_toggle', ['amount' => $money($room->engineer_rate_cents / 100)]) }}"
+                                        data-days-text="{{ __('studio.booking.engineer_toggle_day', ['amount' => $money($room->engineerDayRateCents() / 100)]) }}">{{ __('studio.booking.engineer_toggle', ['amount' => $money($room->engineer_rate_cents / 100)]) }}</span>
                                 </span>
                                 <input type="checkbox" name="engineer" value="1" data-engineer-toggle class="h-4 w-4 shrink-0 rounded border-prussian-blue/30 accent-ruby-red" @checked(request('engineer'))>
                             </label>
@@ -370,6 +374,8 @@
             // Per dag boeken: hele dagen op dagtarief, zonder starttijd.
             const FREE_DAYS = new Set(JSON.parse(form.dataset.freeDays || '[]'));
             const DAY_PRICE = parseInt(form.dataset.dayPriceCents || '0', 10);
+            const DAY_RATES = JSON.parse(form.dataset.dayRates || '{}');
+            const ENGINEER_DAY_RATE = parseInt(form.dataset.engineerDayRateCents || '0', 10);
             const MIN_DAYS = parseInt(form.dataset.minDays || '2', 10);
             const MAX_DAYS = parseInt(form.dataset.maxDays || '14', 10);
             const DAYS_LABEL = form.dataset.daysLabel || ':count';
@@ -392,6 +398,22 @@
             let extending = false;
 
             const daysBetween = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 86400000) + 1;
+
+            // Elke dag heeft zijn eigen tarief, plus eventueel de engineer erbij.
+            const rangeTotal = (a, b) => {
+                const engineer = engineerToggle?.checked ? ENGINEER_DAY_RATE : 0;
+                const cursor = parseKey(a);
+                const last = parseKey(b);
+                let total = 0;
+
+                while (cursor <= last) {
+                    const weekday = cursor.getDay() === 0 ? 7 : cursor.getDay();
+                    total += (DAY_RATES[weekday] ?? DAY_PRICE) + engineer;
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+
+                return total;
+            };
 
             const rangeIsFree = (a, b) => {
                 const cursor = parseKey(a);
@@ -492,7 +514,7 @@
                     endDateInput.disabled = ! (rangeStart && rangeEnd);
 
                     const count = rangeStart && rangeEnd ? daysBetween(rangeStart, rangeEnd) : 0;
-                    totalEl.textContent = money.format(DAY_PRICE * count / 100);
+                    totalEl.textContent = money.format((count ? rangeTotal(rangeStart, rangeEnd) : 0) / 100);
                     rentText.textContent = DAYS_LABEL.replace(':count', count);
                     submit.disabled = count < MIN_DAYS || count > MAX_DAYS;
                     return;
@@ -559,6 +581,13 @@
                 slotsBlock.classList.toggle('hidden', mode === 'days');
                 priceHeadline.textContent = mode === 'days' ? money.format(DAY_PRICE / 100) : money.format(PRICE / 100);
                 priceUnit.textContent = mode === 'days' ? PER_DAY_LABEL : PER_HOUR_LABEL;
+
+                const engineerLabel = form.querySelector('[data-engineer-label]');
+                if (engineerLabel) {
+                    engineerLabel.textContent = mode === 'days'
+                        ? engineerLabel.dataset.daysText
+                        : engineerLabel.dataset.hoursText;
+                }
 
                 renderCalendar();
                 renderSlots();

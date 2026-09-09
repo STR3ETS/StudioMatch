@@ -27,6 +27,7 @@ return [
 
     'booking' => [
         'engineer_toggle' => 'Add engineer (+ :amount per hour)',
+        'engineer_toggle_day' => 'Add engineer (+ :amount per day)',
         'from' => 'from',
         'mode_hours' => 'Per hour',
         'mode_days' => 'Per day',

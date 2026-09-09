@@ -26,7 +26,7 @@ class RoomController extends Controller
     {
         $this->authorizeStudio($request, $studio);
 
-        [$validated, $photos] = $this->validateRoom($request, isCreate: true);
+        [$validated, $photos, $dayRates] = $this->validateRoom($request, isCreate: true);
 
         $validated['status'] = RoomStatus::InReview;
 
@@ -34,6 +34,7 @@ class RoomController extends Controller
 
         $room->seedDefaultHours();
 
+        $this->storeDayRates($room, $dayRates);
         $this->storePhotos($room, $photos);
 
         $this->notifySubmitted($request, $room);
@@ -52,7 +53,7 @@ class RoomController extends Controller
     {
         $this->authorizeRoom($request, $room);
 
-        [$validated, $photos] = $this->validateRoom($request, isCreate: false);
+        [$validated, $photos, $dayRates] = $this->validateRoom($request, isCreate: false);
 
         $resubmitted = $room->status === RoomStatus::Afgekeurd;
 
@@ -63,6 +64,7 @@ class RoomController extends Controller
 
         $room->update($validated);
 
+        $this->storeDayRates($room, $dayRates);
         $this->storePhotos($room, $photos);
 
         if ($resubmitted) {

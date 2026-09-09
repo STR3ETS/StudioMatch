@@ -27,6 +27,7 @@ return [
 
     'booking' => [
         'engineer_toggle' => 'Engineer erbij (+ :amount per uur)',
+        'engineer_toggle_day' => 'Engineer erbij (+ :amount per dag)',
         'from' => 'vanaf',
         'mode_hours' => 'Per uur',
         'mode_days' => 'Per dag',

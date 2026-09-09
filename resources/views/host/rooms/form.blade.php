@@ -132,6 +132,31 @@
             </div>
 
             @php
+                $rateByWeekday = $room->exists ? $room->hours->keyBy('weekday') : collect();
+            @endphp
+            <details class="mt-5 rounded-xl border border-prussian-blue/10 px-4 py-3" @if ($errors->has('day_rates.*') || $rateByWeekday->contains(fn ($day) => $day->day_rate_cents !== null)) open @endif>
+                <summary class="cursor-pointer list-none text-sm font-semibold text-prussian-blue [&::-webkit-details-marker]:hidden">
+                    <i class="fa-solid fa-calendar-week fa-sm mr-1.5 text-prussian-blue/40"></i>{{ __('host.rooms.fields.day_rates') }}
+                </summary>
+                <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.rooms.fields.day_rates_hint') }}</p>
+                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    @for ($weekday = 1; $weekday <= 7; $weekday++)
+                        @php $current = $rateByWeekday->get($weekday)?->day_rate_cents; @endphp
+                        <div>
+                            <label for="day_rate_{{ $weekday }}" class="{{ $label }}">{{ __('host.availability.days.' . $weekday) }}</label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute left-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-prussian-blue/50">&euro;</span>
+                                <input id="day_rate_{{ $weekday }}" type="number" name="day_rates[{{ $weekday }}]" step="0.50" min="1" max="10000"
+                                       value="{{ old('day_rates.' . $weekday, $current !== null ? number_format($current / 100, 2, '.', '') : '') }}"
+                                       placeholder="{{ __('host.rooms.fields.day_rates_default') }}" class="{{ $field }} pl-9">
+                            </div>
+                            <x-input-error field="day_rates.{{ $weekday }}" />
+                        </div>
+                    @endfor
+                </div>
+            </details>
+
+            @php
                 $engineerOption = old('engineer_option', $room->engineer_included ? 'included' : ($room->engineer_rate_cents !== null ? 'optional' : 'none'));
             @endphp
             <div class="mt-5">
@@ -155,6 +180,15 @@
                         <span class="text-sm text-prussian-blue/50">{{ __('host.rooms.per_hour') }}</span>
                     </div>
                     <x-input-error field="engineer_rate" />
+
+                    <label for="engineer_day_rate" class="{{ $label }} mt-4">{{ __('host.rooms.fields.engineer_day_rate') }}</label>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="text-sm text-prussian-blue/50">&euro;</span>
+                        <input id="engineer_day_rate" type="number" name="engineer_day_rate" min="1" max="5000" step="0.50" value="{{ old('engineer_day_rate', $room->engineer_day_rate_cents !== null ? $room->engineer_day_rate_cents / 100 : '') }}" class="{{ $field }} !mt-0 max-w-40">
+                        <span class="text-sm text-prussian-blue/50">{{ __('host.rooms.per_day') }}</span>
+                    </div>
+                    <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.rooms.fields.engineer_day_rate_hint') }}</p>
+                    <x-input-error field="engineer_day_rate" />
                 </div>
             </div>
 

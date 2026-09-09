@@ -43,6 +43,9 @@
             @endisset
         </div>
         <p class="truncate text-xs text-prussian-blue/50">{{ $studio['city'] }}@isset($studio['distance']) ({{ $studio['distance'] }} km)@endisset</p>
-        <p class="mt-0.5 text-sm font-semibold text-prussian-blue">&euro;{{ $studio['price'] }} <span class="font-normal text-prussian-blue/50">{{ __('home.studios.per_hour') }}</span></p>
+        <p class="mt-0.5 text-sm font-semibold text-prussian-blue">
+            &euro;{{ $studio['price'] }}
+            <span class="font-normal text-prussian-blue/50">{{ ($studio['per_day'] ?? false) ? __('studios.filters.per_day_card') : __('home.studios.per_hour') }}</span>
+        </p>
     </div>
 </a>

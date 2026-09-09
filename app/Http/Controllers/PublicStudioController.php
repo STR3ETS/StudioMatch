@@ -52,6 +52,7 @@ class PublicStudioController extends Controller
             'facilities' => ['nullable', 'array'],
             'facilities.*' => [Rule::in(config('studio.facilities'))],
             'date' => ['nullable', 'date'],
+            'full_day' => ['nullable', 'boolean'],
             'start' => ['nullable', 'integer', 'between:0,23'],
             'end' => ['nullable', 'integer', 'between:1,24'],
             'lat' => ['nullable', 'numeric', 'between:-90,90'],
@@ -160,7 +161,19 @@ class PublicStudioController extends Controller
             }
         }
 
-        if (! empty($filters['date'])) {
+        // Hele dagen: alleen ruimtes met een dagtarief, en dan telt de hele dag vrij te zijn.
+        $fullDay = (bool) ($filters['full_day'] ?? false);
+
+        if ($fullDay) {
+            $rooms = $rooms->filter(fn (Room $room) => $room->allowsMultiDay())->values();
+
+            if (! empty($filters['date'])) {
+                $date = Carbon::parse($filters['date']);
+                $rooms = $rooms->filter(fn (Room $room) => $room->isBookableForDays($date, $date))->values();
+            }
+        }
+
+        if (! $fullDay && ! empty($filters['date'])) {
             $date = Carbon::parse($filters['date']);
             $start = isset($filters['start']) ? (int) $filters['start'] : null;
             $end = isset($filters['end']) ? (int) $filters['end'] : null;
@@ -183,7 +196,7 @@ class PublicStudioController extends Controller
 
         return view('studios', [
             'rooms' => $rooms,
-            'cards' => $rooms->map(fn (Room $room) => $this->cardData($room)),
+            'cards' => $rooms->map(fn (Room $room) => $this->cardData($room, $fullDay)),
             'mapStudios' => $this->mapData($rooms),
         ]);
     }
@@ -227,12 +240,15 @@ class PublicStudioController extends Controller
             ->all();
     }
 
-    public function cardData(Room $room): array
+    public function cardData(Room $room, bool $perDay = false): array
     {
         return array_filter([
             'name' => $room->studio->name . ' - ' . $room->title,
             'city' => $room->studio->city,
-            'price' => (int) round($room->hourlyRateEuros()),
+            'per_day' => $perDay ?: null,
+            'price' => $perDay && $room->day_rate_cents !== null
+                ? (int) round($room->day_rate_cents / 100)
+                : (int) round($room->hourlyRateEuros()),
             'type' => $room->typeLabel(),
             'photos' => $room->photos->map->thumbUrl()->all(),
             'url' => route('studios.show', $room),

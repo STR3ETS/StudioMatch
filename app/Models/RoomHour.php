@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['weekday', 'is_open', 'open_hour', 'close_hour'])]
+#[Fillable(['weekday', 'is_open', 'open_hour', 'close_hour', 'day_rate_cents'])]
 class RoomHour extends Model
 {
 

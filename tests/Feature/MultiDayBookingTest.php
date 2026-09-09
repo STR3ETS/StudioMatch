@@ -139,6 +139,80 @@ class MultiDayBookingTest extends TestCase
         $this->assertSame(40000, (int) $booking->rent_cents);
     }
 
+    public function test_a_weekend_day_may_have_its_own_rate(): void
+    {
+        // Standaardrooster is in het weekend dicht, dus eerst openzetten.
+        $this->room->hours()->whereIn('weekday', [6, 7])->update([
+            'is_open' => true,
+            'day_rate_cents' => 60000,
+        ]);
+        $this->room->refresh();
+
+        $friday = today()->next(Carbon::FRIDAY);
+
+        $this->actingAs($this->artist)->post('/studios/' . $this->room->slug . '/boeken', [
+            'date' => $friday->toDateString(),
+            'end_date' => $friday->copy()->addDays(2)->toDateString(),
+            'terms' => '1',
+        ])->assertRedirect();
+
+        // Vrijdag 400 plus zaterdag 600 plus zondag 600.
+        $this->assertSame(160000, (int) $this->room->bookings()->firstOrFail()->rent_cents);
+    }
+
+    public function test_the_engineer_has_its_own_day_rate(): void
+    {
+        $this->room->update([
+            'engineer_included' => false,
+            'engineer_rate_cents' => 5000,
+            'engineer_day_rate_cents' => 30000,
+        ]);
+
+        $this->actingAs($this->artist)->post('/studios/' . $this->room->slug . '/boeken', [
+            'date' => $this->monday()->toDateString(),
+            'end_date' => $this->monday()->addDay()->toDateString(),
+            'engineer' => '1',
+            'terms' => '1',
+        ])->assertRedirect();
+
+        // Twee dagen a 400 euro plus twee keer 300 euro engineer.
+        $this->assertSame(140000, (int) $this->room->bookings()->firstOrFail()->rent_cents);
+    }
+
+    public function test_without_an_engineer_day_rate_eight_hours_are_charged(): void
+    {
+        $this->room->update([
+            'engineer_included' => false,
+            'engineer_rate_cents' => 5000,
+            'engineer_day_rate_cents' => null,
+        ]);
+
+        $this->assertSame(40000, $this->room->fresh()->engineerDayRateCents());
+    }
+
+    public function test_the_whole_day_filter_only_shows_rooms_with_a_day_rate(): void
+    {
+        $other = $this->room->studio->rooms()->create([
+            'title' => 'Alleen per uur',
+            'description' => 'Fijne ruimte.',
+            'type' => 'opname',
+            'hourly_rate_cents' => 3000,
+            'min_hours' => 2,
+            'capacity' => 4,
+            'status' => 'live',
+        ]);
+        $other->seedDefaultHours();
+
+        $this->get('/studios')->assertOk()->assertSee('Alleen per uur');
+
+        $this->get('/studios?full_day=1')
+            ->assertOk()
+            ->assertDontSee('Alleen per uur')
+            ->assertSee($this->room->title)
+            ->assertSee(__('studios.filters.per_day_card'))
+            ->assertSee('&euro;400', escape: false);
+    }
+
     public function test_the_minimum_number_of_days_is_enforced(): void
     {
         $this->room->update(['min_days' => 3]);
