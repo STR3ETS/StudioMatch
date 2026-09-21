@@ -61,14 +61,11 @@ const initStudioMap = () => {
         }).addTo(map);
     };
 
-    fetch('https://cartomap.github.io/nl/wgs84/landsdeel_2023.geojson')
+    // Een samengevoegde omtrek van Nederland. Eerder tekenden we de vier landsdelen los,
+    // waardoor de grenzen daartussen als lijnen dwars door het land zichtbaar werden.
+    fetch('/geo/nederland.geojson')
         .then((response) => response.json())
-        .then((geo) => {
-            const rings = geo.features.flatMap((feature) => feature.geometry.type === 'MultiPolygon'
-                ? feature.geometry.coordinates.map((polygon) => polygon[0])
-                : [feature.geometry.coordinates[0]]);
-            applyHighlight(rings);
-        })
+        .then((geo) => applyHighlight(geo.geometry.coordinates.map((polygon) => polygon[0])))
         .catch(() => applyHighlight([nlFallback], true));
 
     if (mapEl.dataset.approx) {
