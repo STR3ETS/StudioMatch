@@ -210,7 +210,8 @@ class MultiDayBookingTest extends TestCase
             ->assertDontSee('Alleen per uur')
             ->assertSee($this->room->title)
             ->assertSee(__('studios.filters.per_day_card'))
-            ->assertSee('&euro;400', escape: false);
+            // De kaart toont de consumentenprijs, dus inclusief servicekosten.
+            ->assertSee('&euro;' . \App\Models\Room::allInEuros(40000), escape: false);
     }
 
     public function test_the_minimum_number_of_days_is_enforced(): void

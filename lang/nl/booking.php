@@ -62,6 +62,13 @@ return [
 
     'checkout' => [
         'with_engineer' => 'incl. engineer',
+        'buyer_title' => 'Op wiens naam?',
+        'buyer_note' => 'Dit bepaalt welke gegevens op je factuur komen.',
+        'buyer_particulier' => 'Particulier',
+        'buyer_zakelijk' => 'Zakelijk',
+        'buyer_company' => 'Bedrijfsnaam',
+        'buyer_vat' => 'Btw-nummer (optioneel)',
+
         'address_title' => 'Je factuuradres',
         'address_note' => 'We hebben je adres nodig voor de factuur. Je vult dit maar één keer in.',
         'title' => 'Boeking controleren',

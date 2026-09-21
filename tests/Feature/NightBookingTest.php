@@ -90,7 +90,11 @@ class NightBookingTest extends TestCase
     {
         $this->book();
 
-        $this->assertSame('22:00 – 02:00 (+1)', $this->room->bookings()->firstOrFail()->timeRange());
+        // De volgende dag wordt bij naam genoemd in plaats van met "+1".
+        $expected = today()->next(Carbon::WEDNESDAY)->translatedFormat('l') . ' 22:00 – '
+            . today()->next(Carbon::WEDNESDAY)->addDay()->translatedFormat('l') . ' 02:00';
+
+        $this->assertSame($expected, $this->room->bookings()->firstOrFail()->timeRange());
         $this->assertTrue($this->room->bookings()->firstOrFail()->runsPastMidnight());
     }
 
@@ -182,6 +186,10 @@ class NightBookingTest extends TestCase
         $this->assertSame('01:00', Hours::clock(25));
         $this->assertSame('06:00', Hours::clock(30));
         $this->assertSame('20:00 – 24:00', Hours::range(20, 24));
-        $this->assertStringContainsString('(+1)', Hours::range(20, 26));
+        $this->assertSame('20:00 – 02:00', Hours::range(20, 26));
+
+        // Openingstijden noemen de dag waarop de sluitingstijd valt.
+        $this->assertSame('09:00 – 21:00', Hours::openingRange(1, 9, 21));
+        $this->assertStringEndsWith('(' . Hours::weekdayShort(2) . ')', Hours::openingRange(1, 6, 26));
     }
 }

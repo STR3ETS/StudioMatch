@@ -77,6 +77,16 @@ class BookingController extends Controller
 
         $request->validate(['terms' => ['accepted']]);
 
+        // Particulier of zakelijk boeken bepaalt wat er op de factuur komt.
+        $buyer = $request->validate([
+            'buyer_type' => ['nullable', 'in:particulier,zakelijk'],
+            'buyer_company' => ['nullable', 'string', 'max:255', 'required_if:buyer_type,zakelijk'],
+            'buyer_vat_number' => ['nullable', 'string', 'max:30'],
+        ]);
+
+        // Niets gekozen betekent particulier, dat is de veiligste aanname voor de consument.
+        $buyer['buyer_type'] ??= 'particulier';
+
         $user = $request->user();
         if (! $user->hasCompleteAddress()) {
             $address = $request->validate([
@@ -95,7 +105,7 @@ class BookingController extends Controller
             ? $this->dayPrices($room, $date, $endDate, $withEngineer)
             : $this->prices($room, $endHour - $startHour, $withEngineer);
 
-        $booking = DB::transaction(function () use ($request, $room, $date, $endDate, $startHour, $endHour, $multiDay, $withEngineer, $prices) {
+        $booking = DB::transaction(function () use ($request, $room, $date, $endDate, $startHour, $endHour, $multiDay, $withEngineer, $prices, $buyer) {
             $taken = ($multiDay
                 ? $room->bookingsBetween($date, $endDate)
                 : $room->overlappingBookings($date, $startHour, $endHour))
@@ -109,6 +119,7 @@ class BookingController extends Controller
 
             return $room->bookings()->create([
                 'user_id' => $request->user()->id,
+                ...$buyer,
                 'date' => $date,
                 'end_date' => $endDate,
                 'start_hour' => $multiDay ? 0 : $startHour,
@@ -368,7 +379,8 @@ class BookingController extends Controller
 
     private function prices(Room $room, int $hours, bool $withEngineer = false): array
     {
-        $hourly = $room->hourly_rate_cents + ($withEngineer ? (int) $room->engineer_rate_cents : 0);
+        $engineerPerHour = $withEngineer ? (int) $room->engineer_rate_cents : 0;
+        $hourly = $room->hourly_rate_cents + $engineerPerHour;
         $rent = $hourly * $hours;
         $fee = (int) round($rent * config('studio.service_fee_percent') / 100);
         $vat = (int) round($fee * config('studio.vat_percent') / 100);
@@ -376,6 +388,7 @@ class BookingController extends Controller
         return [
             'hourly_rate_cents' => $hourly,
             'rent_cents' => $rent,
+            'engineer_cents' => $engineerPerHour * $hours,
             'service_fee_cents' => $fee,
             'vat_cents' => $vat,
             'total_cents' => $rent + $fee + $vat,
@@ -404,6 +417,7 @@ class BookingController extends Controller
             'hourly_rate_cents' => $room->hourly_rate_cents,
             'day_rate_cents' => $days > 0 ? (int) round($rent / $days) : (int) $room->day_rate_cents,
             'rent_cents' => $rent,
+            'engineer_cents' => $engineer * $days,
             'service_fee_cents' => $fee,
             'vat_cents' => $vat,
             'total_cents' => $rent + $fee + $vat,

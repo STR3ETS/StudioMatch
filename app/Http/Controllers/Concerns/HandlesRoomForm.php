@@ -22,6 +22,8 @@ trait HandlesRoomForm
             'title' => ['required', 'string', 'max:255'],
             'description' => ['required', 'string', 'max:5000'],
             'type' => ['required', Rule::enum(RoomType::class)],
+            'types' => ['nullable', 'array'],
+            'types.*' => [Rule::enum(RoomType::class)],
             'hourly_rate' => ['required', 'numeric', 'min:1', 'max:1000'],
             'min_hours' => ['required', 'integer', 'min:2', 'max:8'],
             'day_rate' => ['nullable', 'numeric', 'min:1', 'max:10000'],
@@ -49,6 +51,9 @@ trait HandlesRoomForm
 
         $photos = $validated['photos'] ?? [];
         unset($validated['photos']);
+
+        // De aangevinkte categorieen, met de hoofdcategorie er altijd bij.
+        $validated['types'] = array_values(array_unique([$validated['type'], ...($validated['types'] ?? [])]));
 
         $validated['hourly_rate_cents'] = (int) round($validated['hourly_rate'] * 100);
         unset($validated['hourly_rate']);

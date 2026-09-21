@@ -95,6 +95,54 @@
             </div>
         </div>
 
+        <div class="mt-6 grid gap-6 sm:grid-cols-3">
+            <div>
+                <h3 class="{{ $label }}">{{ __('host.rooms.fields.day_rate') }}</h3>
+                <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-prussian-blue">
+                    @if ($room->allowsMultiDay())
+                        <span>&euro; {{ number_format($room->day_rate_cents / 100, 2, ',', '.') }} {{ __('host.rooms.per_day') }}</span>
+                        <span class="text-prussian-blue/60">{{ trans_choice('booking.day_count', $room->min_days, ['count' => $room->min_days]) }} {{ __('admin.queue.min_days_suffix') }}</span>
+                    @else
+                        <span class="text-prussian-blue/50">{{ __('admin.queue.no_day_rate') }}</span>
+                    @endif
+                </p>
+                @php $overrides = $room->hours->filter(fn ($day) => $day->day_rate_cents !== null); @endphp
+                @if ($overrides->isNotEmpty())
+                    <p class="mt-1 text-xs text-prussian-blue/60">
+                        @foreach ($overrides as $day)
+                            {{ __('host.availability.days.' . $day->weekday) }} &euro; {{ number_format($day->day_rate_cents / 100, 2, ',', '.') }}@if (! $loop->last), @endif
+                        @endforeach
+                    </p>
+                @endif
+            </div>
+            <div>
+                <h3 class="{{ $label }}">{{ __('host.rooms.fields.engineer_day_rate') }}</h3>
+                <p class="mt-1 text-sm text-prussian-blue">
+                    @if ($room->hasOptionalEngineer())
+                        &euro; {{ number_format($room->engineerDayRateCents() / 100, 2, ',', '.') }} {{ __('host.rooms.per_day') }}
+                    @else
+                        <span class="text-prussian-blue/50">&mdash;</span>
+                    @endif
+                </p>
+            </div>
+            <div>
+                <h3 class="{{ $label }}">{{ __('studio.opening_hours') }}</h3>
+                <dl class="mt-1 space-y-0.5 text-sm text-prussian-blue/80">
+                    @foreach ($room->hours->sortBy('weekday') as $day)
+                        <div class="flex items-center justify-between gap-3">
+                            <dt>{{ __('host.availability.days.' . $day->weekday) }}</dt>
+                            <dd>
+                                @if ($day->is_open)
+                                    {{ \App\Support\Hours::openingRange((int) $day->weekday, (int) $day->open_hour, (int) $day->close_hour) }}
+                                @else
+                                    <span class="text-prussian-blue/40">{{ __('studio.closed') }}</span>
+                                @endif
+                            </dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </div>
+        </div>
         <div class="mt-6">
             <h3 class="{{ $label }}">{{ __('host.rooms.fields.description') }}</h3>
             <p class="mt-1 whitespace-pre-line text-sm leading-relaxed text-prussian-blue/80">{{ $room->description }}</p>

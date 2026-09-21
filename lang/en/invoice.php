@@ -14,6 +14,7 @@ return [
     'footer' => 'This document was generated automatically via StudioMatch (studiomatch.nl). Questions? Email info@studiomatch.nl.',
 
     'line_session' => 'Studio rental :room, :date, :time (:hours hours)',
+    'line_engineer' => 'Engineer surcharge',
     'line_fee' => 'StudioMatch service fee for booking :number',
     'line_credit' => 'Credit for document :number',
 

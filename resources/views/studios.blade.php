@@ -55,10 +55,20 @@
                         </x-filter-group>
 
                         <x-filter-group :title="__('studios.filters.groups.availability')">
-                            <div data-datepicker data-min="{{ today()->toDateString() }}" data-submit="1">
+                            <span class="{{ $subLabel }}">{{ __('studios.filters.date_from') }}</span>
+                            <div class="mt-1" data-datepicker data-min="{{ today()->toDateString() }}" data-submit="1">
                                 <input type="hidden" name="date" value="{{ request('date') }}">
                                 <button type="button" data-datepicker-toggle class="{{ $field }} cursor-pointer text-left">
                                     <span data-datepicker-label class="{{ request('date') ? '' : 'text-prussian-blue/40' }}">{{ request('date') ? \Illuminate\Support\Carbon::parse(request('date'))->translatedFormat('j M Y') : __('studios.filters.date_placeholder') }}</span>
+                                </button>
+                                <div data-datepicker-panel class="mt-2 hidden rounded-2xl border border-prussian-blue/10 bg-white p-3"></div>
+                            </div>
+
+                            <span class="{{ $subLabel }} mt-3">{{ __('studios.filters.date_to') }}</span>
+                            <div class="mt-1" data-datepicker data-min="{{ request('date') ?: today()->toDateString() }}" data-submit="1">
+                                <input type="hidden" name="date_to" value="{{ request('date_to') }}">
+                                <button type="button" data-datepicker-toggle class="{{ $field }} cursor-pointer text-left">
+                                    <span data-datepicker-label class="{{ request('date_to') ? '' : 'text-prussian-blue/40' }}">{{ request('date_to') ? \Illuminate\Support\Carbon::parse(request('date_to'))->translatedFormat('j M Y') : __('studios.filters.date_to_placeholder') }}</span>
                                 </button>
                                 <div data-datepicker-panel class="mt-2 hidden rounded-2xl border border-prussian-blue/10 bg-white p-3"></div>
                             </div>
@@ -68,27 +78,7 @@
                             </label>
                             <p class="mt-1 text-xs text-prussian-blue/50">{{ __('studios.filters.full_day_hint') }}</p>
 
-                            <div @class(['mt-2 grid grid-cols-2 gap-2', 'hidden' => request()->boolean('full_day')]) data-hours-filter>
-                                <div class="min-w-0">
-                                    <span class="{{ $subLabel }}">{{ __('studios.filters.start') }}</span>
-                                    <select name="start" class="{{ $field }} mt-1 cursor-pointer">
-                                        <option value="">--:--</option>
-                                        @for ($h = 0; $h <= 23; $h++)
-                                            <option value="{{ $h }}" @selected(request('start') !== null && request('start') !== '' && (int) request('start') === $h)>{{ sprintf('%02d:00', $h) }}</option>
-                                        @endfor
-                                    </select>
-                                </div>
-                                <div class="min-w-0">
-                                    <span class="{{ $subLabel }}">{{ __('studios.filters.end') }}</span>
-                                    <select name="end" class="{{ $field }} mt-1 cursor-pointer">
-                                        <option value="">--:--</option>
-                                        @for ($h = 1; $h <= 24; $h++)
-                                            <option value="{{ $h }}" @selected(request('end') !== null && request('end') !== '' && (int) request('end') === $h)>{{ $h === 24 ? '24:00' : sprintf('%02d:00', $h) }}</option>
-                                        @endfor
-                                    </select>
-                                </div>
-                            </div>
-                        </x-filter-group>
+                            </x-filter-group>
 
                         <x-filter-group :title="__('studios.filters.groups.studio')">
                             <div>
@@ -266,16 +256,6 @@
                     results.classList.remove('opacity-40', 'pointer-events-none');
                     overlay?.classList.add('hidden');
                     overlay?.classList.remove('flex');
-                }
-            });
-
-            // Bij "hele dag" is een begin- en eindtijd niet van toepassing.
-            const fullDay = form.querySelector('input[name=full_day]');
-            const hoursFilter = form.querySelector('[data-hours-filter]');
-            fullDay?.addEventListener('change', () => {
-                hoursFilter?.classList.toggle('hidden', fullDay.checked);
-                if (fullDay.checked) {
-                    form.querySelectorAll('select[name=start], select[name=end]').forEach((select) => select.value = '');
                 }
             });
 

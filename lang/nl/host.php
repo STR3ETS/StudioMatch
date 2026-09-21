@@ -117,6 +117,7 @@ return [
         'next' => 'Volgende',
         'submit' => 'Studio en ruimte indienen',
         'errors_intro' => 'Er ging nog iets mis. Loop de stappen na, de velden met een melding zijn gemarkeerd.',
+        'profile_required' => 'Vul eerst je bedrijfsgegevens in. Die hebben we nodig voor je facturen en uitbetalingen, daarna maak je direct je studio aan.',
         'profile_saved_next' => 'Je bedrijfsgegevens staan klaar. Volgende stap: maak je eerste studio en ruimte aan.',
         'done' => 'Je studio en eerste ruimte staan in review. We mailen je zodra de ruimte live staat.',
         'done_stripe_next' => 'Je studio en eerste ruimte staan in review. Laatste stap: koppel Stripe zodat je uitbetalingen kunt ontvangen.',
@@ -126,6 +127,7 @@ return [
         'opname' => 'Opname',
         'mix' => 'Mix',
         'master' => 'Master',
+        'productie' => 'Productie',
         'mix_master' => 'Mix / master',
     ],
 
@@ -363,6 +365,8 @@ return [
         'fields' => [
             'title' => 'Titel',
             'title_placeholder' => 'Bijv. Studio A - Live room',
+            'type_hint' => 'Vink alles aan waar je ruimte voor geschikt is. Artiesten vinden je via al deze categorieen.',
+            'type_primary' => 'Hoofdcategorie',
             'description' => 'Omschrijving',
             'description_placeholder' => 'Beschrijf je ruimte, de akoestiek en waarvoor hij het meest geschikt is.',
             'type' => 'Type ruimte',

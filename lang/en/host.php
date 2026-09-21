@@ -117,6 +117,7 @@ return [
         'next' => 'Next',
         'submit' => 'Submit studio and room',
         'errors_intro' => 'Something still went wrong. Walk through the steps, the fields with a message are highlighted.',
+        'profile_required' => 'Please fill in your business details first. We need these for your invoices and payouts, after that you can create your studio right away.',
         'profile_saved_next' => 'Your business details are set. Next step: create your first studio and room.',
         'done' => 'Your studio and first room are in review. We will email you once the room is live.',
         'done_stripe_next' => 'Your studio and first room are in review. Final step: connect Stripe so you can receive payouts.',
@@ -126,6 +127,7 @@ return [
         'opname' => 'Recording',
         'mix' => 'Mix',
         'master' => 'Master',
+        'productie' => 'Production',
         'mix_master' => 'Mix / master',
     ],
 
@@ -363,6 +365,8 @@ return [
         'fields' => [
             'title' => 'Title',
             'title_placeholder' => 'E.g. Studio A - Live room',
+            'type_hint' => 'Tick everything your room is suitable for. Artists find you through all of these.',
+            'type_primary' => 'Main category',
             'description' => 'Description',
             'description_placeholder' => 'Describe your room, its acoustics and what it is best suited for.',
             'type' => 'Room type',

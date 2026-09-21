@@ -100,6 +100,8 @@ return [
     ],
 
     'queue' => [
+        'no_day_rate' => 'Geen dagtarief ingesteld',
+        'min_days_suffix' => 'minimaal',
         'title' => 'Goedkeuringswachtrij',
         'subtitle' => 'Hier staan alle ruimtes die op beoordeling wachten. Keur je een ruimte goed, dan gaat hij direct live. Afwijzen kan alleen met een duidelijke reden voor de verhuurder.',
         'empty_title' => 'De wachtrij is leeg',

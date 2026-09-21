@@ -100,6 +100,8 @@ return [
     ],
 
     'queue' => [
+        'no_day_rate' => 'No day rate set',
+        'min_days_suffix' => 'minimum',
         'title' => 'Approval queue',
         'subtitle' => 'All rooms waiting for review. Approving a room takes it live right away. Rejecting requires a clear reason for the host.',
         'empty_title' => 'The queue is empty',

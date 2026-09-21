@@ -14,8 +14,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 #[Fillable([
-    'room_id', 'user_id', 'date', 'end_date', 'start_hour', 'end_hour', 'with_engineer',
-    'hourly_rate_cents', 'day_rate_cents', 'rent_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
+    'room_id', 'user_id', 'buyer_type', 'buyer_company', 'buyer_vat_number', 'date', 'end_date', 'start_hour', 'end_hour', 'with_engineer',
+    'hourly_rate_cents', 'day_rate_cents', 'rent_cents', 'engineer_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_studio_response', 'dispute_photos', 'resolution_note', 'reminder_sent_at',
     'response_reminder_sent_at', 'damage_reported_at', 'damage_reason', 'damage_photos',
@@ -80,6 +80,11 @@ class Booking extends Model
         return $this->start_hour < $endHour && $this->end_hour > $startHour;
     }
 
+    public function isBusinessBooking(): bool
+    {
+        return $this->buyer_type === 'zakelijk';
+    }
+
     public function isMultiDay(): bool
     {
         return $this->end_date !== null;
@@ -131,7 +136,7 @@ class Booking extends Model
     {
         return $this->isMultiDay()
             ? trans_choice('booking.day_count', $this->dayCount(), ['count' => $this->dayCount()])
-            : Hours::range((int) $this->start_hour, (int) $this->end_hour);
+            : Hours::bookingRange($this->date, (int) $this->start_hour, (int) $this->end_hour);
     }
 
     public function dateRange(): string

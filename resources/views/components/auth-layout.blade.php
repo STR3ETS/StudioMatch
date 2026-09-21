@@ -9,8 +9,8 @@
 
         <title>{{ $title }} · {{ config('app.name', 'StudioMatch') }}</title>
 
-        <link rel="icon" type="image/png" href="/logos/sm-sub-mark-logo-blauw.png">
-        <link rel="apple-touch-icon" href="/logos/sm-sub-mark-logo-blauw.png">
+        <link rel="icon" type="image/png" href="/logos/sm-mark-rood.png">
+        <link rel="apple-touch-icon" href="/logos/sm-mark-rood.png">
 
         <link rel="preload" href="{{ asset('fontawesome/css/all.min.css') }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
         <noscript><link rel="stylesheet" href="{{ asset('fontawesome/css/all.min.css') }}"></noscript>

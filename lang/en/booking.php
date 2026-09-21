@@ -62,6 +62,13 @@ return [
 
     'checkout' => [
         'with_engineer' => 'incl. engineer',
+        'buyer_title' => 'Who is booking?',
+        'buyer_note' => 'This determines which details appear on your invoice.',
+        'buyer_particulier' => 'Private',
+        'buyer_zakelijk' => 'Business',
+        'buyer_company' => 'Company name',
+        'buyer_vat' => 'VAT number (optional)',
+
         'address_title' => 'Your billing address',
         'address_note' => 'We need your address for the invoice. You only fill this in once.',
         'title' => 'Review your booking',

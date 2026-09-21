@@ -100,6 +100,15 @@
     color: rgb(255 255 255 / 0.5);
 }
 
+/*
+ * Safari laat haarlijnen zien tussen de kaarttegels doordat het de tegelposities
+ * op subpixels afrondt. Een halve pixel overlap dekt die naden af.
+ */
+.leaflet-container .leaflet-tile {
+    width: 256.5px !important;
+    height: 256.5px !important;
+}
+
 .map-pin {
     position: absolute;
     left: 0;

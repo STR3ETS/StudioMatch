@@ -14,6 +14,7 @@ return [
     'footer' => 'Dit document is automatisch opgesteld via StudioMatch (studiomatch.nl). Vragen? Mail naar info@studiomatch.nl.',
 
     'line_session' => 'Studiohuur :room, :date, :time (:hours uur)',
+    'line_engineer' => 'Toeslag engineer',
     'line_fee' => 'Servicekosten StudioMatch bij boeking :number',
     'line_credit' => 'Creditering van document :number',
 

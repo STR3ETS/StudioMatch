@@ -17,7 +17,15 @@ class HostDashboardTest extends TestCase
 
     private function host(): User
     {
-        return User::factory()->create(['role' => 'verhuurder']);
+        $host = User::factory()->create(['role' => 'verhuurder']);
+
+        // Zonder bedrijfsgegevens stuurt de wizard je eerst naar die stap.
+        $host->hostProfile()->create([
+            'name' => 'Test Verhuurder',
+            'phone' => '0612345678',
+        ]);
+
+        return $host->fresh();
     }
 
     private function studioFor(User $user, array $attributes = []): Studio
@@ -279,7 +287,8 @@ class HostDashboardTest extends TestCase
 
     public function test_overview_checklist_reflects_progress(): void
     {
-        $host = $this->host();
+        // Bewust zonder bedrijfsgegevens, zodat de checklist vanaf het begin meetelt.
+        $host = User::factory()->create(['role' => 'verhuurder']);
 
         $this->actingAs($host)->get('/dashboard/verhuurder')->assertOk()->assertSee('1 / 5');
 

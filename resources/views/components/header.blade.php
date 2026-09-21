@@ -59,8 +59,11 @@
                     <i class="fa-solid fa-gauge-high fa-sm"></i> {{ __('nav.dashboard') }}
                 </a>
             @else
-                <a href="{{ route('login') }}" class="flex h-9 items-center gap-2 rounded-full bg-ruby-red px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
-                    <i class="fa-solid fa-user fa-sm"></i> {{ __('nav.account') }}
+                <a href="{{ route('login') }}" class="hidden h-9 items-center rounded-full border border-prussian-blue/20 px-4 text-sm font-semibold text-prussian-blue transition hover:bg-prussian-blue/5 sm:flex">
+                    {{ __('nav.login') }}
+                </a>
+                <a href="{{ route('register') }}" class="flex h-9 items-center gap-2 rounded-full bg-ruby-red px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
+                    <i class="fa-solid fa-user fa-sm"></i> <span class="sm:hidden">{{ __('nav.login_register') }}</span><span class="hidden sm:inline">{{ __('nav.register') }}</span>
                 </a>
             @endauth
 

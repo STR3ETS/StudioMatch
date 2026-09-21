@@ -8,5 +8,8 @@ return [
     'faq' => 'FAQ',
     'contact' => 'Contact',
     'account' => 'Account',
+    'login' => 'Log in',
+    'register' => 'Sign up',
+    'login_register' => 'Log in / Sign up',
     'dashboard' => 'Dashboard',
 ];

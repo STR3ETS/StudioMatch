@@ -28,6 +28,7 @@ return [
         'mic_dynamic',
         'mic_usb',
         'monitors',
+        'interface',
         'midi25',
         'midi49',
         'midi61',

@@ -11,6 +11,8 @@ return [
         'where_placeholder' => 'City or address',
         'when' => 'When',
         'when_placeholder' => 'Date & time',
+        'until' => 'Until',
+        'until_placeholder' => 'Same day',
         'type' => 'Type',
         'type_placeholder' => 'Type of studio',
         'all_types' => 'All types',

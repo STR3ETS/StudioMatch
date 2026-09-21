@@ -11,6 +11,8 @@ return [
         'where_placeholder' => 'Plaats of adres',
         'when' => 'Wanneer',
         'when_placeholder' => 'Datum & tijd',
+        'until' => 'Tot en met',
+        'until_placeholder' => 'Zelfde dag',
         'type' => 'Type',
         'type_placeholder' => 'Type studio',
         'all_types' => 'Alle types',

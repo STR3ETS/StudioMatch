@@ -60,11 +60,20 @@ class Invoices
             'hours' => $booking->hours(),
         ]);
 
+        // De toeslag voor de engineer staat als eigen regel op de huurfactuur.
+        $engineerCents = (int) ($booking->engineer_cents ?? 0);
+        $rentLines = $engineerCents > 0
+            ? [
+                ['label' => $sessionLabel, 'amount' => $booking->rent_cents - $engineerCents],
+                ['label' => __('invoice.line_engineer'), 'amount' => $engineerCents],
+            ]
+            : [['label' => $sessionLabel, 'amount' => $booking->rent_cents]];
+
         $data = match ($type) {
             'huur' => [
                 'title' => $btwPlichtig ? __('invoice.types.rent_invoice') : __('invoice.types.rent_receipt'),
                 'seller' => $hostSeller,
-                'lines' => [['label' => $sessionLabel, 'amount' => $booking->rent_cents]],
+                'lines' => $rentLines,
                 'total' => $booking->rent_cents,
                 'vat' => $btwPlichtig ? self::vatFromInclusive($booking->rent_cents, $vatRate) : null,
                 'note' => $btwPlichtig ? __('invoice.notes.rent_invoice') : __('invoice.notes.rent_receipt'),
@@ -104,10 +113,12 @@ class Invoices
             'number' => $numbers[$type],
             'date' => ($booking->requested_at ?? $booking->created_at)->format('d-m-Y'),
             'buyer' => array_filter([
+                $booking->isBusinessBooking() ? $booking->buyer_company : null,
                 $booking->user->name,
                 $booking->user->street,
                 trim(($booking->user->postal_code ?? '') . ' ' . ($booking->user->city ?? '')) ?: null,
                 $booking->user->email,
+                $booking->isBusinessBooking() && $booking->buyer_vat_number ? 'Btw ' . $booking->buyer_vat_number : null,
             ]),
         ];
     }

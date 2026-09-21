@@ -27,6 +27,7 @@ class FeedbackFixesTest extends TestCase
 
         $this->artist = User::factory()->create(['role' => 'artiest']);
         $this->host = User::factory()->create(['role' => 'verhuurder']);
+        $this->host->hostProfile()->create(['name' => 'Test Verhuurder', 'phone' => '0612345678']);
 
         $studio = $this->host->studios()->create([
             'name' => 'Redlight Recordings',

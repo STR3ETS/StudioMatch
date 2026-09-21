@@ -85,17 +85,24 @@
                 </div>
                 <div>
                     <span class="{{ $label }}">{{ __('host.rooms.fields.type') }}</span>
-                    <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+                    <p class="mt-1 text-xs text-prussian-blue/50">{{ __('host.rooms.fields.type_hint') }}</p>
+                    <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                        @php $chosen = (array) old('types', ['opname']); @endphp
                         @foreach (\App\Enums\RoomType::cases() as $type)
-                            <label>
-                                <input type="radio" name="type" value="{{ $type->value }}" class="peer sr-only" @checked(old('type', 'opname') === $type->value)>
-                                <span class="flex cursor-pointer items-center gap-2 rounded-xl border border-prussian-blue/15 px-4 py-3 text-sm font-semibold text-prussian-blue transition peer-checked:border-ruby-red peer-checked:bg-ruby-red/5">
-                                    <i class="fa-solid {{ $type === \App\Enums\RoomType::Opname ? 'fa-microphone' : 'fa-sliders' }} text-xs text-ruby-red"></i>
-                                    {{ __('host.types.' . $type->value) }}
-                                </span>
+                            <label class="flex cursor-pointer items-center gap-2 rounded-xl border border-prussian-blue/15 px-4 py-3 text-sm font-semibold text-prussian-blue transition has-checked:border-ruby-red has-checked:bg-ruby-red/5">
+                                <input type="checkbox" name="types[]" value="{{ $type->value }}" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(in_array($type->value, $chosen, true))>
+                                {{ __('host.types.' . $type->value) }}
                             </label>
                         @endforeach
                     </div>
+                    <x-input-error field="types" />
+
+                    <label for="type" class="{{ $label }} mt-4">{{ __('host.rooms.fields.type_primary') }}</label>
+                    <select id="type" name="type" class="{{ $field }} cursor-pointer">
+                        @foreach (\App\Enums\RoomType::cases() as $type)
+                            <option value="{{ $type->value }}" @selected(old('type', 'opname') === $type->value)>{{ __('host.types.' . $type->value) }}</option>
+                        @endforeach
+                    </select>
                     <x-input-error field="type" />
                 </div>
             </div>

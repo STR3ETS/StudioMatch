@@ -31,13 +31,25 @@ class StudioController extends Controller
         ]);
     }
 
-    public function create(): View
+    public function create(Request $request): View|RedirectResponse
     {
+        // Zonder bedrijfsgegevens loopt het aanmelden verderop stuk op de facturatie,
+        // dus sturen we de verhuurder eerst naar die stap met uitleg waarom.
+        if ($request->user()->hostProfile === null) {
+            return redirect()->route('host.profile.edit')
+                ->with('status', __('host.wizard.profile_required'));
+        }
+
         return view('host.studios.wizard', ['studio' => new Studio, 'room' => new Room]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        if ($request->user()->hostProfile === null) {
+            return redirect()->route('host.profile.edit')
+                ->with('status', __('host.wizard.profile_required'));
+        }
+
         $validated = $this->validateStudio($request);
 
         $coords = $this->verifiedCoords($validated, __('host.studios.address_invalid'));

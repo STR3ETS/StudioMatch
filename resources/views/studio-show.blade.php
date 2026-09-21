@@ -18,7 +18,7 @@
     $money = fn ($v) => '€ ' . number_format($v, 2, ',', '.');
 
     $hours = $room->min_hours;
-    $rent = $room->hourlyRateEuros() * $hours;
+    $rent = \App\Models\Room::allInCents($room->hourly_rate_cents * $hours) / 100;
 
     $schemaData = array_filter([
         '@context' => 'https://schema.org',
@@ -37,7 +37,7 @@
             'latitude' => round($studio->lat, 3),
             'longitude' => round($studio->lng, 3),
         ] : null,
-        'priceRange' => '€' . number_format($room->hourlyRateEuros(), 0) . ' ' . __('studio.booking.per_hour'),
+        'priceRange' => '€' . $room->displayHourlyEuros() . ' ' . __('studio.booking.per_hour'),
     ]);
 @endphp
 
@@ -171,7 +171,7 @@
                                         <dt class="capitalize">{{ __('host.availability.days.' . $day->weekday) }}</dt>
                                         <dd>
                                             @if ($day->is_open)
-                                                {{ \App\Support\Hours::range((int) $day->open_hour, (int) $day->close_hour) }}
+                                                {{ \App\Support\Hours::openingRange((int) $day->weekday, (int) $day->open_hour, (int) $day->close_hour) }}
                                             @else
                                                 <span class="text-prussian-blue/40">{{ __('studio.closed') }}</span>
                                             @endif
@@ -192,6 +192,9 @@
                         <p class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/70">
                             <span><i class="fa-solid fa-location-dot fa-sm mr-1.5 text-prussian-blue/40"></i>{{ $studio->city }}</span>
                             <span class="text-prussian-blue/50"><i class="fa-solid fa-lock fa-xs mr-1.5 text-prussian-blue/30"></i>{{ __('studio.location_privacy') }}</span>
+                            @if ($studio->user?->hostProfile)
+                                <span><i class="fa-solid fa-id-card fa-xs mr-1.5 text-prussian-blue/40"></i>{{ __('studio.owner_' . $studio->user->hostProfile->owner_type->value) }}</span>
+                            @endif
                         </p>
                         @if (count($mapStudios) > 0)
                             <x-studio-map :studios="$mapStudios" data-zoom="{{ $studio->lat !== null ? 14 : 12 }}" data-approx="1" class="mt-3 h-[28rem] max-sm:h-80 border border-prussian-blue/10" />
@@ -214,6 +217,8 @@
                           data-max-days="{{ config('studio.booking_max_days') }}"
                           data-days-label="{{ trans_choice('booking.day_count', 2, ['count' => ':count']) }}"
                           data-price-cents="{{ $room->hourly_rate_cents }}"
+                          data-service-fee-percent="{{ config('studio.service_fee_percent') }}"
+                          data-vat-percent="{{ config('studio.vat_percent') }}"
                           data-engineer-rate-cents="{{ $room->hasOptionalEngineer() ? $room->engineer_rate_cents : 0 }}"
                           data-rent-label="{{ __('studio.booking.rent', ['count' => ':count']) }}"
                           data-hours-label="{{ __('studio.booking.hours', ['count' => ':count']) }}"
@@ -221,7 +226,7 @@
                           data-max-hours="{{ config('studio.booking_max_hours') }}"
                           class="custom-scrollbar scroll-mt-28 rounded-2xl border border-prussian-blue/10 bg-white p-6 shadow-lg lg:sticky lg:top-28 lg:max-h-[calc(100vh-8.5rem)] lg:overflow-y-auto">
                         <p class="text-prussian-blue">
-                            <span data-price-headline class="text-2xl font-bold">{{ $money($room->hourlyRateEuros()) }}</span>
+                            <span data-price-headline class="text-2xl font-bold">&euro;{{ $room->displayHourlyEuros() }}</span>
                             <span data-price-unit class="text-sm text-prussian-blue/50">{{ __('studio.booking.per_hour') }}</span>
                         </p>
 
@@ -294,6 +299,7 @@
 
                         <button type="submit" data-book-submit disabled class="mt-5 w-full cursor-pointer rounded-full bg-ruby-red py-3 text-sm font-semibold text-white transition hover:bg-ruby-red/90 disabled:cursor-not-allowed disabled:opacity-40">{{ __('studio.booking.book') }}</button>
 
+                        <p class="mt-3 text-center text-xs text-prussian-blue/50">{{ __('studio.booking.price_note') }}</p>
                         <p class="mt-3 text-center text-xs text-prussian-blue/50">{{ __('studio.booking.disclaimer') }}</p>
                         <p class="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-prussian-blue/50">
                             <i class="fa-solid fa-shield-halved text-prussian-blue/30"></i> {{ __('studio.booking.cancel') }}
@@ -307,7 +313,7 @@
     <div class="fixed inset-x-0 bottom-0 z-[1100] flex items-center justify-between gap-4 border-t border-prussian-blue/10 bg-white px-5 py-3 shadow-[0_-8px_30px_rgba(16,43,63,0.12)] lg:hidden">
         <p class="text-prussian-blue">
             <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('studio.booking.from') }}</span>
-            <span class="text-lg font-bold">{{ $money($room->hourlyRateEuros()) }}</span>
+            <span class="text-lg font-bold">&euro;{{ $room->displayHourlyEuros() }}</span>
             <span class="text-sm text-prussian-blue/50">{{ __('studio.booking.per_hour') }}</span>
         </p>
         <a href="#boeken" class="shrink-0 rounded-full bg-ruby-red px-6 py-3 text-sm font-semibold text-white transition hover:bg-ruby-red/90">{{ __('studio.booking.book') }}</a>
@@ -360,6 +366,14 @@
             const engineerToggle = form.querySelector('[data-engineer-toggle]');
             const ENGINEER_RATE = parseInt(form.dataset.engineerRateCents || '0', 10);
             const hourlyPrice = () => PRICE + (engineerToggle?.checked ? ENGINEER_RATE : 0);
+
+            // Zelfde vololgorde als de server: eerst huur, dan servicekosten, dan btw daarover.
+            const FEE_PERCENT = parseFloat(form.dataset.serviceFeePercent || '0');
+            const VAT_PERCENT = parseFloat(form.dataset.vatPercent || '0');
+            const allIn = (rent) => {
+                const fee = Math.round(rent * FEE_PERCENT / 100);
+                return rent + fee + Math.round(fee * VAT_PERCENT / 100);
+            };
 
             const keys = Object.keys(AVAIL);
             const parseKey = (k) => new Date(k + 'T00:00:00');
@@ -442,6 +456,14 @@
             // 25 is 01:00 de volgende ochtend.
             const clock = (h) => String(h === 24 ? 24 : h % 24).padStart(2, '0') + ':00';
 
+            // Een tijd na middernacht valt op de volgende kalenderdag, die noemen we bij naam.
+            const nextDayShort = (key) => {
+                if (! key) return '';
+                const next = parseKey(key);
+                next.setDate(next.getDate() + 1);
+                return weekdayFmt.format(next).replace(/\.$/, '');
+            };
+
             let view = new Date(firstMonth);
             let selectedDate = dateInput.value && AVAIL[dateInput.value] ? dateInput.value : null;
             let selectedStart = selectedDate && startInput.value !== '' ? parseInt(startInput.value, 10) : null;
@@ -495,7 +517,7 @@
                     const classes = sel
                         ? 'border-ruby-red bg-ruby-red font-bold text-white'
                         : 'border-prussian-blue/15 font-semibold text-prussian-blue hover:border-ruby-red/60';
-                    return `<button type="button" data-slot="${s}" class="cursor-pointer rounded-xl border px-2 py-2 text-sm transition ${classes}">${clock(s)}${s >= 24 ? ' <span class="text-[10px] opacity-60">+1</span>' : ''}</button>`;
+                    return `<button type="button" data-slot="${s}" class="cursor-pointer rounded-xl border px-2 py-2 text-sm transition ${classes}">${clock(s)}${s >= 24 ? ' <span class="text-[10px] opacity-60">' + nextDayShort(selectedDate) + '</span>' : ''}</button>`;
                 }).join('');
             };
 
@@ -514,7 +536,7 @@
                     endDateInput.disabled = ! (rangeStart && rangeEnd);
 
                     const count = rangeStart && rangeEnd ? daysBetween(rangeStart, rangeEnd) : 0;
-                    totalEl.textContent = money.format((count ? rangeTotal(rangeStart, rangeEnd) : 0) / 100);
+                    totalEl.textContent = money.format(allIn(count ? rangeTotal(rangeStart, rangeEnd) : 0) / 100);
                     rentText.textContent = DAYS_LABEL.replace(':count', count);
                     submit.disabled = count < MIN_DAYS || count > MAX_DAYS;
                     return;
@@ -523,7 +545,7 @@
                 endDateInput.disabled = true;
                 dateInput.value = selectedDate ?? '';
                 startInput.value = selectedStart ?? '';
-                totalEl.textContent = money.format(hourlyPrice() * duration() / 100);
+                totalEl.textContent = money.format(allIn(hourlyPrice() * duration()) / 100);
                 rentText.textContent = RENT_LABEL.replace(':count', duration());
                 submit.disabled = ! (selectedDate && selectedStart !== null);
             };

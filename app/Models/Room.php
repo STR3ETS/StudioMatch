@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 #[Fillable([
-    'title', 'description', 'type', 'hourly_rate_cents', 'day_rate_cents', 'min_hours', 'min_days', 'capacity',
+    'title', 'description', 'type', 'types', 'hourly_rate_cents', 'day_rate_cents', 'min_hours', 'min_days', 'capacity',
     'engineer_included', 'engineer_rate_cents', 'engineer_day_rate_cents', 'house_rules', 'equipment', 'equipment_extra', 'daws', 'facilities', 'status',
     'rejection_reason', 'on_vacation', 'vacation_until',
 ])]
@@ -40,6 +40,7 @@ class Room extends Model
     {
         return [
             'type' => RoomType::class,
+            'types' => 'array',
             'status' => RoomStatus::class,
             'engineer_included' => 'boolean',
             'equipment' => 'array',
@@ -67,9 +68,27 @@ class Room extends Model
         return $this->status === RoomStatus::Live && ! $this->isOnVacation();
     }
 
+    /**
+     * Alle categorieen waaronder de ruimte bekend staat, met de hoofdcategorie voorop.
+     *
+     * @return array<int, string>
+     */
+    public function typeValues(): array
+    {
+        $values = array_values(array_unique(array_filter((array) ($this->types ?: []))));
+
+        if ($values === [] && $this->type !== null) {
+            $values = [$this->type->value];
+        }
+
+        return $values;
+    }
+
     public function typeLabel(): string
     {
-        return __('host.types.' . $this->type->value);
+        return collect($this->typeValues())
+            ->map(fn (string $value) => __('host.types.' . $value))
+            ->join(' · ');
     }
 
     public function studio(): BelongsTo
@@ -344,6 +363,36 @@ class Room extends Model
                 ['is_open' => $weekday <= 5, 'open_hour' => 9, 'close_hour' => 21],
             );
         }
+    }
+
+    /**
+     * Consumentenprijs: het tarief inclusief servicekosten en de btw daarover, zodat de
+     * getoonde prijs het bedrag is dat de huurder ook echt betaalt.
+     */
+    public static function allInCents(int $cents): int
+    {
+        $fee = (int) round($cents * config('studio.service_fee_percent') / 100);
+        $vat = (int) round($fee * config('studio.vat_percent') / 100);
+
+        return $cents + $fee + $vat;
+    }
+
+    /**
+     * Zelfde bedrag, afgerond op hele euro's: onder 50 cent omlaag, anders omhoog.
+     */
+    public static function allInEuros(int $cents): int
+    {
+        return (int) round(self::allInCents($cents) / 100);
+    }
+
+    public function displayHourlyEuros(): int
+    {
+        return self::allInEuros((int) $this->hourly_rate_cents);
+    }
+
+    public function displayDayEuros(): ?int
+    {
+        return $this->day_rate_cents === null ? null : self::allInEuros((int) $this->day_rate_cents);
     }
 
     public function hourlyRateEuros(): float
