@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Post;
 use App\Models\Room;
 use Illuminate\Http\Response;
 
@@ -17,6 +18,7 @@ class SitemapController extends Controller
             ['loc' => route('how')],
             ['loc' => route('faq')],
             ['loc' => route('contact')],
+            ['loc' => route('blog')],
         ]);
 
         $rooms = Room::publiclyVisible()->get()->map(fn (Room $room) => [
@@ -24,10 +26,15 @@ class SitemapController extends Controller
             'lastmod' => $room->updated_at->toAtomString(),
         ]);
 
+        $posts = Post::published()->get()->map(fn (Post $post) => [
+            'loc' => route('blog.show', $post->slug),
+            'lastmod' => $post->updated_at->toAtomString(),
+        ]);
+
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
             . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-        foreach ($urls->concat($rooms) as $url) {
+        foreach ($urls->concat($rooms)->concat($posts) as $url) {
             $xml .= '  <url><loc>' . e($url['loc']) . '</loc>'
                 . (isset($url['lastmod']) ? '<lastmod>' . $url['lastmod'] . '</lastmod>' : '')
                 . "</url>\n";

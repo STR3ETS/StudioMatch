@@ -5,6 +5,7 @@
         ['label' => __('nav.for_studios'), 'url' => route('hosts'), 'active' => request()->routeIs('hosts')],
         ['label' => __('nav.how_it_works'), 'url' => route('how'), 'active' => request()->routeIs('how')],
         ['label' => __('nav.faq'), 'url' => route('faq'), 'active' => request()->routeIs('faq')],
+        ['label' => __('nav.blog'), 'url' => route('blog'), 'active' => request()->routeIs('blog', 'blog.*')],
         ['label' => __('nav.contact'), 'url' => route('contact'), 'active' => request()->routeIs('contact')],
     ];
 @endphp

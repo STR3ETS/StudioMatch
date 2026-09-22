@@ -765,3 +765,217 @@ document.querySelectorAll('[data-photo-input]').forEach((input) => {
         submits.forEach((button) => button.disabled = false);
     });
 });
+
+/**
+ * De tekst-editor onder elke blogalinea.
+ *
+ * Bewust een contenteditable met execCommand en geen editor-bibliotheek: het gaat om
+ * dikgedrukt, cursief, lijstjes en een link, en dat scheelt honderden kilobytes aan JS.
+ * execCommand staat als verouderd te boek maar werkt in alle browsers, en wat het ook
+ * oplevert wordt op de server alsnog teruggebracht tot een korte lijst toegestane tags.
+ */
+const EDITOR_STATES = ['bold', 'italic', 'underline', 'strikeThrough', 'insertUnorderedList', 'insertOrderedList'];
+
+const editorBlock = () => {
+    try {
+        return (document.queryCommandValue('formatBlock') || '').toLowerCase();
+    } catch (error) {
+        return '';
+    }
+};
+
+/** Licht de knoppen op die gelden voor waar de cursor nu staat. */
+const refreshEditorToolbar = () => {
+    document.querySelectorAll('[data-editor-command].is-active').forEach((button) => button.classList.remove('is-active'));
+
+    const area = document.activeElement?.closest?.('[data-editor-area]');
+    if (!area) return;
+
+    const block = editorBlock();
+
+    area.closest('[data-editor]').querySelectorAll('[data-editor-command]').forEach((button) => {
+        const command = button.dataset.editorCommand;
+        let active = false;
+
+        if (EDITOR_STATES.includes(command)) {
+            try { active = document.queryCommandState(command); } catch (error) { active = false; }
+        } else if (command === 'heading') {
+            active = block === 'h3';
+        } else if (command === 'quote') {
+            active = block === 'blockquote';
+        }
+
+        button.classList.toggle('is-active', active);
+    });
+};
+
+document.addEventListener('selectionchange', refreshEditorToolbar);
+
+const initEditor = (wrap) => {
+    if (wrap.dataset.editorReady) return;
+    wrap.dataset.editorReady = '1';
+
+    const area = wrap.querySelector('[data-editor-area]');
+    const input = wrap.querySelector('[data-editor-input]');
+    if (!area || !input) return;
+
+    // Enter maakt een nieuwe alinea in plaats van een div. Safari negeert dit, daar vangt
+    // de server het op door div's als alinea te lezen.
+    try { document.execCommand('defaultParagraphSeparator', false, 'p'); } catch (error) {}
+
+    const sync = () => {
+        input.value = area.innerHTML;
+        area.classList.toggle('is-empty', area.textContent.trim() === '');
+    };
+
+    const exec = (command, value = null) => {
+        area.focus();
+        try { document.execCommand(command, false, value); } catch (error) {}
+        sync();
+        refreshEditorToolbar();
+    };
+
+    const addLink = () => {
+        const selection = window.getSelection();
+
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed || !area.contains(selection.anchorNode)) {
+            window.alert(wrap.dataset.linkSelect);
+            return;
+        }
+
+        const range = selection.getRangeAt(0).cloneRange();
+        const url = window.prompt(wrap.dataset.linkPrompt, 'https://');
+
+        // De prompt haalt de selectie weg, dus die zetten we eerst terug.
+        area.focus();
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        if (url && url.trim() !== '' && !/^\s*javascript:/i.test(url)) {
+            exec('createLink', url.trim());
+        }
+    };
+
+    wrap.querySelectorAll('[data-editor-command]').forEach((button) => {
+        // mousedown afvangen, anders is de selectie in de tekst al weg voor de klik aankomt.
+        button.addEventListener('mousedown', (event) => event.preventDefault());
+
+        button.addEventListener('click', () => {
+            const command = button.dataset.editorCommand;
+
+            if (command === 'heading') exec('formatBlock', editorBlock() === 'h3' ? '<p>' : '<h3>');
+            else if (command === 'quote') exec('formatBlock', editorBlock() === 'blockquote' ? '<p>' : '<blockquote>');
+            else if (command === 'link') addLink();
+            else if (command === 'removeFormat') { exec('removeFormat'); exec('unlink'); }
+            else exec(command);
+        });
+    });
+
+    // Plakken gaat als platte tekst, zodat opmaak uit Word of een website de pagina niet
+    // binnenkomt en je in de editor precies ziet wat er opgeslagen wordt.
+    area.addEventListener('paste', (event) => {
+        event.preventDefault();
+        const text = event.clipboardData?.getData('text/plain') ?? '';
+        try { document.execCommand('insertText', false, text); } catch (error) {}
+        sync();
+    });
+
+    area.addEventListener('input', sync);
+    area.addEventListener('blur', sync);
+    sync();
+};
+
+document.querySelectorAll('[data-post-form]').forEach((form) => {
+    const wrap = form.querySelector('[data-sections-wrap]');
+    const list = form.querySelector('[data-sections]');
+    const template = form.querySelector('[data-section-template]');
+    const addButton = form.querySelector('[data-section-add]');
+    const emptyNote = form.querySelector('[data-sections-empty]');
+
+    if (!wrap || !list || !template || !addButton) return;
+
+    const pattern = wrap.dataset.sectionLabel || '';
+
+    /**
+     * De volgorde op de pagina is de volgorde in het formulier, dus hernummeren we de
+     * veldnamen na elke wijziging. Daardoor hoeft de server geen sorteerveld te lezen.
+     */
+    const renumber = () => {
+        const sections = [...list.querySelectorAll('[data-section]')];
+
+        sections.forEach((section, index) => {
+            section.querySelectorAll('[name]').forEach((field) => {
+                field.name = field.name.replace(/^sections\[[^\]]*\]/, 'sections[' + index + ']');
+            });
+
+            const label = section.querySelector('[data-section-number]');
+            if (label) label.textContent = pattern.replace(':number', String(index + 1));
+        });
+
+        emptyNote?.classList.toggle('hidden', sections.length > 0);
+    };
+
+    addButton.addEventListener('click', () => {
+        list.appendChild(template.content.cloneNode(true));
+
+        const section = list.lastElementChild;
+        section.querySelectorAll('[data-editor]').forEach(initEditor);
+        renumber();
+        section.querySelector('input[type="text"]')?.focus();
+    });
+
+    list.addEventListener('click', (event) => {
+        const button = event.target.closest('[data-section-remove]');
+        if (!button) return;
+
+        button.closest('[data-section]')?.remove();
+        renumber();
+    });
+
+    initSortable(list, renumber);
+
+    form.querySelectorAll('[data-editor]').forEach(initEditor);
+    renumber();
+
+    form.addEventListener('submit', () => {
+        form.querySelectorAll('[data-editor]').forEach((editor) => {
+            const area = editor.querySelector('[data-editor-area]');
+            const input = editor.querySelector('[data-editor-input]');
+            if (area && input) input.value = area.innerHTML;
+        });
+
+        renumber();
+    });
+
+    const cover = form.querySelector('[data-cover]');
+    if (!cover) return;
+
+    const coverInput = cover.querySelector('[data-cover-input]');
+    const preview = cover.querySelector('[data-cover-preview]');
+    const removeButton = cover.querySelector('[data-cover-remove]');
+    const flag = cover.querySelector('[data-cover-flag]');
+    const marked = cover.querySelector('[data-cover-marked]');
+    const label = cover.querySelector('[data-cover-label]');
+
+    coverInput?.addEventListener('change', () => {
+        const file = coverInput.files?.[0];
+        if (!file) return;
+
+        preview.src = URL.createObjectURL(file);
+        preview.classList.remove('hidden');
+        removeButton?.classList.remove('hidden');
+        marked?.classList.add('hidden');
+        if (flag) flag.value = '0';
+        if (label) label.textContent = label.dataset.replace;
+    });
+
+    removeButton?.addEventListener('click', () => {
+        if (coverInput) coverInput.value = '';
+        preview.removeAttribute('src');
+        preview.classList.add('hidden');
+        removeButton.classList.add('hidden');
+        marked?.classList.remove('hidden');
+        if (flag) flag.value = '1';
+        if (label) label.textContent = label.dataset.choose;
+    });
+});

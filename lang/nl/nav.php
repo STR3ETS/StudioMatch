@@ -6,6 +6,7 @@ return [
     'for_studios' => 'Verhuurders',
     'how_it_works' => 'Hoe werkt StudioMatch',
     'faq' => 'FAQ',
+    'blog' => 'Blog',
     'contact' => 'Contact',
     'account' => 'Account',
     'login' => 'Log in',

@@ -308,3 +308,153 @@ input[type='date'],
 input[type='time'] {
     color-scheme: light;
 }
+
+/*
+ * Het bewerkveld van een blogalinea. Tailwind haalt standaard alle opmaak van koppen
+ * en lijsten af, dus binnen de editor zetten we die expliciet terug. Anders zie je
+ * tijdens het typen niet wat de bezoeker straks te zien krijgt.
+ */
+.sm-editor {
+    position: relative;
+}
+
+.sm-editor > * + * {
+    margin-top: 0.75rem;
+}
+
+.sm-editor h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #101529;
+}
+
+.sm-editor ul,
+.sm-editor ol {
+    padding-left: 1.25rem;
+}
+
+.sm-editor ul {
+    list-style: disc;
+}
+
+.sm-editor ol {
+    list-style: decimal;
+}
+
+.sm-editor li + li {
+    margin-top: 0.25rem;
+}
+
+.sm-editor blockquote {
+    border-left: 3px solid rgb(173 9 36 / 0.3);
+    padding-left: 0.875rem;
+    color: rgb(16 21 41 / 0.7);
+    font-style: italic;
+}
+
+.sm-editor a {
+    color: #ad0924;
+    text-decoration: underline;
+}
+
+.sm-editor strong {
+    font-weight: 700;
+}
+
+.sm-editor em {
+    font-style: italic;
+}
+
+.sm-editor u {
+    text-decoration: underline;
+}
+
+.sm-editor s {
+    text-decoration: line-through;
+}
+
+/* Absoluut geplaatst, zodat de cursor gewoon linksboven blijft staan. */
+.sm-editor.is-empty::before {
+    content: attr(data-placeholder);
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    color: rgb(16 21 41 / 0.4);
+    pointer-events: none;
+}
+
+[data-editor-command].is-active {
+    background: rgb(173 9 36 / 0.1);
+    color: #ad0924;
+}
+
+/*
+ * De tekst van een blogalinea zoals de bezoeker hem leest. Dezelfde tags als in de
+ * editor, alleen ruimer gezet omdat dit leestekst is in plaats van een invoerveld.
+ */
+.sm-prose {
+    color: rgb(16 21 41 / 0.75);
+    line-height: 1.75;
+}
+
+.sm-prose > * + * {
+    margin-top: 1rem;
+}
+
+.sm-prose h3 {
+    margin-top: 1.75rem;
+    font-size: 1.0625rem;
+    font-weight: 700;
+    color: #101529;
+}
+
+.sm-prose ul,
+.sm-prose ol {
+    padding-left: 1.5rem;
+}
+
+.sm-prose ul {
+    list-style: disc;
+}
+
+.sm-prose ol {
+    list-style: decimal;
+}
+
+.sm-prose li + li {
+    margin-top: 0.4rem;
+}
+
+.sm-prose blockquote {
+    border-left: 3px solid rgb(173 9 36 / 0.4);
+    padding-left: 1.125rem;
+    font-style: italic;
+    color: rgb(16 21 41 / 0.6);
+}
+
+.sm-prose a {
+    color: #ad0924;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.sm-prose a:hover {
+    color: rgb(173 9 36 / 0.8);
+}
+
+.sm-prose strong {
+    font-weight: 700;
+    color: #101529;
+}
+
+.sm-prose em {
+    font-style: italic;
+}
+
+.sm-prose u {
+    text-decoration: underline;
+}
+
+.sm-prose s {
+    text-decoration: line-through;
+}

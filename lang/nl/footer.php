@@ -9,6 +9,7 @@ return [
         'search' => "Studio's zoeken",
         'how_it_works' => 'Hoe werkt het',
         'faq' => 'Veelgestelde vragen',
+        'blog' => 'Blog',
     ],
 
     'hosts' => [

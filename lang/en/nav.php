@@ -6,6 +6,7 @@ return [
     'for_studios' => 'Hosts',
     'how_it_works' => 'How StudioMatch works',
     'faq' => 'FAQ',
+    'blog' => 'Blog',
     'contact' => 'Contact',
     'account' => 'Account',
     'login' => 'Log in',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\OverviewController as AdminOverviewController;
+use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\RevenueController as AdminRevenueController;
 use App\Http\Controllers\Admin\TicketController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Artist\OverviewController as ArtistOverviewController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\Host\BookingController as HostBookingController;
 use App\Http\Controllers\Host\DamageController;
@@ -54,6 +56,9 @@ Route::post('/contact', \App\Http\Controllers\ContactController::class)
 Route::get('/faq', function () {
     return view('faq');
 })->name('faq');
+
+Route::get('/blog', [BlogController::class, 'index'])->name('blog');
+Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
 
 Route::middleware('guest')->group(function () {
     Route::get('/inloggen', function () {
@@ -208,6 +213,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/gebruikers/export', [AdminUserController::class, 'export'])->name('admin.users.export');
 
         Route::get('/omzet', AdminRevenueController::class)->name('admin.revenue');
+
+        Route::get('/blog', [AdminPostController::class, 'index'])->name('admin.posts.index');
+        Route::get('/blog/nieuw', [AdminPostController::class, 'create'])->name('admin.posts.create');
+        Route::post('/blog', [AdminPostController::class, 'store'])->name('admin.posts.store');
+        Route::get('/blog/{post}', [AdminPostController::class, 'edit'])->name('admin.posts.edit');
+        Route::put('/blog/{post}', [AdminPostController::class, 'update'])->name('admin.posts.update');
+        Route::delete('/blog/{post}', [AdminPostController::class, 'destroy'])->name('admin.posts.destroy');
     });
 });
 

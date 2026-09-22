@@ -1,11 +1,11 @@
-@props(['title' => null, 'description' => null, 'schema' => null])
+@props(['title' => null, 'description' => null, 'schema' => null, 'image' => null, 'type' => 'website'])
 
 @php
     $siteName = config('app.name', 'StudioMatch');
     $pageTitle = $title ? $title . ' · ' . $siteName : $siteName . ' · Every sound deserves a studio';
     $metaDescription = $description ?? __('seo.default_description');
     $currentUrl = url()->current();
-    $ogImage = url('/temp-studio-1.webp');
+    $ogImage = $image ?? url('/temp-studio-1.webp');
     $ogLocale = ['nl' => 'nl_NL', 'en' => 'en_GB'][app()->getLocale()] ?? 'nl_NL';
 
     $structuredData = [
@@ -47,7 +47,7 @@
         <meta name="description" content="{{ $metaDescription }}">
         <link rel="canonical" href="{{ $currentUrl }}">
 
-        <meta property="og:type" content="website">
+        <meta property="og:type" content="{{ $type }}">
         <meta property="og:site_name" content="{{ $siteName }}">
         <meta property="og:title" content="{{ $pageTitle }}">
         <meta property="og:description" content="{{ $metaDescription }}">
@@ -74,10 +74,18 @@
             <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) !!}</script>
         @endforeach
     </head>
-    <body>
+    {{--
+        Kolom over de volle schermhoogte, zodat de footer bij een korte pagina onderaan
+        het scherm blijft plakken in plaats van halverwege te eindigen met wit eronder.
+        dvh in plaats van vh: op mobiel is 100vh groter dan het zichtbare venster, wat
+        op korte pagina's een overbodige scrollbalk oplevert.
+    --}}
+    <body class="flex min-h-dvh flex-col">
         <x-header />
 
-        {{ $slot }}
+        <main class="flex-1">
+            {{ $slot }}
+        </main>
 
         <x-footer />
 

@@ -10,6 +10,7 @@
         ['key' => 'bookings', 'icon' => 'fa-calendar-check', 'url' => route('admin.bookings.index'), 'mobile' => true],
         ['key' => 'users', 'icon' => 'fa-users', 'url' => route('admin.users.index')],
         ['key' => 'revenue', 'icon' => 'fa-chart-line', 'url' => route('admin.revenue')],
+        ['key' => 'blog', 'icon' => 'fa-newspaper', 'url' => route('admin.posts.index')],
         ['key' => 'tickets', 'icon' => 'fa-life-ring', 'url' => route('admin.tickets.index'), 'mobile' => true, 'badge' => $openTickets],
         ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit')],
     ];

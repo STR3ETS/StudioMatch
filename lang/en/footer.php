@@ -9,6 +9,7 @@ return [
         'search' => 'Find studios',
         'how_it_works' => 'How it works',
         'faq' => 'FAQ',
+        'blog' => 'Blog',
     ],
 
     'hosts' => [
