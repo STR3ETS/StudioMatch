@@ -10,12 +10,7 @@ class HomeController extends Controller
 
     public function __invoke(PublicStudioController $studios): View
     {
-        $rooms = Room::query()
-            ->publiclyVisible()
-            ->with(['studio', 'photos'])
-            ->latest()
-            ->take(8)
-            ->get();
+        $rooms = Room::featured();
 
         return view('welcome', [
             'featured' => $rooms->map(fn (Room $room) => $studios->cardData($room)),

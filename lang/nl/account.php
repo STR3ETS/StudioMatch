@@ -32,9 +32,11 @@ return [
 
     'delete' => [
         'title' => 'Account verwijderen',
-        'text' => 'Je account en alle bijbehorende gegevens worden definitief verwijderd, conform de AVG. Dit kan niet ongedaan worden gemaakt.',
+        'text' => 'Je persoonsgegevens worden definitief verwijderd: je naam, e-mailadres, adres en foto\'s. Je betaalde facturen bewaren we nog zeven jaar, omdat de Belastingdienst dat verplicht. Die zijn daarna nergens meer aan je account gekoppeld. Dit kan niet ongedaan worden gemaakt.',
         'password' => 'Bevestig met je wachtwoord',
         'submit' => 'Verwijder mijn account',
-        'confirm' => 'Weet je zeker dat je je account definitief wilt verwijderen? Al je gegevens gaan verloren en dit kan niet ongedaan worden gemaakt.',
+        'confirm' => 'Weet je zeker dat je je account definitief wilt verwijderen? Je persoonsgegevens gaan verloren, alleen de wettelijk verplichte factuurgegevens blijven bewaard. Dit kan niet ongedaan worden gemaakt.',
+        'removed' => 'Verwijderd account',
+        'done' => 'Je account is verwijderd. Je persoonsgegevens zijn gewist.',
     ],
 ];

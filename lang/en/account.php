@@ -25,16 +25,18 @@ return [
         'title' => 'Change password',
         'current' => 'Current password',
         'new' => 'New password',
-        'confirm' => 'Repeat new password',
+        'confirm' => 'Confirm new password',
         'submit' => 'Change password',
         'saved' => 'Your password has been changed.',
     ],
 
     'delete' => [
         'title' => 'Delete account',
-        'text' => 'Your account and all associated data will be permanently deleted, in accordance with the GDPR. This cannot be undone.',
+        'text' => 'Your personal data is permanently deleted: your name, email address, address and photos. Paid invoices are kept for seven years because tax law requires it, and are no longer linked to your account. This cannot be undone.',
         'password' => 'Confirm with your password',
         'submit' => 'Delete my account',
-        'confirm' => 'Are you sure you want to permanently delete your account? All your data will be lost and this cannot be undone.',
+        'confirm' => 'Are you sure you want to permanently delete your account? Your personal data is lost; only the legally required invoice details are kept. This cannot be undone.',
+        'removed' => 'Deleted account',
+        'done' => 'Your account has been deleted. Your personal data has been erased.',
     ],
 ];

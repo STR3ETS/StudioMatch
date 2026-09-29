@@ -52,8 +52,8 @@
                 </button>
                 <div data-select-panel data-float class="z-[1400] hidden w-56 rounded-2xl border border-prussian-blue/10 bg-white p-1.5 text-left shadow-xl">
                     <button type="button" data-select-option data-value="" class="block w-full cursor-pointer rounded-xl bg-prussian-blue/5 px-3 py-2 text-left text-sm font-medium text-prussian-blue transition hover:bg-prussian-blue/5">{{ __('home.search.all_types') }}</button>
-                    @foreach (['recording', 'mix', 'master'] as $value)
-                        <button type="button" data-select-option data-value="{{ $value }}" class="block w-full cursor-pointer rounded-xl px-3 py-2 text-left text-sm font-medium text-prussian-blue transition hover:bg-prussian-blue/5">{{ __('studios.type.' . $value) }}</button>
+                    @foreach (\App\Enums\RoomType::cases() as $type)
+                        <button type="button" data-select-option data-value="{{ $type->value }}" class="block w-full cursor-pointer rounded-xl px-3 py-2 text-left text-sm font-medium text-prussian-blue transition hover:bg-prussian-blue/5">{{ __('host.types.' . $type->value) }}</button>
                     @endforeach
                 </div>
             </div>
@@ -114,11 +114,11 @@
 
                 <div>
                     <span class="block text-xs font-bold uppercase tracking-wide text-prussian-blue/50">{{ __('home.search.type') }}</span>
-                    <div class="mt-2 flex gap-2">
-                        @foreach (['recording', 'mix', 'master'] as $value)
-                            <label class="flex-1">
-                                <input type="radio" name="type" value="{{ $value }}" class="peer sr-only">
-                                <span class="flex cursor-pointer items-center justify-center rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm font-semibold text-prussian-blue/70 transition peer-checked:border-ruby-red peer-checked:bg-ruby-red/5 peer-checked:text-prussian-blue">{{ __('studios.type.' . $value) }}</span>
+                    <div class="mt-2 grid grid-cols-2 gap-2">
+                        @foreach (\App\Enums\RoomType::cases() as $type)
+                            <label>
+                                <input type="radio" name="type" value="{{ $type->value }}" class="peer sr-only">
+                                <span class="flex cursor-pointer items-center justify-center rounded-2xl border border-prussian-blue/15 px-4 py-3.5 text-sm font-semibold text-prussian-blue/70 transition peer-checked:border-ruby-red peer-checked:bg-ruby-red/5 peer-checked:text-prussian-blue">{{ __('host.types.' . $type->value) }}</span>
                             </label>
                         @endforeach
                     </div>
@@ -173,7 +173,7 @@
     @if (count($mapStudios) > 0)
         <section class="py-16">
             <div class="mx-auto max-w-7xl px-6">
-                <x-studio-map :studios="$mapStudios" class="aspect-[2/1] max-sm:aspect-square rounded-[2.5rem] border border-white/10" />
+                <x-studio-map :studios="$mapStudios" data-silhouette="1" class="aspect-[2/1] max-sm:aspect-square rounded-[2.5rem] border border-white/10" />
             </div>
         </section>
     @endif

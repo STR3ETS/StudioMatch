@@ -109,16 +109,46 @@ class AccountTest extends TestCase
         ])->assertSessionHasErrors('current_password');
     }
 
-    public function test_user_can_delete_account_with_password(): void
+    public function test_deleting_an_account_wipes_the_personal_data(): void
     {
-        $user = User::factory()->create(['role' => 'artiest']);
+        $user = User::factory()->create([
+            'role' => 'artiest',
+            'name' => 'Sam de Wit',
+            'email' => 'sam@voorbeeld.nl',
+            'street' => 'Prinsengracht 263',
+            'postal_code' => '1016 GV',
+            'city' => 'Amsterdam',
+        ]);
 
         $this->actingAs($user)->delete('/dashboard/account', [
             'delete_password' => 'password',
         ])->assertRedirect(route('home'));
 
         $this->assertGuest();
-        $this->assertDatabaseMissing('users', ['id' => $user->id]);
+
+        // De rij blijft bestaan, want boekingen en facturen hangen eraan. Er staat
+        // alleen niets persoonlijks meer in.
+        $fresh = $user->fresh();
+        $this->assertNotNull($fresh);
+        $this->assertNotNull($fresh->anonymised_at);
+        $this->assertSame(__('account.delete.removed'), $fresh->name);
+        $this->assertNull($fresh->street);
+        $this->assertNull($fresh->postal_code);
+        $this->assertNull($fresh->city);
+        $this->assertStringNotContainsString('sam@voorbeeld.nl', $fresh->email);
+        $this->assertStringEndsWith('@account.invalid', $fresh->email);
+    }
+
+    public function test_an_erased_account_can_no_longer_log_in(): void
+    {
+        $user = User::factory()->create(['role' => 'artiest', 'email' => 'sam@voorbeeld.nl']);
+
+        $this->actingAs($user)->delete('/dashboard/account', ['delete_password' => 'password']);
+
+        $this->post('/inloggen', ['email' => 'sam@voorbeeld.nl', 'password' => 'password'])
+            ->assertSessionHasErrors();
+
+        $this->assertGuest();
     }
 
     public function test_deleting_account_requires_correct_password(): void
@@ -154,7 +184,14 @@ class AccountTest extends TestCase
             'delete_password' => 'password',
         ]);
 
-        $this->assertDatabaseCount('studios', 0);
-        $this->assertDatabaseCount('rooms', 0);
+        // Studio en ruimte blijven bestaan omdat facturen eraan hangen, maar ze staan
+        // niet meer op de site en het adres is gewist.
+        $this->assertDatabaseCount('studios', 1);
+        $this->assertDatabaseCount('rooms', 1);
+
+        $this->assertSame('concept', $studio->rooms()->first()->status->value);
+        $this->assertSame(__('account.delete.removed'), $studio->fresh()->name);
+        $this->assertSame('-', $studio->fresh()->street);
+        $this->assertNull($studio->fresh()->lat);
     }
 }

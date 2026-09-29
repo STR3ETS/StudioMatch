@@ -190,7 +190,7 @@
             <div data-results-map>
                 @if (count($mapStudios) > 0)
                     <div data-reveal class="mt-16">
-                        <x-studio-map :studios="$mapStudios" class="aspect-[2/1] rounded-[2.5rem] border border-prussian-blue/10" />
+                        <x-studio-map :studios="$mapStudios" data-silhouette="1" class="aspect-[2/1] rounded-[2.5rem] border border-prussian-blue/10" />
                     </div>
                 @endif
             </div>

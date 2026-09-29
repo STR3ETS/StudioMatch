@@ -32,18 +32,24 @@ class Invoices
 
     public static function build(Booking $booking, string $type): array
     {
+        // De gegevens komen van de boeking zelf. Die momentopname is bij het aanmaken
+        // vastgelegd, zodat een factuur blijft kloppen nadat een account is verwijderd.
+        // De live gegevens dienen alleen nog als terugval voor oude, ongevulde rijen.
         $profile = $booking->room->studio->user->hostProfile;
-        $btwPlichtig = (bool) $profile?->btw_plichtig;
+        $btwPlichtig = $booking->seller_vat_liable ?? (bool) $profile?->btw_plichtig;
         $vatRate = (int) config('studio.vat_percent');
 
         $base = 'SM-' . $booking->created_at->year . '-' . str_pad((string) $booking->id, 4, '0', STR_PAD_LEFT);
         $numbers = ['huur' => $base . '-H', 'commissie' => $base . '-C', 'credit-huur' => $base . '-CH', 'credit-commissie' => $base . '-CC'];
 
+        $kvk = $booking->seller_kvk_number ?? $profile?->kvk_number;
+        $sellerVat = $booking->seller_vat_number ?? $profile?->vat_number;
+
         $hostSeller = array_filter([
-            $profile?->name ?? $booking->room->studio->user->name,
-            $booking->room->studio->fullAddress(),
-            $profile?->kvk_number ? 'KvK ' . $profile->kvk_number : null,
-            $btwPlichtig && $profile?->vat_number ? 'Btw ' . $profile->vat_number : null,
+            $booking->seller_name ?? $profile?->name ?? $booking->room->studio->user->name,
+            $booking->seller_address ?? $booking->room->studio->fullAddress(),
+            $kvk ? 'KvK ' . $kvk : null,
+            $btwPlichtig && $sellerVat ? 'Btw ' . $sellerVat : null,
         ]);
 
         $platformSeller = [
@@ -54,7 +60,7 @@ class Invoices
         ];
 
         $sessionLabel = __('invoice.line_session', [
-            'room' => $booking->room->studio->name . ' - ' . $booking->room->title,
+            'room' => $booking->room_label ?? $booking->room->studio->name . ' - ' . $booking->room->title,
             'date' => $booking->date->translatedFormat('j F Y'),
             'time' => $booking->timeRange(),
             'hours' => $booking->hours(),
@@ -114,10 +120,10 @@ class Invoices
             'date' => ($booking->requested_at ?? $booking->created_at)->format('d-m-Y'),
             'buyer' => array_filter([
                 $booking->isBusinessBooking() ? $booking->buyer_company : null,
-                $booking->user->name,
-                $booking->user->street,
-                trim(($booking->user->postal_code ?? '') . ' ' . ($booking->user->city ?? '')) ?: null,
-                $booking->user->email,
+                $booking->buyer_name ?? $booking->user?->name,
+                $booking->buyer_street ?? $booking->user?->street,
+                trim(($booking->buyer_postal_code ?? $booking->user?->postal_code ?? '') . ' ' . ($booking->buyer_city ?? $booking->user?->city ?? '')) ?: null,
+                $booking->buyer_email ?? $booking->user?->email,
                 $booking->isBusinessBooking() && $booking->buyer_vat_number ? 'Btw ' . $booking->buyer_vat_number : null,
             ]),
         ];

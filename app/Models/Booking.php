@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 #[Fillable([
     'room_id', 'user_id', 'buyer_type', 'buyer_company', 'buyer_vat_number', 'date', 'end_date', 'start_hour', 'end_hour', 'with_engineer',
+    'buyer_name', 'buyer_email', 'buyer_street', 'buyer_postal_code', 'buyer_city',
+    'seller_name', 'seller_address', 'seller_kvk_number', 'seller_vat_number', 'seller_vat_liable', 'room_label',
     'hourly_rate_cents', 'day_rate_cents', 'rent_cents', 'engineer_cents', 'service_fee_cents', 'vat_cents', 'total_cents',
     'status', 'expires_at', 'terms_accepted_at', 'requested_at', 'confirmed_at', 'cancelled_by',
     'rescheduled_at', 'disputed_at', 'dispute_reason', 'dispute_studio_response', 'dispute_photos', 'resolution_note', 'reminder_sent_at',
@@ -32,6 +34,7 @@ class Booking extends Model
             'date' => 'date',
             'end_date' => 'date',
             'with_engineer' => 'boolean',
+            'seller_vat_liable' => 'boolean',
             'status' => BookingStatus::class,
             'expires_at' => 'datetime',
             'terms_accepted_at' => 'datetime',
@@ -47,6 +50,43 @@ class Booking extends Model
             'damage_resolved_at' => 'datetime',
             'transferred_at' => 'datetime',
         ];
+    }
+
+    protected static function booted(): void
+    {
+
+        // Meteen bij het aanmaken vastleggen, zodat de factuur later niet afhankelijk is
+        // van gegevens die de koper of de verhuurder intussen heeft laten verwijderen.
+        static::created(fn (Booking $booking) => $booking->captureInvoiceDetails());
+    }
+
+    /**
+     * Zet de koper- en verkopergegevens op de boeking zelf.
+     *
+     * Een factuur moet fiscaal zeven jaar bewaard blijven, maar een account moet
+     * verwijderd kunnen worden. Dat gaat alleen samen als de factuur niet live uit het
+     * account leest. Bestaande waarden blijven staan: een eenmaal verstuurde factuur
+     * verandert niet meer mee.
+     */
+    public function captureInvoiceDetails(): void
+    {
+        $buyer = $this->user;
+        $studio = $this->room?->studio;
+        $profile = $studio?->user?->hostProfile;
+
+        $this->forceFill([
+            'buyer_name' => $this->buyer_name ?? $buyer?->name,
+            'buyer_email' => $this->buyer_email ?? $buyer?->email,
+            'buyer_street' => $this->buyer_street ?? $buyer?->street,
+            'buyer_postal_code' => $this->buyer_postal_code ?? $buyer?->postal_code,
+            'buyer_city' => $this->buyer_city ?? $buyer?->city,
+            'seller_name' => $this->seller_name ?? $profile?->name ?? $studio?->user?->name,
+            'seller_address' => $this->seller_address ?? $studio?->fullAddress(),
+            'seller_kvk_number' => $this->seller_kvk_number ?? $profile?->kvk_number,
+            'seller_vat_number' => $this->seller_vat_number ?? $profile?->vat_number,
+            'seller_vat_liable' => $this->seller_vat_liable ?? (bool) $profile?->btw_plichtig,
+            'room_label' => $this->room_label ?? ($studio && $this->room ? $studio->name . ' - ' . $this->room->title : null),
+        ])->saveQuietly();
     }
 
     public function room(): BelongsTo

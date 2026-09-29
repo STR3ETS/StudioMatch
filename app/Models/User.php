@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Notifications\ResetPasswordQueued;
+use App\Notifications\VerifyEmailQueued;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -26,6 +28,22 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     public function preferredLocale(): ?string
     {
         return $this->locale;
+    }
+
+    /*
+     * Laravel verstuurt deze twee mails standaard midden in het verzoek. Valt de
+     * mailprovider dan weg, dan ziet de bezoeker een foutpagina terwijl zijn account al
+     * bestaat of zijn herstelverzoek al is genoteerd. Daarom via de wachtrij.
+     */
+
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new VerifyEmailQueued);
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new ResetPasswordQueued($token));
     }
 
     protected function casts(): array

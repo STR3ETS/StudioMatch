@@ -26,8 +26,17 @@ const initStudioMap = () => {
 
     map.attributionControl.setPrefix(false);
 
+    /*
+     * Op de overzichtskaarten tekenen we Nederland zelf in plaats van de grijze basiskaart
+     * van Esri te gebruiken. Die basiskaart tekent namelijk de rivieren (Rijn, Waal, Maas)
+     * en de landsgrenzen, en op dit uitgezoomde niveau lezen die als lijnen over het land.
+     * De plaatsnamen komen uit een aparte tegellaag en die bevat geen enkele lijn.
+     * De detailkaart bij een ruimte houdt de echte basiskaart, want daar is straatbeeld nodig.
+     */
+    const silhouette = mapEl.dataset.silhouette !== undefined;
+
     // Base layer plus a separate label layer, see config/services.php for the provider.
-    if (mapEl.dataset.tiles) {
+    if (mapEl.dataset.tiles && !silhouette) {
         L.tileLayer(mapEl.dataset.tiles, {
             maxZoom: 16,
             attribution: mapEl.dataset.attribution || '',
@@ -35,7 +44,18 @@ const initStudioMap = () => {
     }
 
     if (mapEl.dataset.labels) {
-        L.tileLayer(mapEl.dataset.labels, { maxZoom: 16 }).addTo(map);
+        if (silhouette) {
+            // Eigen laag boven de landvorm, anders verdwijnen de plaatsnamen eronder.
+            map.createPane('labels');
+            map.getPane('labels').style.zIndex = 450;
+            map.getPane('labels').style.pointerEvents = 'none';
+        }
+
+        L.tileLayer(mapEl.dataset.labels, {
+            maxZoom: 16,
+            pane: silhouette ? 'labels' : undefined,
+            attribution: silhouette ? (mapEl.dataset.attribution || '') : '',
+        }).addTo(map);
     }
 
     const nlFallback = [
@@ -48,6 +68,16 @@ const initStudioMap = () => {
     ];
 
     const applyHighlight = (rings, outline = false) => {
+        if (silhouette) {
+            // Alleen het land invullen; de donkere achtergrond van de kaart is de zee.
+            L.geoJSON({ type: 'MultiPolygon', coordinates: rings.map((ring) => [ring]) }, {
+                interactive: false,
+                style: { stroke: false, fillColor: '#232b45', fillOpacity: 1 },
+            }).addTo(map);
+
+            return;
+        }
+
         const world = [[-30, 30], [30, 30], [30, 65], [-30, 65], [-30, 30]];
         L.geoJSON({ type: 'Polygon', coordinates: [world, ...rings] }, {
             interactive: false,
@@ -978,4 +1008,9 @@ document.querySelectorAll('[data-post-form]').forEach((form) => {
         if (flag) flag.value = '1';
         if (label) label.textContent = label.dataset.choose;
     });
+});
+
+// "Ga terug" op de 419-pagina, waar de bezoeker het formulier opnieuw moet versturen.
+document.querySelectorAll('[data-history-back]').forEach((button) => {
+    button.addEventListener('click', () => window.history.back());
 });

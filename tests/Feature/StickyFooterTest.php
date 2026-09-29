@@ -33,7 +33,7 @@ class StickyFooterTest extends TestCase
         $html = $this->get($path)->assertOk()->getContent();
 
         $this->assertStringContainsString('<body class="flex min-h-dvh flex-col">', $html);
-        $this->assertStringContainsString('<main class="flex-1">', $html);
+        $this->assertStringContainsString('<main class="flex flex-1 flex-col">', $html);
 
         $this->assertLessThan(
             strpos($html, '<footer'),

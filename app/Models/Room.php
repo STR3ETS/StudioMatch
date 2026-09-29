@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\BookingStatus;
 use App\Enums\ExceptionType;
 use App\Enums\RoomStatus;
 use App\Enums\RoomType;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 #[Fillable([
@@ -99,6 +101,39 @@ class Room extends Model
     public function photos(): HasMany
     {
         return $this->hasMany(RoomPhoto::class)->orderBy('sort_order');
+    }
+
+    /**
+     * De uitgelichte ruimtes op de homepage: eerst de populairste, daarna de nieuwste.
+     *
+     * Populariteit meten we aan het aantal afgeronde boekingen. Bewust simpel gehouden:
+     * zonder reviewsysteem zou een zwaarder algoritme nergens op gebaseerd zijn. Zolang
+     * er nog niets is afgerond, is de lijst precies wat hij altijd was: de nieuwste
+     * aanmeldingen. Zo krijgen nieuwe studio's ook altijd een plek naast de bekende.
+     */
+    public static function featured(int $limit = 8, int $popularSlots = 4): Collection
+    {
+        $popular = static::query()
+            ->publiclyVisible()
+            ->whereHas('bookings', fn (Builder $query) => $query->where('status', BookingStatus::Completed))
+            ->withCount(['bookings as completed_bookings_count' => fn (Builder $query) => $query->where('status', BookingStatus::Completed)])
+            ->with(['studio', 'photos'])
+            ->orderByDesc('completed_bookings_count')
+            ->latest()
+            ->orderByDesc('id')
+            ->take(max(0, min($popularSlots, $limit)))
+            ->get();
+
+        $newest = static::query()
+            ->publiclyVisible()
+            ->whereKeyNot($popular->modelKeys())
+            ->with(['studio', 'photos'])
+            ->latest()
+            ->orderByDesc('id')
+            ->take($limit - $popular->count())
+            ->get();
+
+        return $popular->concat($newest);
     }
 
     public function bookings(): HasMany

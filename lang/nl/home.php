@@ -18,7 +18,7 @@ return [
         'all_types' => 'Alle types',
         'submit' => 'Zoeken',
         'mobile_placeholder' => 'Zoek een studio',
-        'mobile_hint' => 'Plaats · datum & tijd · type',
+        'mobile_hint' => 'Plaats · datum · type',
         'close' => 'Sluiten',
     ],
 

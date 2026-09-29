@@ -85,7 +85,13 @@
     }
 }
 
-.leaflet-container {
+/*
+ * De klassenaam staat er bewust twee keer in. leaflet.css wordt na onze eigen stylesheet
+ * ingeladen en zet de achtergrond op #ddd; met deze extra specificiteit wint onze kleur.
+ * Dat viel niet op zolang er een dekkende basiskaart overheen lag, maar de overzichtskaart
+ * tekent alleen nog het land en daar is de achtergrond dus de zee.
+ */
+.leaflet-container.leaflet-container {
     font-family: inherit;
     background-color: #0b0f1e;
 }

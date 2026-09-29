@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\VerifiesAddress;
 use App\Models\User;
 use App\Rules\FullName;
+use App\Support\AccountAnonymiser;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -67,15 +68,15 @@ class AccountController extends Controller
 
         $user = $request->user();
 
-        $user->rooms()->with('photos')->get()->each(fn ($room) => $room->photos->each->delete());
+        // Niet hard verwijderen: dan gaan de boekingen en facturen mee, en die moeten
+        // fiscaal zeven jaar bewaard blijven. Zie App\Support\AccountAnonymiser.
+        AccountAnonymiser::run($user);
 
         Auth::logout();
-
-        $user->delete();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return redirect()->route('home')->with('status', __('account.delete.done'));
     }
 }

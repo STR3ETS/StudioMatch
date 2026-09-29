@@ -18,7 +18,7 @@ return [
         'all_types' => 'All types',
         'submit' => 'Search',
         'mobile_placeholder' => 'Find a studio',
-        'mobile_hint' => 'Location · date & time · type',
+        'mobile_hint' => 'Location · date · type',
         'close' => 'Close',
     ],
 

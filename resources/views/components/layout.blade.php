@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null, 'schema' => null, 'image' => null, 'type' => 'website'])
+@props(['title' => null, 'description' => null, 'schema' => null, 'image' => null, 'type' => 'website', 'robots' => 'index, follow'])
 
 @php
     $siteName = config('app.name', 'StudioMatch');
@@ -40,7 +40,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="robots" content="index, follow">
+        <meta name="robots" content="{{ $robots }}">
         <meta name="theme-color" content="#101529">
 
         <title>{{ $pageTitle }}</title>
@@ -83,7 +83,8 @@
     <body class="flex min-h-dvh flex-col">
         <x-header />
 
-        <main class="flex-1">
+        {{-- Kolom, zodat een korte pagina zoals een foutmelding zich kan uitrekken tot de footer. --}}
+        <main class="flex flex-1 flex-col">
             {{ $slot }}
         </main>
 
