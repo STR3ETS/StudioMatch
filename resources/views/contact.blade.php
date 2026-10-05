@@ -83,6 +83,8 @@
                         <x-input-error field="message" />
                     </div>
 
+                    <x-recaptcha />
+
                     <div class="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <p class="text-xs text-prussian-blue/50"><i class="fa-solid fa-lock mr-1 text-prussian-blue/30"></i> {{ __('contact.form.privacy') }}</p>
                         <button type="submit" class="cursor-pointer rounded-full bg-ruby-red px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">{{ __('contact.form.submit') }}</button>

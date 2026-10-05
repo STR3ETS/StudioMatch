@@ -230,7 +230,7 @@ Route::get('/ical/ruimte/{room}', IcalController::class)->middleware('signed')->
 Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
 
 foreach (['voorwaarden' => 'terms', 'privacy' => 'privacy', 'disclaimer' => 'disclaimer', 'cookiebeleid' => 'cookies'] as $uri => $key) {
-    Route::get('/' . $uri, fn () => view('legal', ['title' => __('legal.' . $key)]))->name('legal.' . $key);
+    Route::get('/' . $uri, fn () => view('legal', ['key' => $key, 'title' => __('legal.' . $key)]))->name('legal.' . $key);
 }
 
 Route::get('/language/{locale}', function (string $locale) {

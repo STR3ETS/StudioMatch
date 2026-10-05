@@ -35,27 +35,66 @@ const initStudioMap = () => {
      */
     const silhouette = mapEl.dataset.silhouette !== undefined;
 
+    // Vanaf dit zoomniveau kijk je naar een stad in plaats van naar het land, en dan heb
+    // je straten en wijken nodig. Daaronder is de kale landvorm juist rustiger.
+    const detailZoom = 9;
+
     // Base layer plus a separate label layer, see config/services.php for the provider.
-    if (mapEl.dataset.tiles && !silhouette) {
-        L.tileLayer(mapEl.dataset.tiles, {
+    const baseLayer = mapEl.dataset.tiles
+        ? L.tileLayer(mapEl.dataset.tiles, {
             maxZoom: 16,
-            attribution: mapEl.dataset.attribution || '',
-        }).addTo(map);
+            // In silhouetstand hangt de bronvermelding aan de labellaag, die altijd meedoet.
+            attribution: silhouette ? '' : (mapEl.dataset.attribution || ''),
+        })
+        : null;
+
+    if (baseLayer && ! silhouette) {
+        baseLayer.addTo(map);
     }
 
+    let landLayer = null;
+    let borderLayer = null;
+
+    /**
+     * Wisselt tussen de eigen landvorm en de echte kaart, afhankelijk van hoe ver er is
+     * ingezoomd. Alleen op de overzichtskaarten; de detailkaart heeft altijd straatbeeld.
+     */
+    const syncDetail = () => {
+        if (! silhouette) return;
+
+        const showLand = map.getZoom() < detailZoom;
+
+        [landLayer, borderLayer].forEach((layer) => {
+            if (! layer) return;
+
+            if (showLand && ! map.hasLayer(layer)) layer.addTo(map);
+            if (! showLand && map.hasLayer(layer)) map.removeLayer(layer);
+        });
+
+        if (baseLayer) {
+            if (! showLand && ! map.hasLayer(baseLayer)) baseLayer.addTo(map);
+            if (showLand && map.hasLayer(baseLayer)) map.removeLayer(baseLayer);
+        }
+    };
+
+    map.on('zoomend', syncDetail);
+
     if (mapEl.dataset.labels) {
+        // Alleen zetten wat nodig is: een expliciete pane: undefined overschrijft de
+        // standaardwaarde van Leaflet, en dan klapt het toevoegen van de laag eruit.
+        const labelOptions = { maxZoom: 16 };
+
         if (silhouette) {
             // Eigen laag boven de landvorm, anders verdwijnen de plaatsnamen eronder.
             map.createPane('labels');
             map.getPane('labels').style.zIndex = 450;
             map.getPane('labels').style.pointerEvents = 'none';
+
+            labelOptions.pane = 'labels';
+            labelOptions.attribution = mapEl.dataset.attribution || '';
         }
 
-        L.tileLayer(mapEl.dataset.labels, {
-            maxZoom: 16,
-            pane: silhouette ? 'labels' : undefined,
-            attribution: silhouette ? (mapEl.dataset.attribution || '') : '',
-        }).addTo(map);
+        L.tileLayer(mapEl.dataset.labels, labelOptions).addTo(map);
     }
 
     const nlFallback = [
@@ -70,10 +109,29 @@ const initStudioMap = () => {
     const applyHighlight = (rings, outline = false) => {
         if (silhouette) {
             // Alleen het land invullen; de donkere achtergrond van de kaart is de zee.
-            L.geoJSON({ type: 'MultiPolygon', coordinates: rings.map((ring) => [ring]) }, {
+            landLayer = L.geoJSON({ type: 'MultiPolygon', coordinates: rings.map((ring) => [ring]) }, {
                 interactive: false,
                 style: { stroke: false, fillColor: '#232b45', fillOpacity: 1 },
-            }).addTo(map);
+            });
+
+            /*
+             * De provinciegrenzen als dunne lijnen erover, puur voor de oriëntatie. Het
+             * bestand bevat alleen de grenzen onderling en elk lijnstuk precies een keer,
+             * zodat er niets dubbel getekend wordt. Rivieren en wegen blijven weg.
+             */
+            fetch('/geo/provinciegrenzen.geojson')
+                .then((response) => response.json())
+                .then((borders) => {
+                    borderLayer = L.geoJSON(borders, {
+                        interactive: false,
+                        style: { color: '#ffffff', opacity: 0.22, weight: 1, fill: false },
+                    });
+
+                    syncDetail();
+                })
+                .catch(() => {});
+
+            syncDetail();
 
             return;
         }
@@ -108,9 +166,16 @@ const initStudioMap = () => {
                 fillOpacity: 0.85,
                 interactive: false,
             }).addTo(map);
+            // Met een opgegeven iconSize zet Leaflet het merkteken zelf midden op de
+            // locatie. Zonder die maat landde het linksboven het punt en bleef het leeg.
             L.marker([studio.lat, studio.lng], {
                 interactive: false,
-                icon: L.divIcon({ className: 'map-mark-wrap', html: '<span class="map-mark"></span>', iconSize: null }),
+                keyboard: false,
+                icon: L.divIcon({
+                    className: 'map-mark',
+                    html: '<img src="/logos/sm-mark-wit.png" alt="">',
+                    iconSize: [36, 36],
+                }),
             }).addTo(map);
         });
         return;

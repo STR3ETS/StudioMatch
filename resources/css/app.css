@@ -146,18 +146,12 @@
     cursor: grabbing;
 }
 
-.map-mark {
-    position: absolute;
-    left: 0;
-    top: 0;
-    transform: translate(-50%, -50%);
+/* Afmeting en uitlijning komen van Leaflet zelf, zie de iconSize in app.js. */
+.map-mark img {
     display: block;
-    height: 2.25rem;
-    width: 2.25rem;
-    background-image: url('/logos/sm-mark-wit.png');
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
     filter: drop-shadow(0 2px 6px rgb(0 0 0 / 0.35));
 }
 
@@ -463,4 +457,77 @@ input[type='time'] {
 
 .sm-prose s {
     text-decoration: line-through;
+}
+
+/*
+ * De juridische pagina's. De tekst komt uit de aangeleverde Word-documenten en bevat
+ * koppen, opsommingen, tabellen en een enkel kader met een belangrijke mededeling.
+ * Die laatste twee komen op de blogpagina's niet voor, vandaar deze aanvullingen.
+ */
+.sm-prose h2 {
+    margin-top: 2.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #101529;
+}
+
+.sm-prose h2:first-child {
+    margin-top: 0;
+}
+
+.sm-legal {
+    font-size: 0.9375rem;
+}
+
+.sm-legal h3 {
+    margin-top: 1.5rem;
+    color: #101529;
+}
+
+/* Een brede tabel krijgt zijn eigen schuifbalk in plaats van de pagina mee te sleuren. */
+.sm-table {
+    margin-top: 1.5rem;
+    overflow-x: auto;
+    border: 1px solid rgb(16 21 41 / 0.1);
+    border-radius: 1rem;
+}
+
+.sm-table table {
+    width: 100%;
+    min-width: 34rem;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.sm-table th,
+.sm-table td {
+    padding: 0.75rem 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid rgb(16 21 41 / 0.07);
+}
+
+.sm-table thead th {
+    background: rgb(16 21 41 / 0.03);
+    font-weight: 700;
+    color: #101529;
+    white-space: nowrap;
+}
+
+.sm-table tbody tr:last-child th,
+.sm-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.sm-callout {
+    margin-top: 1.5rem;
+    border-left: 3px solid #ad0924;
+    border-radius: 0 1rem 1rem 0;
+    background: rgb(173 9 36 / 0.04);
+    padding: 1rem 1.25rem;
+    color: rgb(16 21 41 / 0.8);
+}
+
+.sm-callout strong {
+    color: #101529;
 }

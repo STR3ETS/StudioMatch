@@ -368,10 +368,12 @@ class BookingExtrasTest extends TestCase
         ])->assertForbidden();
     }
 
-    public function test_legal_stub_pages_render(): void
+    public function test_legal_pages_render(): void
     {
+        // De teksten zelf worden in LegalPagesTest gecontroleerd; hier gaat het er alleen
+        // om dat elke juridische pagina blijft bestaan en laadt.
         foreach (['/voorwaarden', '/privacy', '/disclaimer', '/cookiebeleid'] as $uri) {
-            $this->get($uri)->assertOk()->assertSee(__('legal.pending_title'));
+            $this->get($uri)->assertOk();
         }
     }
 

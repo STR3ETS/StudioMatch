@@ -45,6 +45,8 @@ return [
         ],
         'message' => 'Message',
         'message_placeholder' => 'What can we help you with?',
+        'recaptcha_error' => 'Please confirm that you are not a robot and try again.',
+        'recaptcha_noscript' => 'Turn on JavaScript to send the form, or email us directly.',
         'submit' => 'Send message',
         'privacy' => 'We only use your details to reply to your message.',
         'sent' => 'Your message has been sent. We usually respond within one business day.',

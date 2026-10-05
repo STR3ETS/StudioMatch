@@ -45,6 +45,8 @@ return [
         ],
         'message' => 'Bericht',
         'message_placeholder' => 'Waar kunnen we je mee helpen?',
+        'recaptcha_error' => 'Bevestig even dat je geen robot bent en probeer het opnieuw.',
+        'recaptcha_noscript' => 'Zet JavaScript aan om het formulier te kunnen versturen, of mail ons rechtstreeks.',
         'submit' => 'Verstuur bericht',
         'privacy' => 'We gebruiken je gegevens alleen om je bericht te beantwoorden.',
         'sent' => 'Je bericht is verstuurd. We reageren doorgaans binnen één werkdag.',

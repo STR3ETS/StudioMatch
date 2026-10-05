@@ -42,6 +42,16 @@ return [
         'key' => env('RESEND_API_KEY'),
     ],
 
+    /*
+     * Google reCAPTCHA v2 op het contactformulier. Zonder sleutels slaat de controle
+     * zichzelf over, zodat de site lokaal en in de tests gewoon blijft werken.
+     */
+    'recaptcha' => [
+        'site_key' => env('RECAPTCHA_SITE_KEY'),
+        'secret' => env('RECAPTCHA_SECRET_KEY'),
+        'verify_url' => 'https://www.google.com/recaptcha/api/siteverify',
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),

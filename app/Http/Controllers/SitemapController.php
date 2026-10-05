@@ -19,6 +19,9 @@ class SitemapController extends Controller
             ['loc' => route('faq')],
             ['loc' => route('contact')],
             ['loc' => route('blog')],
+            ['loc' => route('legal.terms')],
+            ['loc' => route('legal.privacy')],
+            ['loc' => route('legal.cookies')],
         ]);
 
         $rooms = Room::publiclyVisible()->get()->map(fn (Room $room) => [

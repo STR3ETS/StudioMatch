@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\User;
 use App\Notifications\ContactConfirmation;
 use App\Notifications\ContactMessage;
+use App\Rules\Recaptcha;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -21,7 +22,17 @@ class ContactController extends Controller
             'email' => ['required', 'email', 'max:255'],
             'subject' => ['required', Rule::in(['general', 'booking', 'studio', 'other'])],
             'message' => ['required', 'string', 'min:10', 'max:5000'],
+            // Zonder sleutels geen eis, anders blokkeert het formulier op een omgeving
+            // waar reCAPTCHA (nog) niet is ingesteld.
+            'g-recaptcha-response' => Recaptcha::enabled()
+                ? ['required', new Recaptcha($request->ip())]
+                : [],
+        ], [
+            'g-recaptcha-response.required' => __('contact.form.recaptcha_error'),
         ]);
+
+        // Het token hoort niet in de mail thuis.
+        unset($validated['g-recaptcha-response']);
 
         $recipient = (string) config('studio.contact_email');
 
