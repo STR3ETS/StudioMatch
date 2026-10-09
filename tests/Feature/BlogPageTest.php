@@ -194,12 +194,37 @@ class BlogPageTest extends TestCase
             ->assertDontSee(url('/blog/' . $draft->slug), false);
     }
 
-    public function test_the_blog_is_linked_from_the_site_navigation(): void
+    public function test_the_blog_is_linked_from_the_site_navigation_once_an_article_is_online(): void
     {
+        $this->article(['title' => 'Eerste artikel']);
+
         $this->get('/')
             ->assertOk()
             ->assertSee('href="' . url('/blog') . '"', false)
             ->assertSee(__('nav.blog'));
+    }
+
+    public function test_an_empty_blog_stays_out_of_the_menu_and_the_sitemap(): void
+    {
+        // Een menu-item dat naar een lege pagina wijst wil je bezoekers niet geven.
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('href="' . url('/blog') . '"', false);
+
+        $this->get('/sitemap.xml')->assertOk()->assertDontSee(url('/blog'), false);
+
+        // De pagina zelf blijft wel bereikbaar voor wie de link al heeft.
+        $this->get('/blog')->assertOk()->assertSee(__('blog.empty'));
+    }
+
+    public function test_a_blog_with_only_drafts_stays_out_of_the_menu(): void
+    {
+        $this->article(['status' => PostStatus::Concept, 'published_at' => null]);
+        $this->article(['title' => 'Ingepland', 'published_at' => now()->addWeek()]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertDontSee('href="' . url('/blog') . '"', false);
     }
 
     public function test_an_unknown_slug_returns_a_not_found(): void

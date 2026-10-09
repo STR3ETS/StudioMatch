@@ -20,7 +20,7 @@ return [
         'location_active' => 'Location active, detect again',
         'near_me_error' => 'Location unavailable, allow location access',
         'distance' => 'Distance',
-        'datetime' => 'Date & time',
+        'datetime' => 'Date',
         'price' => 'Price per hour',
         'type' => 'Studio type',
         'capacity' => 'Capacity',

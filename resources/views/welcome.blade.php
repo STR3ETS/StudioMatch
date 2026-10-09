@@ -43,11 +43,12 @@
 
             <div class="relative flex-1" data-select>
                 <input type="hidden" name="type" value="">
-                <button type="button" data-select-toggle class="w-full cursor-pointer rounded-2xl px-10 py-4 text-left transition hover:bg-prussian-blue/5">
+                {{-- px-6 zoals de datumvelden: met px-10 bleef er te weinig over en brak "Alle types" over twee regels. --}}
+                <button type="button" data-select-toggle class="w-full cursor-pointer rounded-2xl px-6 py-4 text-left transition hover:bg-prussian-blue/5">
                     <span class="block text-xs font-bold text-prussian-blue">{{ __('home.search.type') }}</span>
                     <span class="flex items-center justify-between text-sm text-prussian-blue">
-                        <span data-select-label>{{ __('home.search.all_types') }}</span>
-                        <i class="fa-solid fa-chevron-down fa-2xs ml-2 text-prussian-blue/40"></i>
+                        <span data-select-label class="min-w-0 truncate">{{ __('home.search.all_types') }}</span>
+                        <i class="fa-solid fa-chevron-down fa-2xs ml-2 shrink-0 text-prussian-blue/40"></i>
                     </span>
                 </button>
                 <div data-select-panel data-float class="z-[1400] hidden w-56 rounded-2xl border border-prussian-blue/10 bg-white p-1.5 text-left shadow-xl">

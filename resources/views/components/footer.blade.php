@@ -30,7 +30,9 @@
                     <li><a href="#" class="transition hover:text-white">{{ __('footer.discover.search') }}</a></li>
                     <li><a href="{{ route('how') }}" class="transition hover:text-white">{{ __('footer.discover.how_it_works') }}</a></li>
                     <li><a href="{{ route('faq') }}" class="transition hover:text-white">{{ __('footer.discover.faq') }}</a></li>
-                    <li><a href="{{ route('blog') }}" class="transition hover:text-white">{{ __('footer.discover.blog') }}</a></li>
+                    @if (\App\Models\Post::hasPublished())
+                        <li><a href="{{ route('blog') }}" class="transition hover:text-white">{{ __('footer.discover.blog') }}</a></li>
+                    @endif
                 </ul>
             </div>
 

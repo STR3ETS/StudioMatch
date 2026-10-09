@@ -18,7 +18,6 @@ class SitemapController extends Controller
             ['loc' => route('how')],
             ['loc' => route('faq')],
             ['loc' => route('contact')],
-            ['loc' => route('blog')],
             ['loc' => route('legal.terms')],
             ['loc' => route('legal.privacy')],
             ['loc' => route('legal.cookies')],
@@ -29,6 +28,9 @@ class SitemapController extends Controller
             'lastmod' => $room->updated_at->toAtomString(),
         ]);
 
+        // Het overzicht alleen aanmelden als er ook echt iets te lezen valt.
+        $blog = Post::hasPublished() ? collect([['loc' => route('blog')]]) : collect();
+
         $posts = Post::published()->get()->map(fn (Post $post) => [
             'loc' => route('blog.show', $post->slug),
             'lastmod' => $post->updated_at->toAtomString(),
@@ -37,7 +39,7 @@ class SitemapController extends Controller
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
             . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
 
-        foreach ($urls->concat($rooms)->concat($posts) as $url) {
+        foreach ($urls->concat($blog)->concat($rooms)->concat($posts) as $url) {
             $xml .= '  <url><loc>' . e($url['loc']) . '</loc>'
                 . (isset($url['lastmod']) ? '<lastmod>' . $url['lastmod'] . '</lastmod>' : '')
                 . "</url>\n";

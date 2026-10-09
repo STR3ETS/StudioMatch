@@ -25,7 +25,7 @@
                     </div>
                 </div>
                 <div class="flex flex-1 justify-center">
-                    <x-phone-mockup class="-rotate-2" :label="__('how.steps.items.search.mock')" />
+                    <x-phone-mockup class="-rotate-2" :label="__('how.steps.items.search.mock')" image="screenshots/zoeken.webp" />
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
                     </div>
                 </div>
                 <div class="relative flex flex-1 justify-center">
-                    <x-phone-mockup class="rotate-2" :label="__('how.steps.items.book.mock')" />
+                    <x-phone-mockup class="rotate-2" :label="__('how.steps.items.book.mock')" image="screenshots/boeken.webp" />
                     <div class="absolute -left-4 top-20 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/30 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-hourglass-half fa-sm"></i></span>
                         <div>
@@ -78,7 +78,7 @@
                     </div>
                 </div>
                 <div class="relative flex flex-1 justify-center">
-                    <x-phone-mockup class="rotate-2" :label="__('how.steps.items.session.mock')" />
+                    <x-phone-mockup class="rotate-2" :label="__('how.steps.items.session.mock')" image="screenshots/boekingen.webp" />
                     <div class="absolute -right-4 bottom-24 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"><i class="fa-solid fa-circle-check fa-sm"></i></span>
                         <div>

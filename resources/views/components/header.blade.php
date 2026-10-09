@@ -5,9 +5,15 @@
         ['label' => __('nav.for_studios'), 'url' => route('hosts'), 'active' => request()->routeIs('hosts')],
         ['label' => __('nav.how_it_works'), 'url' => route('how'), 'active' => request()->routeIs('how')],
         ['label' => __('nav.faq'), 'url' => route('faq'), 'active' => request()->routeIs('faq')],
-        ['label' => __('nav.blog'), 'url' => route('blog'), 'active' => request()->routeIs('blog', 'blog.*')],
         ['label' => __('nav.contact'), 'url' => route('contact'), 'active' => request()->routeIs('contact')],
     ];
+
+    // De blog hoort pas in het menu zodra er een artikel online staat.
+    if (\App\Models\Post::hasPublished()) {
+        array_splice($navItems, 5, 0, [
+            ['label' => __('nav.blog'), 'url' => route('blog'), 'active' => request()->routeIs('blog', 'blog.*')],
+        ]);
+    }
 @endphp
 
 <div data-header class="fixed z-999 w-full h-auto py-5 px-4 sm:px-6 top-0 left-0 right-0 transition-all duration-300">

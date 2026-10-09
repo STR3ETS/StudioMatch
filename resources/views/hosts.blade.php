@@ -33,7 +33,7 @@
                 </div>
 
                 <div data-reveal style="--reveal-delay: .15s" class="relative mx-auto w-fit max-lg:hidden">
-                    <x-phone-mockup class="rotate-2" :label="__('hosts.hero.mock')" />
+                    <x-phone-mockup class="rotate-2" :label="__('hosts.hero.mock')" image="screenshots/verhuurder-dashboard.webp" />
 
                     <div class="absolute -left-40 top-20 flex items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/25">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-calendar-check fa-sm"></i></span>
@@ -106,7 +106,7 @@
                     </ul>
                 </div>
                 <div class="relative flex flex-1 justify-center">
-                    <x-phone-mockup class="-rotate-2" :label="__('hosts.features.items.dashboard.mock')" />
+                    <x-phone-mockup class="-rotate-2" :label="__('hosts.features.items.dashboard.mock')" image="screenshots/verhuurder-omzet.webp" />
                     <div class="absolute -right-2 top-16 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-prussian-blue/15 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-chart-line fa-sm"></i></span>
                         <div>
@@ -134,7 +134,7 @@
                     </ul>
                 </div>
                 <div class="relative flex flex-1 justify-center">
-                    <x-phone-mockup class="rotate-2" :label="__('hosts.features.items.availability.mock')" />
+                    <x-phone-mockup class="rotate-2" :label="__('hosts.features.items.availability.mock')" image="screenshots/beschikbaarheid.webp" />
                     <div class="absolute -left-6 bottom-20 hidden items-center gap-3 float-card rounded-2xl bg-white px-4 py-3 shadow-xl shadow-black/30 xl:flex">
                         <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-prussian-blue/5 text-prussian-blue"><i class="fa-solid fa-umbrella-beach fa-sm"></i></span>
                         <div>

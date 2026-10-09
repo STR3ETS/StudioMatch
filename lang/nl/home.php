@@ -10,7 +10,7 @@ return [
         'where' => 'Waar',
         'where_placeholder' => 'Plaats of adres',
         'when' => 'Wanneer',
-        'when_placeholder' => 'Datum & tijd',
+        'when_placeholder' => 'Kies een datum',
         'until' => 'Tot en met',
         'until_placeholder' => 'Zelfde dag',
         'type' => 'Type',

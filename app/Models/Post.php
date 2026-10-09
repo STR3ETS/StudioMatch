@@ -56,6 +56,17 @@ class Post extends Model
             ->where(fn (Builder $q) => $q->whereNull('published_at')->orWhere('published_at', '<=', now()));
     }
 
+    /**
+     * Of er iets te lezen valt.
+     *
+     * De blog verschijnt pas in het menu en in de sitemap zodra er een artikel online
+     * staat. Een menu-item dat naar een lege pagina wijst wil je bezoekers niet geven.
+     */
+    public static function hasPublished(): bool
+    {
+        return static::published()->exists();
+    }
+
     public function isPublished(): bool
     {
         return $this->status === PostStatus::Gepubliceerd

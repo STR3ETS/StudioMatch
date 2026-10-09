@@ -20,7 +20,7 @@ return [
         'location_active' => 'Locatie actief, opnieuw bepalen',
         'near_me_error' => 'Locatie niet beschikbaar, sta locatietoegang toe',
         'distance' => 'Afstand',
-        'datetime' => 'Datum & tijd',
+        'datetime' => 'Datum',
         'price' => 'Prijs per uur',
         'type' => 'Type studio',
         'capacity' => 'Capaciteit',

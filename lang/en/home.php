@@ -10,7 +10,7 @@ return [
         'where' => 'Where',
         'where_placeholder' => 'City or address',
         'when' => 'When',
-        'when_placeholder' => 'Date & time',
+        'when_placeholder' => 'Pick a date',
         'until' => 'Until',
         'until_placeholder' => 'Same day',
         'type' => 'Type',
