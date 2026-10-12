@@ -19,6 +19,7 @@ class LegalPagesTest extends TestCase
             'algemene voorwaarden' => ['/voorwaarden', 'terms'],
             'privacyverklaring' => ['/privacy', 'privacy'],
             'cookiebeleid' => ['/cookiebeleid', 'cookies'],
+            'disclaimer' => ['/disclaimer', 'disclaimer'],
         ];
     }
 
@@ -104,10 +105,31 @@ class LegalPagesTest extends TestCase
         $this->get('/privacy')->assertOk()->assertSee('info@studiomatch.nl');
     }
 
-    public function test_the_disclaimer_still_announces_that_the_text_follows(): void
+    public function test_every_legal_page_has_its_text(): void
     {
-        // Voor de disclaimer is nog geen document aangeleverd.
-        $this->get('/disclaimer')->assertOk()->assertSee(__('legal.pending_title'));
+        // De disclaimer kwam als laatste binnen; sindsdien staat er op geen enkele
+        // juridische pagina nog een "tekst volgt".
+        foreach (['/voorwaarden', '/privacy', '/cookiebeleid', '/disclaimer'] as $path) {
+            $this->get($path)->assertOk()->assertDontSee(__('legal.pending_title'));
+        }
+    }
+
+    public function test_google_gets_all_four_legal_pages(): void
+    {
+        $sitemap = $this->get('/sitemap.xml')->assertOk();
+
+        foreach (['/voorwaarden', '/privacy', '/cookiebeleid', '/disclaimer'] as $path) {
+            $sitemap->assertSee(url($path), false);
+        }
+    }
+
+    public function test_the_disclaimer_shows_its_sections(): void
+    {
+        $this->get('/disclaimer')
+            ->assertOk()
+            ->assertSee('<h2>1. Identiteit van StudioMatch</h2>', false)
+            ->assertSee('<h2>14. Aansprakelijkheid</h2>', false)
+            ->assertSee('<h2>18. Contact</h2>', false);
     }
 
     public function test_the_documents_folder_does_not_shadow_the_terms_url(): void

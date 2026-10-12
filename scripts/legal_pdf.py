@@ -112,12 +112,14 @@ def main() -> int:
                     "runs": line["runs"],
                     "block": line["block"],
                     "callout": line["callout"],
+                    "x0": line["x0"],
+                    "x1": line["x1"],
                 }
             )
 
     flush(blocks, pending_list, state)
 
-    result = {"updated": updated, "blocks": merge_lines(blocks)}
+    result = {"updated": updated, "blocks": merge_lines(blocks, text_margin(lines))}
 
     with open(sys.argv[2], "w", encoding="utf-8") as handle:
         json.dump(result, handle, ensure_ascii=False, indent=1)
@@ -181,6 +183,8 @@ def collect_lines(document) -> list:
                         "runs": runs,
                         "size": sizes.most_common(1)[0][0],
                         "y": round(line["bbox"][1], 1),
+                        "x0": round(line["bbox"][0], 1),
+                        "x1": round(line["bbox"][2], 1),
                         "height": page.rect.height,
                         "key": re.sub(r"\s+", " ", text).strip().lower(),
                         "nkey": re.sub(r"[^0-9a-z]+", " ", text.lower()).strip(),
@@ -315,9 +319,28 @@ def flush(blocks, pending_list, state) -> None:
     state["block"] = None
 
 
-def merge_lines(blocks) -> list:
+def text_margin(lines) -> float:
+    """Waar de lopende tekst rechts ophoudt; daar breekt een normale regel af."""
+    edges = sorted(line["x1"] for line in lines)
+
+    return edges[int(len(edges) * 0.9)] if edges else 0.0
+
+
+def lead_width(block) -> float:
+    """De breedte van het eerste woord; zoveel ruimte had de vorige regel nog nodig."""
+    text = "".join(run.get("text", "") for run in block["runs"]).strip()
+    width = block.get("x1", 0.0) - block.get("x0", 0.0)
+
+    if not text or width <= 0:
+        return 0.0
+
+    return width / len(text) * len(text.split(" ")[0])
+
+
+def merge_lines(blocks, margin=0.0) -> list:
     """Een alinea staat in de PDF als losse regels; die horen weer aan elkaar."""
     merged = []
+    previous_end = None
 
     for block in blocks:
         if block["type"] != "line":
@@ -325,8 +348,13 @@ def merge_lines(blocks) -> list:
             continue
 
         if merged and merged[-1].get("block") == block["block"] and merged[-1].get("type") in ("p", "callout"):
-            merged[-1]["runs"].append({"text": " ", "bold": False})
+            # Bleef er meer ruimte over dan het volgende woord nodig had? Dan stond daar een enter.
+            gap = margin - previous_end if previous_end is not None else 0.0
+            hard_break = gap > 15 and gap > lead_width(block) * 1.15
+
+            merged[-1]["runs"].append({"br": True} if hard_break else {"text": " ", "bold": False})
             merged[-1]["runs"].extend(clean_runs(block["runs"]))
+            previous_end = block.get("x1")
             continue
 
         merged.append(
@@ -336,6 +364,7 @@ def merge_lines(blocks) -> list:
                 "runs": clean_runs(block["runs"]),
             }
         )
+        previous_end = block.get("x1")
 
     for block in merged:
         block.pop("block", None)
@@ -344,7 +373,10 @@ def merge_lines(blocks) -> list:
 
 
 def clean_runs(runs) -> list:
-    return [{"text": run["text"], "bold": run["bold"]} for run in runs]
+    return [
+        {"br": True} if run.get("br") else {"text": run["text"], "bold": run["bold"]}
+        for run in runs
+    ]
 
 
 def strip_fonts(block) -> dict:

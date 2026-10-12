@@ -274,6 +274,12 @@ class ImportLegalDocuments extends Command
         $html = '';
 
         foreach ($runs as $run) {
+            if ($run['br'] ?? false) {
+                $html .= '<br>';
+
+                continue;
+            }
+
             $text = htmlspecialchars($run['text'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
             $html .= $allowBold && ($run['bold'] ?? false) ? '<strong>' . $text . '</strong>' : $text;
         }

@@ -63,5 +63,5 @@
 <p>De meest actuele versie van dit cookiebeleid is beschikbaar via studiomatch.nl.</p>
 <h2>9. Contact</h2>
 <p>Heb je vragen over het gebruik van cookies of vergelijkbare technieken door StudioMatch? Neem dan contact met ons op:</p>
-<p><strong>StudioMatch V.O.F.</strong> KvK: 94893527 E-mail: <a href="mailto:info@studiomatch.nl">info@studiomatch.nl</a> Website: studiomatch.nl</p>
+<p><strong>StudioMatch V.O.F.</strong><br>KvK: 94893527<br>E-mail: <a href="mailto:info@studiomatch.nl">info@studiomatch.nl</a><br>Website: studiomatch.nl</p>
 @endverbatim

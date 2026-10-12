@@ -228,5 +228,5 @@
 
 <h2>20. Contact</h2>
 <p>Voor vragen over deze privacyverklaring, de verwerking van je persoonsgegevens of het uitoefenen van je privacyrechten kun je contact opnemen met:</p>
-<p><strong>StudioMatch V.O.F.</strong> Harm Koningstraat 41 7742 LR Coevorden Nederland KvK 94893527 <strong>E-mail: </strong><a href="mailto:info@studiomatch.nl">info@studiomatch.nl</a></p>
+<p><strong>StudioMatch V.O.F.</strong><br>Harm Koningstraat 41<br>7742 LR Coevorden<br>Nederland<br>KvK 94893527<br><strong>E-mail: </strong><a href="mailto:info@studiomatch.nl">info@studiomatch.nl</a></p>
 @endverbatim

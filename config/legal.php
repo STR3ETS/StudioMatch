@@ -12,6 +12,12 @@ return array (
     'pdf' => 'documenten/cookiebeleid.pdf',
     'source' => 'Cookiebeleid_StudioMatch_2026_v3.pdf',
   ),
+  'disclaimer' => 
+  array (
+    'updated' => '9 oktober 2026',
+    'pdf' => 'documenten/disclaimer.pdf',
+    'source' => 'Disclaimer_StudioMatch_2026_v1.pdf',
+  ),
   'privacy' => 
   array (
     'updated' => '29 september 2026',

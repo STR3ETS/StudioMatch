@@ -194,37 +194,37 @@ class BlogPageTest extends TestCase
             ->assertDontSee(url('/blog/' . $draft->slug), false);
     }
 
-    public function test_the_blog_is_linked_from_the_site_navigation_once_an_article_is_online(): void
+    public function test_the_blog_is_linked_from_the_footer_and_not_from_the_menu(): void
     {
         $this->article(['title' => 'Eerste artikel']);
 
-        $this->get('/')
-            ->assertOk()
-            ->assertSee('href="' . url('/blog') . '"', false)
-            ->assertSee(__('nav.blog'));
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // De klant wil de blog bewust laag in de aandacht: wel vindbaar, niet in het menu.
+        $this->assertStringContainsString('href="' . url('/blog') . '"', $html);
+
+        $menu = substr($html, 0, strpos($html, '<footer'));
+        $this->assertStringNotContainsString('href="' . url('/blog') . '"', $menu);
     }
 
-    public function test_an_empty_blog_stays_out_of_the_menu_and_the_sitemap(): void
+    public function test_the_footer_keeps_the_link_even_without_articles(): void
     {
-        // Een menu-item dat naar een lege pagina wijst wil je bezoekers niet geven.
-        $this->get('/')
-            ->assertOk()
-            ->assertDontSee('href="' . url('/blog') . '"', false);
+        $html = $this->get('/')->assertOk()->getContent();
 
-        $this->get('/sitemap.xml')->assertOk()->assertDontSee(url('/blog'), false);
+        $this->assertStringContainsString('href="' . url('/blog') . '"', $html);
 
-        // De pagina zelf blijft wel bereikbaar voor wie de link al heeft.
+        // De pagina zelf vangt dat netjes op.
         $this->get('/blog')->assertOk()->assertSee(__('blog.empty'));
     }
 
-    public function test_a_blog_with_only_drafts_stays_out_of_the_menu(): void
+    public function test_an_empty_blog_is_not_offered_to_google(): void
     {
-        $this->article(['status' => PostStatus::Concept, 'published_at' => null]);
-        $this->article(['title' => 'Ingepland', 'published_at' => now()->addWeek()]);
+        // Wel vindbaar via de footer, maar een lege pagina melden we niet aan.
+        $this->get('/sitemap.xml')->assertOk()->assertDontSee(url('/blog'), false);
 
-        $this->get('/')
-            ->assertOk()
-            ->assertDontSee('href="' . url('/blog') . '"', false);
+        $this->article(['title' => 'Eerste artikel']);
+
+        $this->get('/sitemap.xml')->assertOk()->assertSee(url('/blog'), false);
     }
 
     public function test_an_unknown_slug_returns_a_not_found(): void
