@@ -42,6 +42,27 @@ class AuthTest extends TestCase
         $this->assertSame('verhuurder', User::first()->role->value);
     }
 
+    public function test_the_consent_checkbox_links_to_the_documents_you_agree_to(): void
+    {
+        // Je kunt niet akkoord gaan met iets dat je niet kunt lezen; de links stonden op '#'.
+        $html = $this->get('/registreren')->assertOk()->getContent();
+
+        $this->assertStringContainsString('href="' . route('legal.terms') . '"', $html);
+        $this->assertStringContainsString('href="' . route('legal.privacy') . '"', $html);
+    }
+
+    public function test_the_public_pages_have_no_dead_links_left(): void
+    {
+        foreach (['/', '/registreren', '/studios', '/contact'] as $path) {
+            $html = $this->get($path)->assertOk()->getContent();
+
+            // Social media wacht nog op echte accounts; die staan bewust leeg.
+            $dead = substr_count($html, 'href="#"') - substr_count($html, 'href="#" aria-label=');
+
+            $this->assertSame(0, $dead, $path . ' heeft nog een link die nergens heen gaat.');
+        }
+    }
+
     public function test_registration_requires_terms_and_valid_role(): void
     {
         $response = $this->post('/registreren', [

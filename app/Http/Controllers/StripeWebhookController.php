@@ -16,19 +16,29 @@ class StripeWebhookController extends Controller
 
     public function __invoke(Request $request): Response
     {
-        $secret = (string) config('services.stripe.webhook_secret');
+        // Stripe kent per bestemming een eigen geheim. Wie zowel het platform als de
+        // gekoppelde accounts laat afleveren, zet ze hier gescheiden door een komma.
+        $secrets = array_filter(array_map('trim', explode(',', (string) config('services.stripe.webhook_secret'))));
 
-        abort_if($secret === '', 400);
+        abort_if($secrets === [], 400);
 
-        try {
-            $event = Webhook::constructEvent(
-                $request->getContent(),
-                $request->header('Stripe-Signature', ''),
-                $secret,
-            );
-        } catch (Throwable) {
-            abort(400);
+        $event = null;
+
+        foreach ($secrets as $secret) {
+            try {
+                $event = Webhook::constructEvent(
+                    $request->getContent(),
+                    $request->header('Stripe-Signature', ''),
+                    $secret,
+                );
+
+                break;
+            } catch (Throwable) {
+                continue;
+            }
         }
+
+        abort_if($event === null, 400);
 
         if ($event->type === 'checkout.session.completed') {
             $this->handleCheckoutCompleted($event->data->object);

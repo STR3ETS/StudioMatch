@@ -67,8 +67,8 @@
         <label class="flex cursor-pointer items-start gap-2.5 text-sm text-prussian-blue/80">
             <input type="checkbox" name="terms" value="1" class="mt-0.5 h-4 w-4 shrink-0 rounded border-prussian-blue/30 accent-ruby-red" required>
             <span>{!! __('auth.register.terms', [
-                'terms' => '<a href="#" class="font-semibold text-ruby-red hover:underline">' . __('auth.register.terms_link') . '</a>',
-                'privacy' => '<a href="#" class="font-semibold text-ruby-red hover:underline">' . __('auth.register.privacy_link') . '</a>',
+                'terms' => '<a href="' . route('legal.terms') . '" target="_blank" rel="noopener" class="font-semibold text-ruby-red underline underline-offset-2">' . __('auth.register.terms_link') . '</a>',
+                'privacy' => '<a href="' . route('legal.privacy') . '" target="_blank" rel="noopener" class="font-semibold text-ruby-red underline underline-offset-2">' . __('auth.register.privacy_link') . '</a>',
             ]) !!}</span>
         </label>
         <x-input-error field="terms" class="!mt-1.5" />

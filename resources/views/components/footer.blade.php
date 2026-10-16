@@ -27,7 +27,7 @@
             <div>
                 <h3 class="text-sm font-bold">{{ __('footer.discover.title') }}</h3>
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
-                    <li><a href="#" class="transition hover:text-white">{{ __('footer.discover.search') }}</a></li>
+                    <li><a href="{{ route('studios') }}" class="transition hover:text-white">{{ __('footer.discover.search') }}</a></li>
                     <li><a href="{{ route('how') }}" class="transition hover:text-white">{{ __('footer.discover.how_it_works') }}</a></li>
                     <li><a href="{{ route('faq') }}" class="transition hover:text-white">{{ __('footer.discover.faq') }}</a></li>
                     <li><a href="{{ route('blog') }}" class="transition hover:text-white">{{ __('footer.discover.blog') }}</a></li>
@@ -38,14 +38,13 @@
                 <h3 class="text-sm font-bold">{{ __('footer.hosts.title') }}</h3>
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
                     <li><a href="{{ route('hosts') }}" class="transition hover:text-white">{{ __('footer.hosts.become_host') }}</a></li>
-                    <li><a href="#" class="transition hover:text-white">{{ __('footer.hosts.how_hosting_works') }}</a></li>
+                    <li><a href="{{ route('hosts') }}" class="transition hover:text-white">{{ __('footer.hosts.how_hosting_works') }}</a></li>
                 </ul>
             </div>
 
             <div>
                 <h3 class="text-sm font-bold">{{ __('footer.company.title') }}</h3>
                 <ul class="mt-4 space-y-3 text-sm text-white/60">
-                    <li><a href="#" class="transition hover:text-white">{{ __('footer.company.about') }}</a></li>
                     <li><a href="{{ route('contact') }}" class="transition hover:text-white">{{ __('footer.company.contact') }}</a></li>
                 </ul>
             </div>

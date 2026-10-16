@@ -81,6 +81,49 @@ class StripeTest extends TestCase
         $this->post('/stripe/webhook', [])->assertStatus(400);
     }
 
+    public function test_webhook_accepts_a_second_destination_with_its_own_secret(): void
+    {
+        // Stripe levert platformgebeurtenissen en die van gekoppelde accounts bij aparte
+        // bestemmingen af, elk met een eigen geheim, maar wel op hetzelfde adres.
+        config(['services.stripe.webhook_secret' => 'whsec_platform, whsec_connect']);
+
+        $booking = $this->booking();
+        $payload = json_encode([
+            'type' => 'checkout.session.completed',
+            'data' => ['object' => [
+                'payment_status' => 'paid',
+                'payment_intent' => 'pi_live_123',
+                'metadata' => ['booking_id' => $booking->id],
+            ]],
+        ]);
+
+        $this->call('POST', '/stripe/webhook', [], [], [], [
+            'HTTP_STRIPE_SIGNATURE' => $this->signature($payload, 'whsec_connect'),
+            'CONTENT_TYPE' => 'application/json',
+        ], $payload)->assertNoContent();
+
+        $this->assertSame('pi_live_123', $booking->fresh()->stripe_payment_intent_id);
+    }
+
+    public function test_webhook_still_refuses_an_unknown_secret(): void
+    {
+        config(['services.stripe.webhook_secret' => 'whsec_platform, whsec_connect']);
+
+        $payload = json_encode(['type' => 'charge.refunded', 'data' => ['object' => []]]);
+
+        $this->call('POST', '/stripe/webhook', [], [], [], [
+            'HTTP_STRIPE_SIGNATURE' => $this->signature($payload, 'whsec_iemand_anders'),
+            'CONTENT_TYPE' => 'application/json',
+        ], $payload)->assertStatus(400);
+    }
+
+    private function signature(string $payload, string $secret): string
+    {
+        $timestamp = time();
+
+        return 't=' . $timestamp . ',v1=' . hash_hmac('sha256', $timestamp . '.' . $payload, $secret);
+    }
+
     public function test_host_sees_stripe_page_in_simulation_mode(): void
     {
         $this->hostProfile();
