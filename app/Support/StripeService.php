@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Booking;
 use App\Models\HostProfile;
 use Illuminate\Support\Facades\Log;
+use Stripe\Exception\ApiErrorException;
 use Stripe\StripeClient;
 use Throwable;
 
@@ -16,6 +17,26 @@ class StripeService
     public static function lastError(): ?string
     {
         return self::$lastError;
+    }
+
+    /** Stripe zegt in de uitzondering welk veld hij afkeurt; dat is het halve antwoord. */
+    private static function describe(Throwable $exception): string
+    {
+        if (! $exception instanceof ApiErrorException) {
+            return $exception->getMessage();
+        }
+
+        $error = $exception->getError();
+
+        $parts = array_filter([
+            $exception->getMessage(),
+            $error?->type ? 'type: ' . $error->type : null,
+            $error?->code ? 'code: ' . $error->code : null,
+            $error?->param ? 'veld: ' . $error->param : null,
+            $exception->getHttpStatus() ? 'status: ' . $exception->getHttpStatus() : null,
+        ]);
+
+        return implode(' | ', $parts);
     }
 
     public static function enabled(): bool
@@ -191,7 +212,7 @@ class StripeService
 
             return $link->url;
         } catch (Throwable $e) {
-            self::$lastError = $e->getMessage();
+            self::$lastError = self::describe($e);
 
             Log::error('Stripe onboarding mislukt', ['profile' => $profile->id, 'error' => $e->getMessage()]);
 

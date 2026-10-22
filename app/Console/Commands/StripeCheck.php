@@ -26,6 +26,7 @@ class StripeCheck extends Command
         $this->table(['Instelling', 'Waarde'], [
             ['APP_ENV', app()->environment()],
             ['APP_URL', (string) config('app.url')],
+            ['Database', (string) config('database.connections.' . config('database.default') . '.database')],
             ['STRIPE_SECRET', $secret === '' ? '(leeg)' : $this->mode($secret)],
             ['STRIPE_WEBHOOK_SECRET', $webhook === '' ? '(leeg)' : 'ingesteld (' . count(explode(',', $webhook)) . ' stuks)'],
         ]);
@@ -92,9 +93,20 @@ class StripeCheck extends Command
         $this->line('Platformaccount: ' . $account->id);
         $this->line('Land: ' . ($account->country ?? '?') . ', valuta: ' . strtoupper((string) ($account->default_currency ?? '?')));
         $this->line('Betalingen aan: ' . ($account->charges_enabled ? 'ja' : 'nee'));
+        $this->line('Uitbetalingen aan: ' . ($account->payouts_enabled ? 'ja' : 'nee'));
+        $this->line('Activatie afgerond: ' . ($account->details_submitted ? 'ja' : 'nee'));
 
         if (! $account->charges_enabled) {
-            $this->warn('Zolang betalingen uitstaan is het account nog niet geactiveerd. Rond dat eerst af in het Stripe-dashboard.');
+            $this->warn('Zolang betalingen uitstaan kan er niets afgerekend worden.');
+        }
+
+        /*
+         * Een platform mag pas gekoppelde accounts aanmaken als de activatie rond is.
+         * Betalingen kunnen ondertussen gewoon aanstaan, dus hier kijk je snel overheen.
+         */
+        if (! $account->details_submitted) {
+            $this->error('De activatie is niet afgerond, dus verhuurders kunnen zich niet koppelen.');
+            $this->warn('Afronden op https://dashboard.stripe.com/account/onboarding');
         }
 
         return true;
@@ -127,7 +139,13 @@ class StripeCheck extends Command
         $profile = HostProfile::whereHas('user', fn ($query) => $query->where('email', $email))->first();
 
         if ($profile === null) {
-            $this->error("Geen verhuurdersprofiel gevonden bij {$email}.");
+            $this->error("Geen verhuurdersprofiel gevonden bij {$email}. Dit zijn de verhuurders die er wel zijn:");
+
+            $this->table(['Naam', 'E-mail', 'Gekoppeld'], HostProfile::with('user')->get()->map(fn (HostProfile $host) => [
+                $host->name,
+                $host->user->email,
+                $host->stripe_account_id ?? 'nee',
+            ]));
 
             return;
         }
