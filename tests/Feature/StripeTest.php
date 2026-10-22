@@ -124,6 +124,23 @@ class StripeTest extends TestCase
         return 't=' . $timestamp . ',v1=' . hash_hmac('sha256', $timestamp . '.' . $payload, $secret);
     }
 
+    public function test_a_failed_connection_shows_the_reason_instead_of_pointing_at_fields(): void
+    {
+        // Op de uitbetalingenpagina staat geen enkel invulveld, dus "controleer de
+        // gemarkeerde velden" stuurde verhuurders het bos in.
+        $this->hostProfile();
+
+        $html = $this->actingAs($this->host->fresh())
+            ->from('/dashboard/verhuurder/uitbetalingen')
+            ->followingRedirects()
+            ->post('/dashboard/verhuurder/uitbetalingen/onboarding')
+            ->assertOk()
+            ->getContent();
+
+        $this->assertStringContainsString(__('host.stripe.not_configured'), $html);
+        $this->assertStringNotContainsString(__('dashboard.toast.error_text'), $html);
+    }
+
     public function test_host_sees_stripe_page_in_simulation_mode(): void
     {
         $this->hostProfile();

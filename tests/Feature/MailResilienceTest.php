@@ -4,51 +4,25 @@ namespace Tests\Feature;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /**
- * Registreren gaf een 500 zodra Mailgun de daglimiet meldde: het account was al
- * aangemaakt, maar de verificatiemail knalde er middenin uit. Mail hoort daarom via de
- * wachtrij te gaan, zodat een storing bij de provider nooit meer het verzoek raakt.
+ * Mail mag het verzoek nooit slopen, en mag ook nooit stilletjes blijven liggen.
+ *
+ * Eerst ging alles via de wachtrij, want registreren gaf een 500 zodra Mailgun de
+ * daglimiet meldde. Dat loste de ene kant op en brak de andere: draait de scheduler op
+ * de server niet, dan blijft de mail eindeloos staan zonder dat iemand het merkt.
+ *
+ * Nu doet MailDelivery allebei: direct versturen, en bij een weigering alsnog de
+ * wachtrij in. De notificaties blijven dus ShouldQueue, want dat vangnet moet werken.
+ * Dat gedrag zelf staat in AccountMailDeliveryTest en ContactDeliveryTest; hier bewaken
+ * we alleen dat de onderdelen eronder op hun plaats blijven.
  */
 class MailResilienceTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_registering_puts_the_mail_on_the_queue_instead_of_sending_it_inline(): void
-    {
-        config(['queue.default' => 'database']);
-
-        $this->post('/registreren', [
-            'role' => 'artiest',
-            'first_name' => 'Sam',
-            'last_name' => 'de Wit',
-            'email' => 'sam@voorbeeld.nl',
-            'password' => 'Wachtwoord123',
-            'password_confirmation' => 'Wachtwoord123',
-            'terms' => '1',
-        ])->assertRedirect();
-
-        $this->assertDatabaseHas('users', ['email' => 'sam@voorbeeld.nl']);
-
-        // De verificatiemail staat klaar in de wachtrij en is dus niet tijdens het
-        // verzoek verstuurd. Daar kan de mailprovider het verzoek niet meer mee slopen.
-        $this->assertGreaterThan(0, DB::table('jobs')->count());
-    }
-
-    public function test_a_password_reset_request_also_goes_through_the_queue(): void
-    {
-        config(['queue.default' => 'database']);
-
-        \App\Models\User::factory()->create(['role' => 'artiest', 'email' => 'sam@voorbeeld.nl']);
-
-        $this->post('/wachtwoord-vergeten', ['email' => 'sam@voorbeeld.nl']);
-
-        $this->assertGreaterThan(0, DB::table('jobs')->count());
-    }
-
-    public function test_every_notification_is_queued(): void
+    public function test_every_notification_can_fall_back_to_the_queue(): void
     {
         $notQueued = [];
 
@@ -64,7 +38,7 @@ class MailResilienceTest extends TestCase
             }
         }
 
-        $this->assertSame([], $notQueued, 'Deze notificaties gaan nog buiten de wachtrij om: ' . implode(', ', $notQueued));
+        $this->assertSame([], $notQueued, 'Deze notificaties hebben geen vangnet: ' . implode(', ', $notQueued));
     }
 
     public function test_the_queue_is_drained_by_the_scheduler(): void
@@ -76,5 +50,15 @@ class MailResilienceTest extends TestCase
             $commands->contains(fn (?string $command) => $command !== null && str_contains($command, 'queue:work')),
             'Zonder geplande verwerking blijft de mail in de wachtrij staan.'
         );
+    }
+
+    public function test_the_lock_on_that_schedule_expires(): void
+    {
+        // Zonder vervaltijd houdt een afgebroken run de wachtrij 24 uur tegen.
+        $event = collect(app(\Illuminate\Console\Scheduling\Schedule::class)->events())
+            ->first(fn ($event) => $event->command !== null && str_contains($event->command, 'queue:work'));
+
+        $this->assertTrue($event->withoutOverlapping);
+        $this->assertLessThanOrEqual(5, $event->expiresAt);
     }
 }

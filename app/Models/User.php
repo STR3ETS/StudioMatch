@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\UserRole;
 use App\Notifications\ResetPasswordQueued;
 use App\Notifications\VerifyEmailQueued;
+use App\Support\MailDelivery;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -31,19 +32,19 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
     }
 
     /*
-     * Laravel verstuurt deze twee mails standaard midden in het verzoek. Valt de
-     * mailprovider dan weg, dan ziet de bezoeker een foutpagina terwijl zijn account al
-     * bestaat of zijn herstelverzoek al is genoteerd. Daarom via de wachtrij.
+     * Op deze twee staat iemand te wachten met een half account of een vergeten
+     * wachtwoord, dus ze gaan direct de deur uit. Zie MailDelivery voor waarom de
+     * wachtrij hier alleen nog het vangnet is.
      */
 
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new VerifyEmailQueued);
+        MailDelivery::send($this, new VerifyEmailQueued);
     }
 
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new ResetPasswordQueued($token));
+        MailDelivery::send($this, new ResetPasswordQueued($token));
     }
 
     protected function casts(): array

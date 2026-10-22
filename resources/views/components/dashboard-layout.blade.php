@@ -271,7 +271,8 @@
                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-circle-exclamation fa-sm"></i></span>
                     <div class="min-w-0 flex-1">
                         <p class="text-sm font-bold text-prussian-blue">{{ __('dashboard.toast.error') }}</p>
-                        <p class="mt-0.5 text-xs leading-relaxed text-prussian-blue/60">{{ __('dashboard.toast.error_text') }}</p>
+                        {{-- Bij één melding is die zelf bruikbaarder dan een verwijzing naar velden die er niet altijd zijn. --}}
+                        <p class="mt-0.5 text-xs leading-relaxed text-prussian-blue/60">{{ $errors->count() === 1 ? $errors->first() : __('dashboard.toast.error_text') }}</p>
                     </div>
                 @endif
                 <button type="button" data-toast-close aria-label="{{ __('dashboard.toast.close') }}" class="flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full text-prussian-blue/40 transition hover:bg-prussian-blue/5 hover:text-prussian-blue">

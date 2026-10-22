@@ -3,15 +3,17 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Throwable;
 
 class MailCheck extends Command
 {
     protected $signature = 'mail:check {--to= : Stuur ook een testmail naar dit adres}';
 
-    protected $description = 'Controleer de mailconfiguratie (Mailgun-domein, API-key en contactadres)';
+    protected $description = 'Controleer de mailconfiguratie, de wachtrij en de verbinding met Mailgun';
 
     public function handle(): int
     {
@@ -21,21 +23,38 @@ class MailCheck extends Command
         $endpoint = (string) config('services.mailgun.endpoint');
 
         $this->table(['Instelling', 'Waarde'], [
+            ['APP_ENV', app()->environment()],
+            ['APP_URL', (string) config('app.url')],
             ['MAIL_MAILER', $mailer],
             ['MAIL_FROM_ADDRESS', (string) config('mail.from.address')],
             ['CONTACT_EMAIL', (string) config('studio.contact_email')],
             ['MAILGUN_DOMAIN', $domain !== '' ? $domain : '(leeg)'],
             ['MAILGUN_SECRET', $secret !== '' ? 'ingesteld (' . strlen($secret) . ' tekens)' : '(leeg)'],
             ['MAILGUN_ENDPOINT', $endpoint],
+            ['QUEUE_CONNECTION', (string) config('queue.default')],
         ]);
 
         if (config('studio.contact_email') === '') {
             $this->error('CONTACT_EMAIL is leeg: contactformulier-berichten gaan dan naar de adminaccounts in de database.');
         }
 
+        if ($mailer === 'log') {
+            $this->warn('MAIL_MAILER staat op "log": mail belandt in storage/logs en verlaat de server niet.');
+        }
+
+        $host = (string) parse_url((string) config('app.url'), PHP_URL_HOST);
+        $sender = Str::after((string) config('mail.from.address'), '@');
+
+        // Op een ontwikkelmachine wijkt de hostnaam altijd af; daar zegt dit niets.
+        if (app()->isProduction() && $host !== '' && $sender !== '' && ! str_ends_with($host, $sender)) {
+            $this->warn("De afzender staat op '{$sender}' terwijl de site op '{$host}' draait. Dat struikelt over SPF en DKIM.");
+        }
+
         if ($mailer === 'mailgun') {
             $this->checkMailgun($domain, $secret, $endpoint);
         }
+
+        $this->checkQueue();
 
         if ($to = $this->option('to')) {
             $this->sendTest($to);
@@ -91,6 +110,41 @@ class MailCheck extends Command
             if (($record['valid'] ?? '') !== 'valid') {
                 $this->warn('DNS nog niet in orde: ' . ($record['record_type'] ?? '?') . ' ' . ($record['name'] ?? ''));
             }
+        }
+    }
+
+    /*
+     * De instellingen kunnen tot in de puntjes kloppen terwijl er niets aankomt: dan
+     * staat de mail nog in de wachtrij omdat de scheduler op de server niet draait.
+     */
+    private function checkQueue(): void
+    {
+        $this->newLine();
+
+        try {
+            $waiting = DB::table('jobs')->count();
+            $failed = DB::table('failed_jobs')->count();
+        } catch (Throwable $e) {
+            $this->error('De wachtrijtabellen zijn niet leesbaar: ' . $e->getMessage());
+
+            return;
+        }
+
+        $this->line("Wachtrij: {$waiting} klaarstaand, {$failed} mislukt.");
+
+        if ($waiting > 0) {
+            $this->warn('Er staat werk klaar. Loopt dat niet terug, dan draait de cron op php artisan schedule:run niet.');
+        }
+
+        if ($failed > 0) {
+            $this->line('Laatste fout: ' . Str::limit((string) DB::table('failed_jobs')->latest('failed_at')->value('exception'), 500));
+        }
+
+        $locks = DB::table('cache_locks')->where('key', 'like', '%schedule%')->pluck('key');
+
+        if ($locks->isNotEmpty()) {
+            $this->warn('Er ligt nog een slot op de geplande verwerking: ' . $locks->implode(', '));
+            $this->warn('Opruimen met php artisan cache:clear, anders blijft de wachtrij staan.');
         }
     }
 

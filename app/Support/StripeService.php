@@ -10,6 +10,14 @@ use Throwable;
 
 class StripeService
 {
+    /** De laatste fout van Stripe, zodat php artisan stripe:check hem kan tonen. */
+    private static ?string $lastError = null;
+
+    public static function lastError(): ?string
+    {
+        return self::$lastError;
+    }
+
     public static function enabled(): bool
     {
         return (string) config('services.stripe.secret') !== '';
@@ -183,6 +191,8 @@ class StripeService
 
             return $link->url;
         } catch (Throwable $e) {
+            self::$lastError = $e->getMessage();
+
             Log::error('Stripe onboarding mislukt', ['profile' => $profile->id, 'error' => $e->getMessage()]);
 
             return null;
