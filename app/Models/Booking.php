@@ -287,6 +287,22 @@ class Booking extends Model
         return max(0, $this->rent_cents - $refundedFromRent);
     }
 
+    /*
+     * Een aanvraag die de studio nog nooit heeft bevestigd mag de artiest kosteloos
+     * intrekken. Een verzette boeking staat ook weer op "wacht op bevestiging", maar die
+     * was al eens bevestigd: daar geldt gewoon de annuleringsregeling, gerekend vanaf het
+     * nieuwe tijdstip. Anders kon je een boeking naar morgen verzetten en hem vóór de
+     * bevestiging alsnog volledig terugkrijgen.
+     */
+    public function refundPercentForArtistCancellation(): int
+    {
+        if ($this->status === BookingStatus::PendingConfirmation && $this->rescheduled_at === null) {
+            return 100;
+        }
+
+        return $this->refundPercentForCancellationNow();
+    }
+
     public function refundPercentForCancellationNow(): int
     {
         $hoursUntilStart = (int) floor(now()->diffInMinutes($this->startsAt(), false) / 60);

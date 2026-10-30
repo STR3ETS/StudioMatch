@@ -61,6 +61,12 @@ return [
     ],
 
     'checkout' => [
+        'stripe_service_fee' => 'StudioMatch service fee',
+        'stripe_vat' => 'VAT on service fee (:percent%)',
+        'stripe_split' => 'Booking #:id at :studio. :rent goes to the studio, :platform stays with StudioMatch.',
+        'stripe_payout_moment' => '24 hours after the session starts',
+        'stripe_transfer' => 'Rent for booking #:id on :date',
+
         'with_engineer' => 'incl. engineer',
         'buyer_title' => 'Who is booking?',
         'buyer_note' => 'This determines which details appear on your invoice.',

@@ -55,21 +55,12 @@ class StripeService
             $session = self::client()->checkout->sessions->create([
                 'mode' => 'payment',
                 'payment_method_types' => ['ideal', 'card'],
-                'line_items' => [[
-                    'quantity' => 1,
-                    'price_data' => [
-                        'currency' => 'eur',
-                        'unit_amount' => $booking->total_cents,
-                        'product_data' => [
-                            'name' => $booking->room->studio->name . ' - ' . $booking->room->title,
-                            'description' => $booking->date->translatedFormat('l j F Y') . ' ' . $booking->timeRange(),
-                        ],
-                    ],
-                ]],
+                'line_items' => self::lineItems($booking),
                 'customer_email' => $booking->user->email,
                 'metadata' => ['booking_id' => $booking->id],
                 'payment_intent_data' => [
-                    'metadata' => ['booking_id' => $booking->id],
+                    'description' => self::splitDescription($booking),
+                    'metadata' => self::splitMetadata($booking),
                     'transfer_group' => 'booking-' . $booking->id,
                 ],
                 'expires_at' => now()->addMinutes(30)->timestamp,
@@ -85,6 +76,67 @@ class StripeService
 
             return null;
         }
+    }
+
+    /*
+     * Eén regel met het totaal liet in Stripe niet zien welk deel naar de studio gaat en
+     * welk deel bij StudioMatch blijft. Los uitgesplitst ziet de huurder het op de
+     * betaalpagina en ziet StudioMatch het in het dashboard. Samen altijd total_cents.
+     */
+    public static function lineItems(Booking $booking): array
+    {
+        $line = fn (int $cents, string $name, ?string $description = null) => [
+            'quantity' => 1,
+            'price_data' => [
+                'currency' => 'eur',
+                'unit_amount' => $cents,
+                'product_data' => array_filter(['name' => $name, 'description' => $description]),
+            ],
+        ];
+
+        $items = [$line(
+            $booking->rent_cents,
+            $booking->room->studio->name . ' - ' . $booking->room->title,
+            $booking->date->translatedFormat('l j F Y') . ' ' . $booking->timeRange(),
+        )];
+
+        if ($booking->service_fee_cents > 0) {
+            $items[] = $line($booking->service_fee_cents, __('booking.checkout.stripe_service_fee'));
+        }
+
+        if ($booking->vat_cents > 0) {
+            $items[] = $line($booking->vat_cents, __('booking.checkout.stripe_vat', ['percent' => config('studio.vat_percent')]));
+        }
+
+        return $items;
+    }
+
+    public static function splitDescription(Booking $booking): string
+    {
+        return __('booking.checkout.stripe_split', [
+            'id' => $booking->id,
+            'studio' => $booking->room->studio->name,
+            'rent' => self::euro($booking->rent_cents),
+            'platform' => self::euro($booking->service_fee_cents + $booking->vat_cents),
+        ]);
+    }
+
+    /** Metadata is in het Stripe-dashboard doorzoekbaar en staat bij elke betaling. */
+    public static function splitMetadata(Booking $booking): array
+    {
+        return [
+            'booking_id' => (string) $booking->id,
+            'studio' => $booking->room->studio->name,
+            'naar_studio' => self::euro($booking->rent_cents),
+            'servicekosten' => self::euro($booking->service_fee_cents),
+            'btw_servicekosten' => self::euro($booking->vat_cents),
+            'uitbetaling' => __('booking.checkout.stripe_payout_moment'),
+        ];
+    }
+
+    private static function euro(int $cents): string
+    {
+        return '€ ' . number_format($cents / 100, 2, ',', '.');
     }
 
     public static function verifyCheckoutPaid(Booking $booking, string $sessionId): bool
@@ -144,13 +196,26 @@ class StripeService
         }
 
         try {
-            $transfer = self::client()->transfers->create([
+            /*
+             * Zonder bron haalt Stripe de overboeking uit het vrij beschikbare saldo van
+             * StudioMatch. Bij een nieuw account staat dat de eerste dagen op nul en mislukt
+             * de overboeking dan. Gekoppeld aan de betaling zelf maakt Stripe hem meteen aan
+             * en voert hem uit zodra dat geld vrijkomt; de studio ziet hem direct staan.
+             */
+            $charge = self::client()->paymentIntents->retrieve($booking->stripe_payment_intent_id)->latest_charge;
+
+            $transfer = self::client()->transfers->create(array_filter([
                 'amount' => $amount,
                 'currency' => 'eur',
                 'destination' => $profile->stripe_account_id,
+                'source_transaction' => is_string($charge) ? $charge : $charge?->id,
                 'transfer_group' => 'booking-' . $booking->id,
+                'description' => __('booking.checkout.stripe_transfer', [
+                    'id' => $booking->id,
+                    'date' => $booking->date->translatedFormat('j F Y'),
+                ]),
                 'metadata' => ['booking_id' => $booking->id],
-            ]);
+            ]));
 
             $booking->update(['stripe_transfer_id' => $transfer->id, 'transferred_at' => now()]);
 

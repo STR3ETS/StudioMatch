@@ -61,6 +61,12 @@ return [
     ],
 
     'checkout' => [
+        'stripe_service_fee' => 'Servicekosten StudioMatch',
+        'stripe_vat' => 'Btw over servicekosten (:percent%)',
+        'stripe_split' => 'Boeking #:id bij :studio. :rent gaat naar de studio, :platform blijft bij StudioMatch.',
+        'stripe_payout_moment' => '24 uur na de start van de sessie',
+        'stripe_transfer' => 'Huur voor boeking #:id op :date',
+
         'with_engineer' => 'incl. engineer',
         'buyer_title' => 'Op wiens naam?',
         'buyer_note' => 'Dit bepaalt welke gegevens op je factuur komen.',

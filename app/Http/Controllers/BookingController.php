@@ -221,9 +221,7 @@ class BookingController extends Controller
             404,
         );
 
-        $refundPercent = $booking->status === BookingStatus::PendingConfirmation
-            ? 100
-            : $booking->refundPercentForCancellationNow();
+        $refundPercent = $booking->refundPercentForArtistCancellation();
 
         $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'artist']);
 

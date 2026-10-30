@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
+use App\Support\StripeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -218,6 +219,64 @@ class StripeTest extends TestCase
             ->assertRedirect(route('dashboard.artist'));
 
         $this->assertSame(7500 + 1350 + 284, $booking->fresh()->refunded_cents);
+    }
+
+    public function test_an_unconfirmed_request_can_still_be_withdrawn_for_free(): void
+    {
+        Notification::fake();
+        $this->travelTo(today()->addHours(12));
+        $booking = $this->booking([
+            'date' => today()->addDay(),
+            'start_hour' => 10,
+            'end_hour' => 13,
+            'status' => 'pending_confirmation',
+            'confirmed_at' => null,
+        ]);
+
+        $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/annuleren');
+
+        $this->assertSame(16634, $booking->fresh()->refunded_cents);
+    }
+
+    public function test_moving_a_booking_close_and_cancelling_before_the_studio_answers_pays_the_studio(): void
+    {
+        // Uit de testronde: volgende week geboekt, naar morgen verzet, dan geannuleerd
+        // vóórdat de studio de nieuwe tijd bevestigde. Dat gaf een volledige restitutie,
+        // terwijl de studio binnen 24 uur recht heeft op het volledige bedrag.
+        Notification::fake();
+        $this->travelTo(today()->addHours(14));
+        $booking = $this->booking([
+            'date' => today()->addDay(),
+            'start_hour' => 10,
+            'end_hour' => 13,
+            'status' => 'pending_confirmation',
+            'confirmed_at' => null,
+            'rescheduled_at' => now(),
+        ]);
+
+        $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/annuleren');
+
+        $booking->refresh();
+        $this->assertSame('cancelled', $booking->status->value);
+        $this->assertNull($booking->refunded_cents);
+        $this->assertSame(15000, $booking->hostPayoutCents());
+    }
+
+    public function test_the_checkout_shows_what_goes_to_the_studio_and_what_stays_with_studiomatch(): void
+    {
+        $booking = $this->booking()->load('room.studio');
+
+        $items = StripeService::lineItems($booking);
+
+        $this->assertCount(3, $items);
+        $this->assertSame([15000, 1350, 284], array_map(fn ($item) => $item['price_data']['unit_amount'], $items));
+        $this->assertSame($booking->total_cents, array_sum(array_map(fn ($item) => $item['price_data']['unit_amount'], $items)));
+
+        $metadata = StripeService::splitMetadata($booking);
+        $this->assertSame('€ 150,00', $metadata['naar_studio']);
+        $this->assertSame('€ 13,50', $metadata['servicekosten']);
+        $this->assertSame('€ 2,84', $metadata['btw_servicekosten']);
+        $this->assertStringContainsString('€ 150,00', StripeService::splitDescription($booking));
     }
 
     public function test_auto_cancel_records_a_full_refund(): void
