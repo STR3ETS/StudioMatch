@@ -36,7 +36,7 @@
                         <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
                             <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->dateRange() }} {{ $booking->timeRange() }}</span>
                             <span><i class="fa-solid fa-music fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->user->name }}</span>
-                            <span><i class="fa-solid fa-euro-sign fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
+                            <span><i class="fa-solid fa-receipt fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
                         </p>
                     </div>
 

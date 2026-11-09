@@ -13,6 +13,9 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Achter de statusbalk en de knoppenbalk van een websitepagina (die tekent niet onder de balken,
+             SystemBars vult die ruimte met deze kleur). Zo blijven de witte iconen leesbaar. -->
+        <item name="android:windowBackground">@color/studiomatch_navy</item>
     </style>
 
 

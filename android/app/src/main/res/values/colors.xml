@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prussian blue van StudioMatch. -->
+    <color name="studiomatch_navy">#101529</color>
+    <!-- Ruby red: accent van de pushmeldingen. -->
+    <color name="studiomatch_ruby">#AD0924</color>
+</resources>

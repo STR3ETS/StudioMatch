@@ -7,14 +7,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\User;
 use App\Notifications\DamageReported;
+use App\Notifications\NewTicket;
+use App\Support\MailDelivery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\View\View;
 
 class DamageController extends Controller
 {
-
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
@@ -27,7 +27,7 @@ class DamageController extends Controller
         ]);
 
         $photos = collect($validated['photos'] ?? [])
-            ->map(fn ($photo) => $photo->store('damages/' . $booking->id, 'public'))
+            ->map(fn ($photo) => $photo->store('damages/'.$booking->id, 'public'))
             ->all();
 
         $booking->update([
@@ -37,12 +37,17 @@ class DamageController extends Controller
         ]);
 
         $recipient = (string) config('studio.contact_email');
+        $admins = User::where('role', UserRole::Admin)->get();
 
         if ($recipient !== '') {
             Notification::route('mail', $recipient)->notify(new DamageReported($booking));
         } else {
-            Notification::send(User::where('role', UserRole::Admin)->get(), new DamageReported($booking));
+            Notification::send($admins, new DamageReported($booking));
         }
+
+        // Altijd een pushmelding naar de telefoon van de beheerders (Tickets in de app), ook als de mail
+        // naar het algemene adres gaat.
+        MailDelivery::send($admins, new NewTicket($booking, 'damage'));
 
         return redirect()->route('host.bookings.index')->with('status', __('host.damage.reported'));
     }

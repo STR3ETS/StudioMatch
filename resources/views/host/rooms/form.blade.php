@@ -91,7 +91,7 @@
 
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_pricing') }}</h2>
-            <div class="mt-5 grid gap-5 sm:grid-cols-3">
+            <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
                 <div>
                     <label for="hourly_rate" class="{{ $label }}">{{ __('host.rooms.fields.hourly_rate') }}</label>
                     <div class="relative">
@@ -117,7 +117,7 @@
                 </div>
             </div>
 
-            <div class="mt-5 grid gap-5 sm:grid-cols-3">
+            <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
                 <div>
                     <label for="day_rate" class="{{ $label }}">{{ __('host.rooms.fields.day_rate') }}</label>
                     <div class="relative">
@@ -146,7 +146,7 @@
                     <i class="fa-solid fa-calendar-week fa-sm mr-1.5 text-prussian-blue/40"></i>{{ __('host.rooms.fields.day_rates') }}
                 </summary>
                 <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.rooms.fields.day_rates_hint') }}</p>
-                <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     @for ($weekday = 1; $weekday <= 7; $weekday++)
                         @php $current = $rateByWeekday->get($weekday)?->day_rate_cents; @endphp
                         <div>
@@ -254,7 +254,7 @@
 
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_equipment') }}</h2>
-            <div class="mt-5 grid gap-2 sm:grid-cols-2">
+            <div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 @foreach (config('studio.equipment') as $item)
                     <label class="{{ $check }}">
                         <input type="checkbox" name="equipment[]" value="{{ $item }}" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(in_array($item, old('equipment', $room->equipment ?? [])))>
@@ -269,7 +269,7 @@
             </div>
 
             <h3 class="mt-6 text-sm font-bold text-prussian-blue">{{ __('host.rooms.fields.daws') }}</h3>
-            <div class="mt-3 grid gap-2 sm:grid-cols-2">
+            <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 @foreach (config('studio.daws') as $daw)
                     <label class="{{ $check }}">
                         <input type="checkbox" name="daws[]" value="{{ $daw }}" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(in_array($daw, old('daws', $room->daws ?? [])))>
@@ -281,7 +281,7 @@
 
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_extras') }}</h2>
-            <div class="mt-5 grid gap-2 sm:grid-cols-2">
+            <div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 @foreach (config('studio.facilities') as $facility)
                     <label class="{{ $check }}">
                         <input type="checkbox" name="facilities[]" value="{{ $facility }}" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(in_array($facility, old('facilities', $room->facilities ?? [])))>

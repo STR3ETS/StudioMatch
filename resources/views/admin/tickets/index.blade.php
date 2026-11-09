@@ -15,7 +15,7 @@
     @else
         <div class="mt-8 space-y-4">
             @foreach ($tickets as $booking)
-                <div class="rounded-2xl border border-ruby-red/30 bg-white p-6">
+                <div id="ticket-{{ $booking->id }}" class="scroll-mt-20 rounded-2xl border border-ruby-red/30 bg-white p-6">
                     <div class="flex flex-wrap items-start justify-between gap-4">
                         <div class="min-w-0 flex-1">
                             <div class="flex flex-wrap items-center gap-2">
@@ -26,7 +26,7 @@
                                 <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->dateRange() }} {{ $booking->timeRange() }}</span>
                                 <span><i class="fa-solid fa-music fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->user->name }} ({{ $booking->user->email }})</span>
                                 <span><i class="fa-solid fa-building fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->room->studio->user->name }} ({{ $booking->room->studio->user->email }})</span>
-                                <span><i class="fa-solid fa-euro-sign fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
+                                <span><i class="fa-solid fa-receipt fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->total_cents) }}</span>
                                 <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ __('admin.tickets.reported', ['date' => $booking->disputed_at->translatedFormat('j M Y H:i')]) }}</span>
                             </p>
                             <p class="mt-3 rounded-xl bg-prussian-blue/[0.03] px-4 py-3 text-sm leading-relaxed text-prussian-blue/80">
@@ -90,8 +90,9 @@
 
             <div class="mt-4 space-y-4">
                 @foreach ($damages as $booking)
-                    <div @class([
-                        'rounded-2xl bg-white p-6',
+                    {{-- id: de app opent een melding hier (Api\App\AdminController). --}}
+                    <div id="melding-{{ $booking->id }}" @class([
+                        'scroll-mt-20 rounded-2xl bg-white p-6',
                         'border border-amber-500/40' => $booking->damage_resolved_at === null,
                         'border border-prussian-blue/10 opacity-80' => $booking->damage_resolved_at !== null,
                     ])>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\PostStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Support\AdminDesk;
 use App\Support\RichText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,7 +15,6 @@ use Illuminate\View\View;
 
 class PostController extends Controller
 {
-
     public function index(Request $request): View
     {
         $status = $request->validate([
@@ -22,12 +22,7 @@ class PostController extends Controller
         ])['status'] ?? null;
 
         return view('admin.posts.index', [
-            'posts' => Post::query()
-                ->when($status, fn ($query) => $query->where('status', $status))
-                ->withCount('sections')
-                ->with('author')
-                ->latest('updated_at')
-                ->get(),
+            'posts' => AdminDesk::posts($status),
             'status' => $status,
         ]);
     }
@@ -41,7 +36,7 @@ class PostController extends Controller
     {
         $validated = $this->validatePost($request);
 
-        $post = new Post($this->attributes($request, $validated, new Post()));
+        $post = new Post($this->attributes($request, $validated, new Post));
         $post->user_id = $request->user()->id;
         $post->save();
 

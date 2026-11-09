@@ -5,12 +5,16 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
-use App\Notifications\BookingCancelled;
 use App\Notifications\BookingRescheduled;
+use App\Notifications\DamageReported;
+use App\Notifications\DisputeResolved;
+use App\Notifications\NewTicket;
 use App\Notifications\ProblemReported;
 use App\Notifications\SessionReminder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
@@ -75,7 +79,7 @@ class BookingExtrasTest extends TestCase
         $booking = $this->booking(['date' => today()->addDays(10)->next('monday')]);
         $newDate = $booking->date->copy()->addDay();
 
-        $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/verzetten', [
+        $this->actingAs($this->artist)->post('/boekingen/'.$booking->id.'/verzetten', [
             'date' => $newDate->toDateString(),
             'start' => 14,
         ])->assertRedirect(route('dashboard.artist'));
@@ -98,7 +102,7 @@ class BookingExtrasTest extends TestCase
         ]);
 
         $this->actingAs($this->artist)
-            ->get('/boekingen/' . $booking->id . '/verzetten')
+            ->get('/boekingen/'.$booking->id.'/verzetten')
             ->assertNotFound();
     }
 
@@ -107,7 +111,7 @@ class BookingExtrasTest extends TestCase
         $booking = $this->booking(['date' => today()->addDay()]);
 
         $this->actingAs($this->artist)
-            ->get('/boekingen/' . $booking->id . '/verzetten')
+            ->get('/boekingen/'.$booking->id.'/verzetten')
             ->assertNotFound();
     }
 
@@ -117,7 +121,7 @@ class BookingExtrasTest extends TestCase
         $other = User::factory()->create(['role' => 'artiest']);
         $this->booking(['user_id' => $other->id, 'date' => $booking->date->copy()->addDay(), 'start_hour' => 14, 'end_hour' => 17]);
 
-        $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/verzetten', [
+        $this->actingAs($this->artist)->post('/boekingen/'.$booking->id.'/verzetten', [
             'date' => $booking->date->copy()->addDay()->toDateString(),
             'start' => 14,
         ])->assertSessionHasErrors('slot');
@@ -126,15 +130,15 @@ class BookingExtrasTest extends TestCase
     public function test_artist_can_report_problem_within_window(): void
     {
         Notification::fake();
-        \Illuminate\Support\Facades\Storage::fake('public');
+        Storage::fake('public');
         $admin = User::factory()->create(['role' => 'admin']);
         $booking = $this->booking(['date' => today(), 'start_hour' => max(0, now()->hour - 1), 'end_hour' => min(24, now()->hour + 1)]);
 
-        $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/probleem', [
+        $this->actingAs($this->artist)->post('/boekingen/'.$booking->id.'/probleem', [
             'dispute_reason' => 'De apparatuur werkte niet en er was niemand aanwezig.',
             'photos' => [
-                \Illuminate\Http\UploadedFile::fake()->image('bewijs1.jpg'),
-                \Illuminate\Http\UploadedFile::fake()->image('bewijs2.jpg'),
+                UploadedFile::fake()->image('bewijs1.jpg'),
+                UploadedFile::fake()->image('bewijs2.jpg'),
             ],
         ])->assertRedirect(route('dashboard.artist'));
 
@@ -142,9 +146,12 @@ class BookingExtrasTest extends TestCase
         $this->assertSame('disputed', $booking->status->value);
         $this->assertNotNull($booking->disputed_at);
         $this->assertCount(2, $booking->dispute_photos);
-        \Illuminate\Support\Facades\Storage::disk('public')->assertExists($booking->dispute_photos[0]);
+        Storage::disk('public')->assertExists($booking->dispute_photos[0]);
         Notification::assertSentTo($this->host, ProblemReported::class);
         Notification::assertSentTo($admin, ProblemReported::class);
+        // Pushmelding (Tickets in de app) alleen voor de beheerder.
+        Notification::assertSentTo($admin, NewTicket::class, fn ($notification) => $notification->kind === 'dispute');
+        Notification::assertNotSentTo($this->host, NewTicket::class);
 
         $this->actingAs($admin)->get('/dashboard/admin/tickets')
             ->assertOk()
@@ -157,11 +164,11 @@ class BookingExtrasTest extends TestCase
         $future = $this->booking(['date' => today()->addDays(5)]);
         $old = $this->booking(['date' => today()->subDays(3), 'status' => 'completed']);
 
-        $this->actingAs($this->artist)->post('/boekingen/' . $future->id . '/probleem', [
+        $this->actingAs($this->artist)->post('/boekingen/'.$future->id.'/probleem', [
             'dispute_reason' => 'Dit zou niet mogen werken want de sessie is nog niet begonnen.',
         ])->assertNotFound();
 
-        $this->actingAs($this->artist)->post('/boekingen/' . $old->id . '/probleem', [
+        $this->actingAs($this->artist)->post('/boekingen/'.$old->id.'/probleem', [
             'dispute_reason' => 'Dit zou niet mogen werken want het venster is voorbij.',
         ])->assertNotFound();
     }
@@ -181,7 +188,7 @@ class BookingExtrasTest extends TestCase
             ->assertOk()
             ->assertSee(__('booking.problem.dismissed', ['date' => $booking->disputed_at->translatedFormat('j F')]));
 
-        $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/probleem', [
+        $this->actingAs($this->artist)->post('/boekingen/'.$booking->id.'/probleem', [
             'dispute_reason' => 'Ik probeer het gewoon nog een keer.',
         ])->assertNotFound();
     }
@@ -197,7 +204,7 @@ class BookingExtrasTest extends TestCase
         ]);
 
         Notification::fake();
-        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $booking->id . '/afhandelen', [
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/'.$booking->id.'/afhandelen', [
             'refund_percent' => 100,
             'resolution_note' => 'De studio heeft bevestigd dat de mixer defect was.',
         ]);
@@ -221,7 +228,7 @@ class BookingExtrasTest extends TestCase
             ->assertSee('Probleem A')
             ->assertSee('Probleem B');
 
-        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $release->id . '/afhandelen', [
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/'.$release->id.'/afhandelen', [
             'refund_percent' => 0,
             'resolution_note' => 'De melding is na overleg met beide partijen afgewezen.',
         ]);
@@ -229,7 +236,7 @@ class BookingExtrasTest extends TestCase
         $this->assertNull($release->fresh()->refunded_cents);
         $this->assertSame('dismissed', $release->fresh()->disputeOutcome());
 
-        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $partial->id . '/afhandelen', [
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/'.$partial->id.'/afhandelen', [
             'refund_percent' => 50,
             'resolution_note' => 'Beide partijen hebben deels gelijk, we splitsen het verschil.',
         ]);
@@ -237,15 +244,15 @@ class BookingExtrasTest extends TestCase
         $this->assertSame(7500 + 1350 + 284, $partial->fresh()->refunded_cents);
         $this->assertSame('partial', $partial->fresh()->disputeOutcome());
 
-        $this->actingAs($admin)->patch('/dashboard/admin/tickets/' . $cancel->id . '/afhandelen', [
+        $this->actingAs($admin)->patch('/dashboard/admin/tickets/'.$cancel->id.'/afhandelen', [
             'refund_percent' => 100,
             'resolution_note' => 'De studio was in gebreke, volledige terugbetaling.',
         ]);
         $this->assertSame('cancelled', $cancel->fresh()->status->value);
         $this->assertSame('admin', $cancel->fresh()->cancelled_by);
         $this->assertSame('upheld', $cancel->fresh()->disputeOutcome());
-        Notification::assertSentTo($this->artist, \App\Notifications\DisputeResolved::class);
-        Notification::assertSentTo($this->host, \App\Notifications\DisputeResolved::class);
+        Notification::assertSentTo($this->artist, DisputeResolved::class);
+        Notification::assertSentTo($this->host, DisputeResolved::class);
     }
 
     public function test_reminder_is_sent_once_24_hours_before_start(): void
@@ -318,7 +325,7 @@ class BookingExtrasTest extends TestCase
     {
         $booking = $this->booking(['date' => today()->addDays(5)]);
 
-        $response = $this->actingAs($this->artist)->get('/boekingen/' . $booking->id . '/agenda.ics');
+        $response = $this->actingAs($this->artist)->get('/boekingen/'.$booking->id.'/agenda.ics');
 
         $response->assertOk();
         $this->assertSame('text/calendar; charset=utf-8', $response->headers->get('content-type'));
@@ -326,13 +333,13 @@ class BookingExtrasTest extends TestCase
         $this->assertStringContainsString('LOCATION:', $response->getContent());
 
         $pending = $this->booking(['status' => 'pending_confirmation', 'confirmed_at' => null, 'start_hour' => 14, 'end_hour' => 16]);
-        $this->actingAs($this->artist)->get('/boekingen/' . $pending->id . '/agenda.ics')->assertNotFound();
+        $this->actingAs($this->artist)->get('/boekingen/'.$pending->id.'/agenda.ics')->assertNotFound();
     }
 
     public function test_host_can_report_damage_with_photos(): void
     {
         Notification::fake();
-        \Illuminate\Support\Facades\Storage::fake('public');
+        Storage::fake('public');
         config(['studio.contact_email' => '']);
         $admin = User::factory()->create(['role' => 'admin']);
         $booking = $this->booking(['date' => today()->subDays(2), 'status' => 'completed']);
@@ -341,19 +348,20 @@ class BookingExtrasTest extends TestCase
             ->assertOk()
             ->assertSee(__('host.damage.report_button'));
 
-        $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/' . $booking->id, [
+        $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/'.$booking->id, [
             'damage_reason' => 'De condensatormicrofoon is beschadigd achtergelaten.',
-            'photos' => [\Illuminate\Http\UploadedFile::fake()->image('schade.jpg')],
+            'photos' => [UploadedFile::fake()->image('schade.jpg')],
         ])->assertRedirect(route('host.bookings.index'));
 
         $booking->refresh();
         $this->assertNotNull($booking->damage_reported_at);
         $this->assertCount(1, $booking->damage_photos);
-        Notification::assertSentTo($admin, \App\Notifications\DamageReported::class);
+        Notification::assertSentTo($admin, DamageReported::class);
+        Notification::assertSentTo($admin, NewTicket::class, fn ($notification) => $notification->kind === 'damage');
 
         $this->actingAs($this->host)->get('/dashboard/verhuurder/boekingen')
             ->assertSee('De condensatormicrofoon is beschadigd achtergelaten.');
-        $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/' . $booking->id, [
+        $this->actingAs($this->host)->post('/dashboard/verhuurder/schade/'.$booking->id, [
             'damage_reason' => 'Nog een keer proberen te melden.',
         ])->assertNotFound();
     }
@@ -363,7 +371,7 @@ class BookingExtrasTest extends TestCase
         $booking = $this->booking(['date' => today()->subDays(2), 'status' => 'completed']);
         $other = User::factory()->create(['role' => 'verhuurder']);
 
-        $this->actingAs($other)->post('/dashboard/verhuurder/schade/' . $booking->id, [
+        $this->actingAs($other)->post('/dashboard/verhuurder/schade/'.$booking->id, [
             'damage_reason' => 'Dit is niet mijn boeking maar toch proberen.',
         ])->assertForbidden();
     }
@@ -381,7 +389,7 @@ class BookingExtrasTest extends TestCase
     {
         $this->booking(['date' => today()->addDays(3)]);
 
-        $this->get('/ical/ruimte/' . $this->room->id)->assertForbidden();
+        $this->get('/ical/ruimte/'.$this->room->id)->assertForbidden();
 
         $this->get(URL::signedRoute('ical.room', ['room' => $this->room->id]))
             ->assertOk()

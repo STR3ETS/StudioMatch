@@ -36,7 +36,7 @@
     }
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @inapp class="in-app" @endinapp>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -81,16 +81,25 @@
         op korte pagina's een overbodige scrollbalk oplevert.
     --}}
     <body class="flex min-h-dvh flex-col">
-        <x-app-return />
-        <x-header />
+        <x-app-return :title="$title" />
+        {{-- In de app is de app zelf de navigatie: geen eigen kop, footer of cookiemelding (de app gebruikt
+             alleen noodzakelijke cookies). --}}
+        @unlessinapp
+            <x-header />
+        @endinapp
 
         {{-- Kolom, zodat een korte pagina zoals een foutmelding zich kan uitrekken tot de footer. --}}
         <main class="flex flex-1 flex-col">
             {{ $slot }}
         </main>
 
-        <x-footer />
+        @unlessinapp
+            <x-footer />
 
-        <x-cookie-banner />
+            <x-cookie-banner />
+        @endinapp
+
+        {{-- In de app: de onderbalk van de app. --}}
+        <x-app-tabbar />
     </body>
 </html>

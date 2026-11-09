@@ -70,6 +70,12 @@ class User extends Authenticatable implements HasLocalePreference, MustVerifyEma
         return $this->hasManyThrough(Room::class, Studio::class);
     }
 
+    /** Telefoons waarop deze gebruiker in de app is ingelogd (pushmeldingen, PushChannel). */
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);

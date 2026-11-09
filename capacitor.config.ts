@@ -31,6 +31,11 @@ const config: CapacitorConfig = {
             backgroundColor: '#101529',
             showSpinner: false,
         },
+        FirebaseMessaging: {
+            // iOS: geen melding als de app open staat (Android doet dat vanzelf niet); main.js ververst
+            // dan de teller en het scherm.
+            presentationOptions: [],
+        },
     },
 };
 

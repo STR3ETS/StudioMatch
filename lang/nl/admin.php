@@ -55,6 +55,10 @@ return [
         'col_studios' => "Studio's",
         'col_registered' => 'Geregistreerd',
         'export' => 'Exporteer CSV',
+        // Op een telefoon onder de naam, in plaats van de kolommen.
+        'bookings_count' => '{0}Geen boekingen|{1}1 boeking|[2,*]:count boekingen',
+        'studios_count' => '{0}Geen studio\'s|{1}1 studio|[2,*]:count studio\'s',
+        'since' => 'lid sinds :date',
     ],
 
     'revenue_page' => [
@@ -70,6 +74,9 @@ return [
         'col_bookings' => 'Boekingen',
         'col_rent' => 'Huuromzet',
         'col_fees' => 'Platforminkomsten',
+        // Op een telefoon onder de studio, in plaats van de kolommen.
+        'bookings_count' => '{1}1 boeking|[2,*]:count boekingen',
+        'fees_line' => 'platform :amount',
     ],
 
     'tickets' => [
@@ -119,6 +126,7 @@ return [
         'reject_placeholder' => 'Bijv. de foto\'s zijn te donker of de omschrijving is te summier...',
         'reject_button' => 'Afwijzen',
         'rejected' => '":room" is afgekeurd. De verhuurder is gemaild met de reden.',
+        'not_in_review' => 'Deze ruimte is al beoordeeld.',
     ],
 
     'mail' => [

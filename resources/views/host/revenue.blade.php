@@ -40,22 +40,26 @@
             <p class="mt-4 rounded-xl border border-dashed border-prussian-blue/20 bg-white px-4 py-6 text-center text-sm text-prussian-blue/50">{{ __('host.revenue.payouts_empty') }}</p>
         @else
             <div class="mt-4 overflow-hidden rounded-2xl border border-prussian-blue/10 bg-white">
-                <table class="w-full text-sm">
-                    <thead>
+                {{-- Op een telefoon een lijst (sessie met datum en bedrag, de status op een eigen regel), vanaf md de tabel. --}}
+                <table class="block w-full text-sm md:table">
+                    <thead class="hidden md:table-header-group">
                         <tr class="border-b border-prussian-blue/10 text-left text-xs font-bold uppercase tracking-wide text-prussian-blue/50">
                             <th class="px-5 py-3.5">{{ __('host.revenue.col_session') }}</th>
-                            <th class="hidden px-5 py-3.5 sm:table-cell">{{ __('host.revenue.col_date') }}</th>
+                            <th class="px-5 py-3.5">{{ __('host.revenue.col_date') }}</th>
                             <th class="px-5 py-3.5 text-right">{{ __('host.revenue.col_amount') }}</th>
                             <th class="px-5 py-3.5 text-right">{{ __('host.revenue.col_status') }}</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="block md:table-row-group">
                         @foreach ($payouts as $payout)
-                            <tr class="border-b border-prussian-blue/5 last:border-0">
-                                <td class="px-5 py-3.5 font-semibold text-prussian-blue">{{ $payout['booking']->room->title }}</td>
-                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 sm:table-cell">{{ $payout['booking']->date->translatedFormat('j M Y') }} {{ $payout['booking']->timeRange() }}</td>
-                                <td class="px-5 py-3.5 text-right font-semibold text-prussian-blue">{{ $money($payout['amount']) }}</td>
-                                <td class="px-5 py-3.5 text-right">
+                            <tr class="flex flex-wrap items-start gap-x-3 gap-y-2 border-b border-prussian-blue/5 px-4 py-3.5 last:border-0 md:table-row md:p-0">
+                                <td class="block min-w-0 flex-1 font-semibold text-prussian-blue md:table-cell md:px-5 md:py-3.5">
+                                    {{ $payout['booking']->room->title }}
+                                    <span class="block text-xs font-normal text-prussian-blue/60 md:hidden">{{ $payout['booking']->date->translatedFormat('j M Y') }}, {{ $payout['booking']->timeRange() }}</span>
+                                </td>
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $payout['booking']->date->translatedFormat('j M Y') }} {{ $payout['booking']->timeRange() }}</td>
+                                <td class="block shrink-0 text-right font-semibold text-prussian-blue md:table-cell md:px-5 md:py-3.5">{{ $money($payout['amount']) }}</td>
+                                <td class="block w-full md:table-cell md:w-auto md:px-5 md:py-3.5 md:text-right">
                                     @if ($payout['state'] === 'paid')
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-700"><i class="fa-solid fa-circle-check fa-xs"></i>{{ __('host.revenue.payout_paid', ['date' => $payout['booking']->transferred_at->format('d-m-Y')]) }}</span>
                                     @elseif ($payout['state'] === 'paused')

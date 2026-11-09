@@ -54,14 +54,16 @@
                             <input type="checkbox" name="days[{{ $day->weekday }}][is_open]" value="1" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked((bool) old('days.' . $day->weekday . '.is_open', $day->is_open))>
                             {{ __('host.availability.days.' . $day->weekday) }}
                         </label>
-                        <div class="flex items-center gap-2 text-sm text-prussian-blue/60">
-                            <select name="days[{{ $day->weekday }}][open_hour]" class="cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                        {{-- Op een telefoon de volle breedte, en de keuzelijsten mogen krimpen: "06:00 (volgende dag)"
+                             maakte de rij anders breder dan het scherm. --}}
+                        <div class="flex w-full min-w-0 items-center gap-2 text-sm text-prussian-blue/60 sm:w-auto">
+                            <select name="days[{{ $day->weekday }}][open_hour]" class="min-w-0 flex-1 cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
                                 @for ($h = 0; $h <= 23; $h++)
                                     <option value="{{ $h }}" @selected((int) old('days.' . $day->weekday . '.open_hour', $day->open_hour) === $h)>{{ sprintf('%02d:00', $h) }}</option>
                                 @endfor
                             </select>
                             <span>{{ __('host.availability.until') }}</span>
-                            <select name="days[{{ $day->weekday }}][close_hour]" class="cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
+                            <select name="days[{{ $day->weekday }}][close_hour]" class="min-w-0 flex-1 cursor-pointer rounded-xl border border-prussian-blue/15 px-3 py-2 text-sm text-prussian-blue focus:border-prussian-blue/40 focus:outline-none">
                                 @for ($h = 1; $h <= \App\Support\Hours::max(); $h++)
                                     <option value="{{ $h }}" @selected((int) old('days.' . $day->weekday . '.close_hour', $day->close_hour) === $h)>{{ \App\Support\Hours::label($h) }}</option>
                                 @endfor
@@ -96,7 +98,7 @@
         <h2 class="font-bold text-prussian-blue"><i class="fa-solid fa-calendar-xmark mr-2 text-ruby-red"></i>{{ __('host.availability.exceptions_title') }}</h2>
         <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.availability.exceptions_text') }}</p>
 
-        <form method="POST" action="{{ route('host.availability.exceptions.store', $room) }}" class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <form method="POST" action="{{ route('host.availability.exceptions.store', $room) }}" class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
             @csrf
             <div>
                 <label for="ex-date" class="{{ $label }}">{{ __('host.availability.fields.date') }}</label>

@@ -32,8 +32,9 @@
         @else
             <div class="mt-4 overflow-hidden rounded-2xl border border-prussian-blue/10 bg-white">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
+                    {{-- Op een telefoon een lijst (studio en huuromzet, de rest als regel eronder), vanaf md de tabel. --}}
+                    <table class="block w-full text-sm md:table">
+                        <thead class="hidden md:table-header-group">
                             <tr class="border-b border-prussian-blue/10 text-left text-xs font-bold uppercase tracking-wide text-prussian-blue/50">
                                 <th class="px-5 py-3.5">{{ __('admin.revenue_page.col_studio') }}</th>
                                 <th class="px-5 py-3.5">{{ __('admin.revenue_page.col_host') }}</th>
@@ -42,17 +43,24 @@
                                 <th class="px-5 py-3.5 text-right">{{ __('admin.revenue_page.col_fees') }}</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="block md:table-row-group">
                             @foreach ($studios as $row)
-                                <tr class="border-b border-prussian-blue/5 last:border-0">
-                                    <td class="px-5 py-3.5">
+                                <tr class="flex items-start gap-3 border-b border-prussian-blue/5 px-4 py-3.5 last:border-0 md:table-row md:p-0">
+                                    <td class="block min-w-0 flex-1 md:table-cell md:px-5 md:py-3.5">
                                         <p class="font-semibold text-prussian-blue">{{ $row['studio']->name }}</p>
                                         <p class="text-xs text-prussian-blue/50">{{ $row['studio']->city }}</p>
+                                        <p class="mt-1 text-xs text-prussian-blue/70 md:hidden">
+                                            {{ collect([
+                                                $row['studio']->user->name,
+                                                trans_choice('admin.revenue_page.bookings_count', $row['count'], ['count' => $row['count']]),
+                                                __('admin.revenue_page.fees_line', ['amount' => $money($row['fees'])]),
+                                            ])->implode(', ') }}
+                                        </p>
                                     </td>
-                                    <td class="px-5 py-3.5 text-prussian-blue/70">{{ $row['studio']->user->name }}</td>
-                                    <td class="px-5 py-3.5 text-prussian-blue/70">{{ $row['count'] }}</td>
-                                    <td class="px-5 py-3.5 text-right font-semibold text-prussian-blue">{{ $money($row['rent']) }}</td>
-                                    <td class="px-5 py-3.5 text-right font-semibold text-prussian-blue">{{ $money($row['fees']) }}</td>
+                                    <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $row['studio']->user->name }}</td>
+                                    <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $row['count'] }}</td>
+                                    <td class="block shrink-0 text-right font-semibold text-prussian-blue md:table-cell md:px-5 md:py-3.5">{{ $money($row['rent']) }}</td>
+                                    <td class="hidden px-5 py-3.5 text-right font-semibold text-prussian-blue md:table-cell">{{ $money($row['fees']) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

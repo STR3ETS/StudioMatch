@@ -55,6 +55,10 @@ return [
         'col_studios' => 'Studios',
         'col_registered' => 'Registered',
         'export' => 'Export CSV',
+        // On a phone below the name, instead of the columns.
+        'bookings_count' => '{0}No bookings|{1}1 booking|[2,*]:count bookings',
+        'studios_count' => '{0}No studios|{1}1 studio|[2,*]:count studios',
+        'since' => 'member since :date',
     ],
 
     'revenue_page' => [
@@ -70,6 +74,9 @@ return [
         'col_bookings' => 'Bookings',
         'col_rent' => 'Rent revenue',
         'col_fees' => 'Platform income',
+        // On a phone below the studio, instead of the columns.
+        'bookings_count' => '{1}1 booking|[2,*]:count bookings',
+        'fees_line' => 'platform :amount',
     ],
 
     'tickets' => [
@@ -119,6 +126,7 @@ return [
         'reject_placeholder' => 'E.g. the photos are too dark or the description is too brief...',
         'reject_button' => 'Reject',
         'rejected' => '":room" has been rejected. The host has been emailed with the reason.',
+        'not_in_review' => 'This room has already been reviewed.',
     ],
 
     'mail' => [

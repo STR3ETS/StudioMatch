@@ -2,56 +2,45 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ReviewRoom;
 use App\Enums\RoomStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Room;
-use App\Notifications\RoomApproved;
-use App\Notifications\RoomRejected;
-use App\Support\StripeService;
+use App\Support\AdminDesk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class QueueController extends Controller
 {
-
     public function index(): View
     {
-        return view('admin.queue.index', [
-            'rooms' => Room::where('status', RoomStatus::InReview)
-                ->with(['studio.user', 'photos'])
-                ->oldest('updated_at')
-                ->get(),
-        ]);
+        return view('admin.queue.index', ['rooms' => AdminDesk::queue()]);
     }
 
-    public function show(Room $room): View
+    public function show(Room $room, ReviewRoom $review): View
     {
         $room->load(['studio.user.hostProfile', 'photos', 'hours']);
 
         return view('admin.queue.show', [
             'room' => $room,
-            'stripeBlocked' => $this->stripeBlocked($room),
+            'stripeBlocked' => $review->stripeBlocked($room),
         ]);
     }
 
-    public function approve(Room $room): RedirectResponse
+    public function approve(Room $room, ReviewRoom $review): RedirectResponse
     {
         abort_unless($room->status === RoomStatus::InReview, 404);
 
-        if ($this->stripeBlocked($room)) {
+        if ($review->approve($room) === ReviewRoom::STRIPE_REQUIRED) {
             return redirect()->route('admin.queue.show', $room)
                 ->withErrors(['stripe' => __('admin.queue.stripe_required', ['host' => $room->studio->user->name])]);
         }
 
-        $room->update(['status' => RoomStatus::Live, 'rejection_reason' => null]);
-
-        $room->studio->user->notify(new RoomApproved($room));
-
         return redirect()->route('admin.queue.index')->with('status', __('admin.queue.approved', ['room' => $room->title]));
     }
 
-    public function reject(Request $request, Room $room): RedirectResponse
+    public function reject(Request $request, Room $room, ReviewRoom $review): RedirectResponse
     {
         abort_unless($room->status === RoomStatus::InReview, 404);
 
@@ -59,16 +48,8 @@ class QueueController extends Controller
             'rejection_reason' => ['required', 'string', 'max:1000'],
         ]);
 
-        $room->update(['status' => RoomStatus::Afgekeurd, 'rejection_reason' => $validated['rejection_reason']]);
-
-        $room->studio->user->notify(new RoomRejected($room));
+        $review->reject($room, $validated['rejection_reason']);
 
         return redirect()->route('admin.queue.index')->with('status', __('admin.queue.rejected', ['room' => $room->title]));
-    }
-
-    private function stripeBlocked(Room $room): bool
-    {
-        return StripeService::enabled()
-            && ! $room->studio->user->hostProfile?->stripe_payouts_enabled;
     }
 }

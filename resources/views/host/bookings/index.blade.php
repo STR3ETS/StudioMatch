@@ -22,7 +22,7 @@
                                 <span><i class="fa-solid fa-door-open fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->room->title }}</span>
                                 <span><i class="fa-solid fa-calendar-days fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->dateRange() }}</span>
                                 <span><i class="fa-solid fa-clock fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->timeRange() }}</span>
-                                <span><i class="fa-solid fa-euro-sign fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->rent_cents) }} {{ __('host.bookings.rent_for_you') }}</span>
+                                <span><i class="fa-solid fa-receipt fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $money($booking->rent_cents) }} {{ __('host.bookings.rent_for_you') }}</span>
                             </p>
                         </div>
                         <div class="flex shrink-0 items-center gap-2">

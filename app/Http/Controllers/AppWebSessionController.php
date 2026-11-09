@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\InApp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,5 +29,14 @@ class AppWebSessionController extends Controller
         $request->session()->put('locale', Auth::user()->locale);
 
         return redirect($data['naar']);
+    }
+
+    /**
+     * De balk terug naar de app op een pagina zonder sessie (zoals een 404): de sessie weet het adres van
+     * de app hier wel, anders het gebruikelijke adres voor dit soort telefoon.
+     */
+    public function back(Request $request): RedirectResponse
+    {
+        return redirect()->away((InApp::origin($request) ?? InApp::guessOrigin($request)).'/');
     }
 }

@@ -12,13 +12,14 @@
         <div class="mt-8 space-y-4">
             @foreach ($rooms as $room)
                 <a href="{{ route('admin.queue.show', $room) }}" class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-prussian-blue/5 sm:flex-nowrap">
+                    {{-- Op een telefoon onder elkaar (foto, tekst, knop), anders persen ze de tekst samen tot een smalle kolom. --}}
                     @if ($room->photos->isNotEmpty())
-                        <img src="{{ $room->photos->first()->thumbUrl() }}" alt="{{ $room->title }}" class="h-20 w-28 shrink-0 rounded-xl object-cover">
+                        <img src="{{ $room->photos->first()->thumbUrl() }}" alt="{{ $room->title }}" class="aspect-[16/9] w-full shrink-0 rounded-xl object-cover sm:aspect-auto sm:h-20 sm:w-28">
                     @else
-                        <span class="flex h-20 w-28 shrink-0 items-center justify-center rounded-xl bg-prussian-blue/5 text-prussian-blue/30"><i class="fa-solid fa-image"></i></span>
+                        <span class="flex aspect-[16/9] w-full shrink-0 items-center justify-center rounded-xl bg-prussian-blue/5 text-prussian-blue/30 sm:aspect-auto sm:h-20 sm:w-28"><i class="fa-solid fa-image"></i></span>
                     @endif
 
-                    <div class="min-w-0 flex-1">
+                    <div class="min-w-0 grow basis-full sm:basis-0">
                         <div class="flex flex-wrap items-center gap-2">
                             <h2 class="font-bold text-prussian-blue">{{ $room->title }}</h2>
                             <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $room->status->badgeClasses() }}">{{ __('host.status.' . $room->status->value) }}</span>
@@ -30,7 +31,7 @@
                         </p>
                     </div>
 
-                    <span class="flex shrink-0 items-center gap-2 text-sm font-semibold text-ruby-red">
+                    <span class="flex min-h-11 w-full shrink-0 items-center justify-center gap-2 rounded-xl bg-ruby-red text-sm font-semibold text-white sm:min-h-0 sm:w-auto sm:bg-transparent sm:text-ruby-red">
                         {{ __('admin.queue.review') }} <i class="fa-solid fa-arrow-right fa-xs"></i>
                     </span>
                 </a>

@@ -1,6 +1,6 @@
 @props(['title'])
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @inapp class="in-app" @endinapp>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,21 +20,24 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
-        <x-app-return />
+        <x-app-return :title="$title" />
         <div class="flex min-h-screen">
-            <div class="flex w-full flex-col px-6 py-8 sm:px-12 lg:w-1/2 xl:w-[45%]">
-                <div class="flex items-center justify-between">
-                    <a href="{{ route('home') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-9 w-auto"></a>
-                    <a href="{{ route('home') }}" class="flex items-center gap-1.5 text-sm font-semibold text-prussian-blue/50 transition hover:text-prussian-blue">
-                        <i class="fa-solid fa-arrow-left fa-xs"></i> {{ __('auth.back_home') }}
-                    </a>
-                </div>
+            <div data-auth-page class="flex w-full flex-col px-6 py-8 sm:px-12 lg:w-1/2 xl:w-[45%]">
+                {{-- In de app: geen logo en taalkeuze van de website, de kop en de app regelen dat. --}}
+                @unlessinapp
+                    <div class="flex items-center justify-between">
+                        <a href="{{ route('home') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-9 w-auto"></a>
+                        <a href="{{ route('home') }}" class="flex items-center gap-1.5 text-sm font-semibold text-prussian-blue/50 transition hover:text-prussian-blue">
+                            <i class="fa-solid fa-arrow-left fa-xs"></i> {{ __('auth.back_home') }}
+                        </a>
+                    </div>
+                @endinapp
 
-                <div data-reveal class="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
+                <div data-reveal data-auth-card class="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center py-12">
                     {{ $slot }}
                 </div>
 
-                <div class="flex items-center justify-between text-xs text-prussian-blue/40">
+                <div @inapp hidden @endinapp class="flex items-center justify-between text-xs text-prussian-blue/40">
                     <span>&copy; {{ date('Y') }} StudioMatch</span>
                     <div class="flex items-center gap-1">
                         @foreach (config('localization.supported') as $code => $label)

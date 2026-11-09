@@ -4,9 +4,12 @@ namespace App\Support;
 
 use App\Enums\BookingStatus;
 use App\Enums\ExceptionType;
+use App\Enums\RoomStatus;
 use App\Models\Booking;
+use App\Models\Post;
 use App\Models\Room;
 use App\Models\RoomException;
+use App\Models\User;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -56,6 +59,7 @@ class AppPayload
         $confirmed = $status === BookingStatus::Confirmed;
         $dashboard = route('dashboard.artist', [], false).'#boeking-'.$booking->id;
 
+        // Volgorde: wat je meestal wilt eerst, annuleren altijd als laatste (de app zet het apart onderaan).
         $actions = [];
         if ($status === BookingStatus::PendingPayment) {
             $actions[] = ['label' => __('booking.finish_payment'), 'path' => route('bookings.payment', $booking, false), 'primary' => true];
@@ -63,14 +67,14 @@ class AppPayload
         if ($booking->canReschedule()) {
             $actions[] = ['label' => __('booking.reschedule_button'), 'path' => route('bookings.reschedule', $booking, false)];
         }
+        if ($booking->wasPaid()) {
+            $actions[] = ['label' => __('dashboard.artist_nav.invoices'), 'path' => route('artist.invoices.index', [], false)];
+        }
         if ($booking->canReportProblem()) {
             $actions[] = ['label' => __('booking.problem.title'), 'path' => $dashboard];
         }
         if (in_array($status, [BookingStatus::PendingConfirmation, BookingStatus::Confirmed], true)) {
             $actions[] = ['label' => __('booking.cancel_button'), 'path' => $dashboard, 'danger' => true];
-        }
-        if ($booking->wasPaid()) {
-            $actions[] = ['label' => __('dashboard.artist_nav.invoices'), 'path' => route('artist.invoices.index', [], false)];
         }
 
         $prices = array_values(array_filter([
@@ -82,8 +86,11 @@ class AppPayload
 
         return [
             ...self::artistBooking($booking),
+            // Wat er nu gebeurt, bij de statussen waar dat niet vanzelf spreekt.
             'note' => match ($status) {
                 BookingStatus::PendingConfirmation => __('booking.waiting_note'),
+                BookingStatus::Expired => __('app.notes.expired'),
+                BookingStatus::Disputed => __('app.notes.disputed'),
                 default => null,
             },
             'address' => $confirmed ? $studio->fullAddress() : null,
@@ -122,6 +129,152 @@ class AppPayload
             'respond_before' => $status === BookingStatus::PendingConfirmation && $booking->requested_at
                 ? $booking->requested_at->copy()->addHours(24)->toIso8601String()
                 : null,
+            // Tikken op een sessie: een aanvraag beantwoord je in de app (Aanvragen), de rest staat bij de
+            // boekingen op de website (contactgegevens, schade melden).
+            'path' => $status === BookingStatus::PendingConfirmation ? null : route('host.bookings.index', [], false),
+        ];
+    }
+
+    /**
+     * Een ruimte in de goedkeuringswachtrij, voor de lijst.
+     *
+     * @return array<string, mixed>
+     */
+    public static function adminRoom(Room $room): array
+    {
+        return [
+            'id' => $room->id,
+            'title' => $room->title,
+            'studio' => $room->studio->name,
+            'city' => $room->studio->city,
+            'host' => $room->studio->user->name,
+            'photo' => self::url($room->photos->first()?->thumbUrl()),
+            'since' => $room->updated_at->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Alles wat de beheerder nodig heeft om een ruimte te beoordelen, zoals de beoordelingspagina op de
+     * website (admin.queue.show).
+     *
+     * @return array<string, mixed>
+     */
+    public static function adminRoomDetail(Room $room, bool $stripeBlocked): array
+    {
+        $euro = fn (?int $cents) => $cents === null ? null : (int) $cents;
+
+        return [
+            ...self::adminRoom($room),
+            'status' => $room->status->value,
+            'status_label' => __('host.status.'.$room->status->value),
+            'in_review' => $room->status === RoomStatus::InReview,
+            'address' => $room->studio->fullAddress(),
+            'host_email' => $room->studio->user->email,
+            'photos' => $room->photos->map(fn ($photo) => self::url($photo->url()))->values(),
+            'type' => __('host.types.'.$room->type->value),
+            'hourly_cents' => $euro($room->hourly_rate_cents),
+            'day_cents' => $room->allowsMultiDay() ? $euro($room->day_rate_cents) : null,
+            'min_hours' => (int) $room->min_hours,
+            'capacity' => (int) $room->capacity,
+            // "Technicus: altijd inbegrepen" (los staat er anders alleen "Altijd inbegrepen").
+            'engineer' => $room->engineer_included || $room->hasOptionalEngineer()
+                ? __('app.price.engineer').': '.mb_strtolower(__($room->engineer_included ? 'host.rooms.fields.engineer_included' : 'host.rooms.fields.engineer_optional'))
+                : null,
+            'description' => $room->description,
+            'equipment' => collect($room->equipment ?? [])->map(fn ($item) => __('studios.equipment.'.$item))
+                ->concat($room->daws ?? [])->values(),
+            'equipment_extra' => $room->equipment_extra,
+            'facilities' => collect($room->facilities ?? [])->map(fn ($item) => __('studios.facilities.'.$item))->values(),
+            'house_rules' => $room->house_rules,
+            'hours' => $room->hours->sortBy('weekday')->map(fn ($day) => [
+                'day' => __('host.availability.days.'.$day->weekday),
+                'label' => $day->is_open ? Hours::openingRange((int) $day->weekday, (int) $day->open_hour, (int) $day->close_hour) : __('studio.closed'),
+            ])->values(),
+            'stripe_blocked' => $stripeBlocked,
+            'stripe_message' => $stripeBlocked ? __('admin.queue.stripe_required', ['host' => $room->studio->user->name]) : null,
+        ];
+    }
+
+    /**
+     * Een boeking in het overzicht van de beheerder, met de statussen waarin hij hem kan zetten.
+     *
+     * @return array<string, mixed>
+     */
+    public static function adminBooking(Booking $booking): array
+    {
+        return [
+            'id' => $booking->id,
+            'status' => $booking->status->value,
+            'status_label' => __('booking.status.'.$booking->status->value),
+            'room' => $booking->room->studio->name.' - '.$booking->room->title,
+            'artist' => $booking->user?->name ?? $booking->buyer_name,
+            'date_label' => $booking->dateRange(),
+            'time_label' => $booking->timeRange(),
+            'total_cents' => (int) $booking->total_cents,
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function adminUser(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role->value,
+            'role_label' => $user->isHost() ? __('admin.users.role_host') : __('admin.users.role_artist'),
+            'bookings' => (int) $user->bookings_count,
+            'studios' => (int) $user->studios_count,
+            'since' => $user->created_at->toIso8601String(),
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    public static function adminPost(Post $post): array
+    {
+        return [
+            'id' => $post->id,
+            'title' => $post->title,
+            'slug' => $post->slug,
+            'status' => $post->status->value,
+            'status_label' => $post->status->label(),
+            'scheduled' => $post->isScheduled() ? $post->published_at?->toIso8601String() : null,
+            'sections' => (int) $post->sections_count,
+            'author' => $post->author?->name,
+            'updated_at' => $post->updated_at->toIso8601String(),
+            'edit_path' => route('admin.posts.edit', $post, false),
+            'view_path' => route('blog.show', $post->slug, false),
+        ];
+    }
+
+    /**
+     * Een ticket voor de beheerder: een probleem dat een artiest meldde ('dispute') of een probleemmelding
+     * van een verhuurder ('damage'). Het pad opent de ticketpagina op de website op dit ticket.
+     *
+     * @return array<string, mixed>
+     */
+    public static function adminTicket(Booking $booking, string $kind): array
+    {
+        $dispute = $kind === 'dispute';
+        $room = $booking->room;
+        $host = $room->studio->user;
+
+        return [
+            'id' => $booking->id,
+            'kind' => $kind,
+            'title' => $room->studio->name.' - '.$room->title,
+            'date_label' => $booking->dateRange(),
+            'time_label' => $booking->timeRange(),
+            'artist' => $booking->user?->name ?? $booking->buyer_name,
+            'host' => $host?->name,
+            'total_cents' => (int) $booking->total_cents,
+            'reported_at' => ($dispute ? $booking->disputed_at : $booking->damage_reported_at)?->toIso8601String(),
+            'reason' => $dispute ? $booking->dispute_reason : $booking->damage_reason,
+            'studio_response' => $dispute ? $booking->dispute_studio_response : null,
+            'photos' => count(($dispute ? $booking->dispute_photos : $booking->damage_photos) ?? []),
+            'open' => $dispute || $booking->damage_resolved_at === null,
+            'response' => $dispute ? null : $booking->damage_response,
+            'path' => route('admin.tickets.index', [], false).'#'.($dispute ? 'ticket-' : 'melding-').$booking->id,
         ];
     }
 

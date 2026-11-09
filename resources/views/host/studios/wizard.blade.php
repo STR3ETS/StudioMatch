@@ -52,7 +52,7 @@
                     <div data-address-suggestions class="absolute left-0 right-0 top-full z-30 mt-1 hidden overflow-hidden rounded-xl border border-prussian-blue/10 bg-white shadow-xl"></div>
                     <x-input-error field="street" />
                 </div>
-                <div class="grid gap-5 sm:grid-cols-2">
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                     <div>
                         <label for="postal_code" class="{{ $label }}">{{ __('host.studios.fields.postal_code') }}</label>
                         <input id="postal_code" type="text" name="postal_code" value="{{ old('postal_code') }}" placeholder="1234 AB" class="{{ $field }}" data-address-postal required>
@@ -110,7 +110,7 @@
 
         <div data-wizard-step data-step-title="{{ __('host.wizard.steps.pricing') }}" class="mt-4 hidden rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.wizard.steps.pricing') }}</h2>
-            <div class="mt-5 grid gap-5 sm:grid-cols-3">
+            <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
                 <div>
                     <label for="hourly_rate" class="{{ $label }}">{{ __('host.rooms.fields.hourly_rate') }}</label>
                     <div class="relative">
@@ -166,7 +166,7 @@
         <div data-wizard-step data-step-title="{{ __('host.wizard.steps.equipment') }}" class="mt-4 hidden rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.wizard.steps.equipment') }}</h2>
             <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.wizard.equipment_note') }}</p>
-            <div class="mt-5 grid gap-2 sm:grid-cols-2">
+            <div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 @foreach (config('studio.equipment') as $item)
                     <label class="{{ $check }}">
                         <input type="checkbox" name="equipment[]" value="{{ $item }}" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(in_array($item, old('equipment', [])))>
@@ -180,7 +180,7 @@
             </div>
 
             <h3 class="mt-6 text-sm font-bold text-prussian-blue">{{ __('host.rooms.fields.daws') }}</h3>
-            <div class="mt-3 grid gap-2 sm:grid-cols-2">
+            <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 @foreach (config('studio.daws') as $daw)
                     <label class="{{ $check }}">
                         <input type="checkbox" name="daws[]" value="{{ $daw }}" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(in_array($daw, old('daws', [])))>
@@ -190,7 +190,7 @@
             </div>
 
             <h3 class="mt-6 text-sm font-bold text-prussian-blue">{{ __('host.rooms.section_extras') }}</h3>
-            <div class="mt-3 grid gap-2 sm:grid-cols-2">
+            <div class="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 @foreach (config('studio.facilities') as $facility)
                     <label class="{{ $check }}">
                         <input type="checkbox" name="facilities[]" value="{{ $facility }}" class="h-4 w-4 rounded border-prussian-blue/30 accent-ruby-red" @checked(in_array($facility, old('facilities', [])))>

@@ -4,7 +4,7 @@
     $mobileItems = array_values(array_filter($nav, fn ($item) => ($item['mobile'] ?? false) && $item['url']));
 @endphp
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @inapp class="in-app" @endinapp>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -47,7 +47,7 @@
         </style>
     </head>
     <body class="min-h-screen bg-prussian-blue/[0.04]">
-        <x-app-return />
+        <x-app-return :title="$title" />
         <div class="lg:flex">
             <aside data-sidebar class="fixed inset-y-0 left-0 z-[1300] w-72 -translate-x-full transition-transform duration-300 lg:sticky lg:inset-y-auto lg:top-4 lg:my-4 lg:ml-4 lg:h-[calc(100vh-2rem)] lg:shrink-0 lg:translate-x-0 lg:transition-none [view-transition-name:dash-sidebar]">
                 <div class="flex h-full flex-col rounded-r-3xl bg-ruby-red shadow-xl shadow-ruby-red/25 lg:rounded-3xl">
@@ -142,13 +142,16 @@
             <div data-sidebar-backdrop class="fixed inset-0 z-[1250] hidden bg-prussian-blue/60 backdrop-blur-sm lg:hidden"></div>
 
             <div class="min-w-0 flex-1">
-                <header class="sticky top-0 z-[1200] border-b border-prussian-blue/10 bg-white lg:hidden [view-transition-name:dash-topbar]">
-                    <div class="flex items-center justify-center px-5 py-3.5">
-                        <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-8 w-auto"></a>
-                    </div>
-                </header>
+                {{-- In de app staat hier de balk terug naar de app (x-app-return), niet nog een logo. --}}
+                @unlessinapp
+                    <header class="sticky top-0 z-[1200] border-b border-prussian-blue/10 bg-white lg:hidden [view-transition-name:dash-topbar]">
+                        <div class="flex items-center justify-center px-5 py-3.5">
+                            <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-8 w-auto"></a>
+                        </div>
+                    </header>
+                @endinapp
 
-                <main class="mx-auto w-full max-w-6xl px-5 py-6 pb-28 sm:px-6 lg:px-10 lg:py-10 lg:pb-10 [view-transition-name:dash-content]">
+                <main data-dash-main class="mx-auto w-full max-w-6xl px-5 py-6 pb-28 sm:px-6 lg:px-10 lg:py-10 lg:pb-10 [view-transition-name:dash-content]">
                     {{-- Het adres is pas verplicht bij het boeken, hier alleen een herinnering. --}}
                     @if (auth()->user()->isArtist() && ! auth()->user()->hasCompleteAddress() && ! request()->routeIs('account.edit'))
                         <div class="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-prussian-blue/15 bg-white px-5 py-4">
@@ -166,7 +169,8 @@
             </div>
         </div>
 
-        @if ($mobileItems !== [])
+        {{-- In de app is de onderbalk van de app de navigatie, dus hier geen tweede. --}}
+        @if ($mobileItems !== [] && ! \App\Support\InApp::active())
             <nav class="fixed inset-x-4 bottom-4 z-[1200] flex items-center rounded-3xl bg-ruby-red px-2 py-1.5 shadow-xl shadow-ruby-red/30 lg:hidden [view-transition-name:dash-tabbar]">
                 @foreach ($mobileItems as $item)
                     <a href="{{ $item['url'] }}" title="{{ __($langPrefix . $item['key']) }}" class="flex flex-1 items-center justify-center py-1">
@@ -293,5 +297,8 @@
                 })();
             </script>
         @endif
+
+        {{-- In de app: de onderbalk van de app (in plaats van de rode balk hierboven). --}}
+        <x-app-tabbar />
     </body>
 </html>

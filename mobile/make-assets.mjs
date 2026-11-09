@@ -45,6 +45,17 @@ for (const path of files('android/app/src/main/res')) {
     if (name === 'ic_launcher.png') done.push(await replace(path, { scale: 0.6 }));
     if (name === 'ic_launcher_round.png') done.push(await replace(path, { scale: 0.6, round: true }));
 }
+// Icoon in de statusbalk bij een pushmelding (AndroidManifest: ic_stat_studiomatch): alleen wit op
+// transparant, Android kleurt het zelf. 24dp, dus 24 tot 96 pixels per dichtheid.
+const { mkdirSync } = await import('node:fs');
+for (const [density, size] of Object.entries({ mdpi: 24, hdpi: 36, xhdpi: 48, xxhdpi: 72, xxxhdpi: 96 })) {
+    const dir = `android/app/src/main/res/drawable-${density}`;
+    mkdirSync(dir, { recursive: true });
+    const art = await sharp(MARK).resize({ width: Math.round(size * 0.9), height: Math.round(size * 0.9), fit: 'inside' }).toBuffer();
+    await sharp({ create: { width: size, height: size, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } })
+        .composite([{ input: art, gravity: 'centre' }]).png().toFile(`${dir}/ic_stat_studiomatch.png`);
+    done.push(`${dir}/ic_stat_studiomatch.png (${size}x${size})`);
+}
 for (const path of files('ios/App/App/Assets.xcassets')) {
     if (path.includes('AppIcon') && path.endsWith('.png')) done.push(await replace(path, { scale: 0.6 }));
     if (path.includes('Splash') && path.endsWith('.png')) done.push(await replace(path, { scale: 0.3 }, LOGO));

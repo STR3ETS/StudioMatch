@@ -3,8 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\Post;
 use App\Models\Room;
 use App\Models\User;
+use App\Notifications\BookingCancelled;
+use App\Notifications\DisputeResolved;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
@@ -129,6 +132,145 @@ class AppApiTest extends TestCase
 
         $this->withToken($token)->getJson(route('api.app.inbox'))->assertForbidden();
         $this->withToken($token)->getJson(route('api.app.agenda'))->assertForbidden();
+    }
+
+    public function test_cancelling_comes_last_and_expired_and_disputed_bookings_explain_themselves(): void
+    {
+        $token = $this->tokenFor($this->artist);
+
+        $actions = $this->withToken($token)->getJson(route('api.app.bookings.show', $this->booking()))->assertOk()->json('actions');
+        $this->assertTrue(end($actions)['danger'] ?? false);
+        $this->assertSame([], array_filter(array_slice($actions, 0, -1), fn (array $action) => $action['danger'] ?? false));
+
+        $this->withToken($token)->getJson(route('api.app.bookings.show', $this->booking(['status' => 'expired', 'confirmed_at' => null])))
+            ->assertOk()->assertJsonPath('note', __('app.notes.expired'));
+        $this->withToken($token)->getJson(route('api.app.bookings.show', $this->booking(['status' => 'disputed'])))
+            ->assertOk()->assertJsonPath('note', __('app.notes.disputed'));
+    }
+
+    public function test_agenda_sessions_say_where_they_open(): void
+    {
+        $this->booking(['date' => today()->addDay()]);
+        $this->booking(['date' => today()->addDays(2), 'status' => 'pending_confirmation', 'confirmed_at' => null, 'requested_at' => now()]);
+
+        $days = $this->withToken($this->tokenFor($this->host))->getJson(route('api.app.agenda'))->assertOk()->json('days');
+
+        // Bevestigd: de boekingen op de website. Een aanvraag beantwoordt de app zelf (Aanvragen).
+        $this->assertSame(route('host.bookings.index', [], false), $days[1]['entries'][0]['path']);
+        $this->assertNull($days[2]['entries'][0]['path']);
+    }
+
+    public function test_the_admin_has_an_overview_and_tickets_in_the_app(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $dispute = $this->booking(['status' => 'disputed', 'disputed_at' => now(), 'dispute_reason' => 'De microfoon deed het niet.']);
+        $this->booking(['damage_reported_at' => now(), 'damage_reason' => 'Kabel kapot.', 'start_hour' => 15, 'end_hour' => 18]);
+        $token = $this->tokenFor($admin);
+
+        // Onderbalk: Overzicht, Tickets (met het aantal open tickets), Wachtrij, Boekingen en Account.
+        $profile = $this->withToken($token)->getJson(route('api.app.me'))->assertOk();
+        $this->assertSame(['overzicht', 'tickets', 'wachtrij', 'admin-boekingen', 'account'], array_column($profile->json('menu.tabs'), 'screen'));
+        $this->assertSame(2, $profile->json('counts.tickets'));
+
+        $this->withToken($token)->getJson(route('api.app.admin.overview'))
+            ->assertOk()
+            ->assertJsonPath('open_disputes', 1)
+            ->assertJsonPath('open_damages', 1)
+            ->assertJsonPath('live_rooms', 1);
+
+        $tickets = $this->withToken($token)->getJson(route('api.app.admin.tickets'))->assertOk();
+        $this->assertSame('De microfoon deed het niet.', $tickets->json('disputes.0.reason'));
+        $this->assertSame('/dashboard/admin/tickets#ticket-'.$dispute->id, $tickets->json('disputes.0.path'));
+        $this->assertTrue($tickets->json('damages.0.open'));
+    }
+
+    public function test_the_admin_handles_tickets_in_the_app_with_the_website_rules(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $dispute = $this->booking(['status' => 'disputed', 'disputed_at' => now(), 'dispute_reason' => 'De microfoon deed het niet.']);
+        $damage = $this->booking(['damage_reported_at' => now(), 'damage_reason' => 'Kabel kapot.', 'start_hour' => 15, 'end_hour' => 18]);
+        $token = $this->tokenFor($admin);
+
+        // Te korte toelichting: de foutmelding van de website.
+        $this->withToken($token)->postJson(route('api.app.admin.tickets.resolve', $dispute), ['refund_percent' => 50, 'resolution_note' => 'kort'])
+            ->assertUnprocessable()->assertJsonValidationErrors('resolution_note');
+
+        $this->withToken($token)->postJson(route('api.app.admin.tickets.resolve', $dispute), ['refund_percent' => 50, 'resolution_note' => 'Beide partijen gesproken, half terug.'])
+            ->assertOk()
+            ->assertJsonPath('outcome', 'resolved')
+            ->assertJsonCount(0, 'tickets.disputes');
+        $this->assertSame('completed', $dispute->fresh()->status->value);
+        Notification::assertSentTo($this->artist, DisputeResolved::class);
+
+        // Nog een keer: al afgehandeld.
+        $this->withToken($token)->postJson(route('api.app.admin.tickets.resolve', $dispute), ['refund_percent' => 50, 'resolution_note' => 'Beide partijen gesproken, half terug.'])
+            ->assertStatus(409)->assertJsonPath('outcome', 'already_resolved');
+
+        $this->withToken($token)->postJson(route('api.app.admin.tickets.respond', $damage), ['damage_response' => 'We nemen contact op met de artiest.'])
+            ->assertOk()->assertJsonPath('outcome', 'damage_responded');
+        $this->assertNotNull($damage->fresh()->damage_resolved_at);
+    }
+
+    public function test_the_admin_reviews_rooms_in_the_app(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $token = $this->tokenFor($admin);
+        $room = fn (string $title) => $this->room->studio->rooms()->create([
+            'title' => $title, 'description' => 'Nieuwe ruimte.', 'type' => 'opname',
+            'hourly_rate_cents' => 4000, 'min_hours' => 2, 'capacity' => 4, 'status' => 'in_review',
+        ]);
+        $first = $room('Mix Suite');
+        $second = $room('Booth');
+
+        $this->assertSame(2, $this->withToken($token)->getJson(route('api.app.me'))->json('counts.queue'));
+        $this->assertCount(2, $this->withToken($token)->getJson(route('api.app.admin.queue'))->assertOk()->json('rooms'));
+        $this->withToken($token)->getJson(route('api.app.admin.queue.show', $first))
+            ->assertOk()->assertJsonPath('title', 'Mix Suite')->assertJsonPath('in_review', true)->assertJsonPath('hourly_cents', 4000);
+
+        $this->withToken($token)->postJson(route('api.app.admin.queue.approve', $first))->assertOk()->assertJsonPath('outcome', 'approved');
+        $this->assertSame('live', $first->fresh()->status->value);
+        // Al beoordeeld: niet nog een keer.
+        $this->withToken($token)->postJson(route('api.app.admin.queue.approve', $first))->assertStatus(409);
+
+        $this->withToken($token)->postJson(route('api.app.admin.queue.reject', $second), [])->assertUnprocessable();
+        $this->withToken($token)->postJson(route('api.app.admin.queue.reject', $second), ['rejection_reason' => 'Foto\'s te donker.'])->assertOk();
+        $this->assertSame('afgekeurd', $second->fresh()->status->value);
+        $this->assertSame(0, $this->withToken($token)->getJson(route('api.app.me'))->json('counts.queue'));
+    }
+
+    public function test_the_admin_sees_bookings_users_revenue_and_blog_in_the_app(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $token = $this->tokenFor($admin);
+        $booking = $this->booking();
+        $this->booking(['status' => 'pending_confirmation', 'confirmed_at' => null, 'requested_at' => now(), 'start_hour' => 15, 'end_hour' => 18]);
+
+        $this->assertCount(2, $this->withToken($token)->getJson(route('api.app.admin.bookings'))->assertOk()->json('bookings'));
+        $this->assertCount(1, $this->withToken($token)->getJson(route('api.app.admin.bookings', ['status' => 'confirmed']))->json('bookings'));
+
+        // Status wijzigen: annuleren betaalt terug en mailt beide partijen, net als op de website.
+        $this->withToken($token)->postJson(route('api.app.admin.bookings.status', $booking), ['status' => 'cancelled'])
+            ->assertOk()->assertJsonPath('booking.status', 'cancelled');
+        $this->assertSame('admin', $booking->fresh()->cancelled_by);
+        Notification::assertSentTo($this->artist, BookingCancelled::class);
+
+        $users = $this->withToken($token)->getJson(route('api.app.admin.users', ['rol' => 'verhuurder']))->assertOk()->json('users');
+        $this->assertSame([$this->host->id], array_column($users, 'id'));
+
+        $this->withToken($token)->getJson(route('api.app.admin.revenue'))->assertOk()->assertJsonPath('total_count', 0);
+
+        $post = Post::create(['title' => 'Je eerste EP', 'slug' => 'je-eerste-ep', 'status' => 'concept']);
+        $this->withToken($token)->getJson(route('api.app.admin.posts'))->assertOk()->assertJsonPath('posts.0.edit_path', route('admin.posts.edit', $post, false));
+        $this->withToken($token)->deleteJson(route('api.app.admin.posts.destroy', $post))->assertOk();
+        $this->assertNull(Post::find($post->id));
+    }
+
+    public function test_only_the_admin_sees_the_tickets(): void
+    {
+        $this->withToken($this->tokenFor($this->artist))->postJson(route('api.app.admin.bookings.status', $this->booking()), ['status' => 'cancelled'])->assertForbidden();
+        $this->withToken($this->tokenFor($this->host))->getJson(route('api.app.admin.queue'))->assertForbidden();
+        $this->withToken($this->tokenFor($this->artist))->getJson(route('api.app.admin.tickets'))->assertForbidden();
+        $this->withToken($this->tokenFor($this->host))->getJson(route('api.app.admin.overview'))->assertForbidden();
     }
 
     public function test_a_host_never_sees_the_artist_screens(): void

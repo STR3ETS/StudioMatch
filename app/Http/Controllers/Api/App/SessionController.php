@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Api\App;
 
-use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Booking;
 use App\Models\User;
 use App\Support\AppMenu;
 use Illuminate\Http\JsonResponse;
@@ -78,6 +76,11 @@ class SessionController extends Controller
 
     public function destroy(Request $request): Response
     {
+        // Deze telefoon krijgt na uitloggen geen pushmeldingen meer.
+        if ($request->filled('push_token')) {
+            $request->user()->deviceTokens()->where('token', $request->string('push_token'))->delete();
+        }
+
         $request->user()->currentAccessToken()->delete();
 
         return response()->noContent();
@@ -127,19 +130,14 @@ class SessionController extends Controller
                 'initials' => Str::upper(Str::substr(trim($user->name), 0, 1)),
                 'email' => $user->email,
                 'role' => $user->role->value,
-                'role_label' => __('app.roles.' . $user->role->value),
+                'role_label' => __('app.roles.'.$user->role->value),
                 'locale' => $user->locale ?? app()->getLocale(),
                 'verified' => $user->hasVerifiedEmail(),
             ],
             'locales' => config('localization.supported', []),
             'ui' => __('app.ui'),
             'menu' => AppMenu::for($user),
-            'counts' => [
-                'requests' => $user->isHost()
-                    ? Booking::whereIn('room_id', $user->rooms()->select('rooms.id'))
-                        ->where('status', BookingStatus::PendingConfirmation)->count()
-                    : 0,
-            ],
+            'counts' => AppMenu::counts($user),
         ];
     }
 }

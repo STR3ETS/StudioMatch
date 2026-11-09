@@ -22,8 +22,9 @@
     @else
         <div class="mt-6 overflow-hidden rounded-2xl border border-prussian-blue/10 bg-white">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
+                {{-- Op een telefoon een lijst (naam en rol, de rest als regel eronder), vanaf md de tabel. --}}
+                <table class="block w-full text-sm md:table">
+                    <thead class="hidden md:table-header-group">
                         <tr class="border-b border-prussian-blue/10 text-left text-xs font-bold uppercase tracking-wide text-prussian-blue/50">
                             <th class="px-5 py-3.5">{{ __('admin.users.col_name') }}</th>
                             <th class="px-5 py-3.5">{{ __('admin.users.col_role') }}</th>
@@ -32,26 +33,42 @@
                             <th class="px-5 py-3.5">{{ __('admin.users.col_registered') }}</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="block md:table-row-group">
                         @foreach ($users as $user)
-                            <tr class="border-b border-prussian-blue/5 last:border-0">
-                                <td class="px-5 py-3.5">
-                                    <p class="font-semibold text-prussian-blue">{{ $user->name }}</p>
-                                    <p class="text-xs text-prussian-blue/50">{{ $user->email }}</p>
+                            @php
+                                $role = [
+                                    'class' => $user->isHost() ? 'bg-ruby-red/10 text-ruby-red' : 'bg-prussian-blue/5 text-prussian-blue/60',
+                                    'icon' => $user->isHost() ? 'fa-door-open' : 'fa-music',
+                                    'label' => $user->isHost() ? __('admin.users.role_host') : __('admin.users.role_artist'),
+                                ];
+                            @endphp
+                            <tr class="block border-b border-prussian-blue/5 px-4 py-3.5 last:border-0 md:table-row md:p-0">
+                                <td class="block md:table-cell md:px-5 md:py-3.5">
+                                    {{-- Telefoon: de rol naast de naam, zodat het e-mailadres de hele breedte heeft. --}}
+                                    <div class="flex items-start justify-between gap-3">
+                                        <p class="min-w-0 font-semibold text-prussian-blue">{{ $user->name }}</p>
+                                        <span class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide md:hidden {{ $role['class'] }}">
+                                            <i class="fa-solid {{ $role['icon'] }}"></i> {{ $role['label'] }}
+                                        </span>
+                                    </div>
+                                    <p class="break-words text-xs text-prussian-blue/50">{{ $user->email }}</p>
+                                    <p class="mt-1 text-xs text-prussian-blue/70 md:hidden">
+                                        {{ collect([
+                                            // Een verhuurder boekt zelden: alleen noemen als er boekingen zijn.
+                                            ! $user->isHost() || $user->bookings_count > 0 ? trans_choice('admin.users.bookings_count', $user->bookings_count, ['count' => $user->bookings_count]) : null,
+                                            $user->isHost() ? trans_choice('admin.users.studios_count', $user->studios_count, ['count' => $user->studios_count]) : null,
+                                            __('admin.users.since', ['date' => $user->created_at->translatedFormat('j M Y')]),
+                                        ])->filter()->implode(', ') }}
+                                    </p>
                                 </td>
-                                <td class="px-5 py-3.5">
-                                    <span @class([
-                                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide',
-                                        'bg-ruby-red/10 text-ruby-red' => $user->isHost(),
-                                        'bg-prussian-blue/5 text-prussian-blue/60' => ! $user->isHost(),
-                                    ])>
-                                        <i class="fa-solid {{ $user->isHost() ? 'fa-door-open' : 'fa-music' }}"></i>
-                                        {{ $user->isHost() ? __('admin.users.role_host') : __('admin.users.role_artist') }}
+                                <td class="hidden px-5 py-3.5 md:table-cell">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $role['class'] }}">
+                                        <i class="fa-solid {{ $role['icon'] }}"></i> {{ $role['label'] }}
                                     </span>
                                 </td>
-                                <td class="px-5 py-3.5 text-prussian-blue/70">{{ $user->bookings_count }}</td>
-                                <td class="px-5 py-3.5 text-prussian-blue/70">{{ $user->studios_count }}</td>
-                                <td class="px-5 py-3.5 text-prussian-blue/70">{{ $user->created_at->translatedFormat('j M Y') }}</td>
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $user->bookings_count }}</td>
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $user->studios_count }}</td>
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $user->created_at->translatedFormat('j M Y') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

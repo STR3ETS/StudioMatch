@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+/* Websitepagina's in de iOS/Android-app, in de stijl van de app (alleen onder .in-app). */
+@import './in-app.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';

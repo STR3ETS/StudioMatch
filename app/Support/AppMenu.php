@@ -2,7 +2,9 @@
 
 namespace App\Support;
 
+use App\Enums\BookingStatus;
 use App\Enums\UserRole;
+use App\Models\Booking;
 use App\Models\User;
 
 /**
@@ -19,6 +21,13 @@ class AppMenu
         '/studios' => 'studios',
         '/dashboard/verhuurder/boekingen' => 'inbox',
         '/dashboard/verhuurder/agenda' => 'agenda',
+        '/dashboard/admin' => 'overzicht',
+        '/dashboard/admin/tickets' => 'tickets',
+        '/dashboard/admin/wachtrij' => 'wachtrij',
+        '/dashboard/admin/boekingen' => 'admin-boekingen',
+        '/dashboard/admin/gebruikers' => 'gebruikers',
+        '/dashboard/admin/omzet' => 'omzet',
+        '/dashboard/admin/blog' => 'blog',
     ];
 
     /**
@@ -59,17 +68,69 @@ class AppMenu
             ],
             UserRole::Admin => [
                 'tabs' => [
+                    self::tab('overzicht', 'admin.nav.overview', 'fa-gauge'),
+                    self::tab('tickets', 'admin.nav.tickets', 'fa-triangle-exclamation', 'tickets'),
+                    self::tab('wachtrij', 'app.menu.queue', 'fa-list-check', 'queue'),
+                    self::tab('admin-boekingen', 'admin.nav.bookings', 'fa-calendar-check'),
                     self::tab('account', 'app.menu.account', 'fa-user'),
                 ],
+                // Ook schermen in de app (SCREENS): de app opent ze daar, niet als websitepagina.
                 'links' => [
-                    self::link('admin.nav.overview', 'fa-gauge', 'dashboard.admin'),
-                    self::link('admin.nav.queue', 'fa-list-check', 'admin.queue.index'),
-                    self::link('admin.nav.tickets', 'fa-triangle-exclamation', 'admin.tickets.index'),
-                    self::link('admin.nav.bookings', 'fa-calendar-check', 'admin.bookings.index'),
                     self::link('admin.nav.users', 'fa-users', 'admin.users.index'),
                     self::link('admin.nav.revenue', 'fa-chart-line', 'admin.revenue'),
+                    self::link('admin.nav.blog', 'fa-newspaper', 'admin.posts.index'),
+                    self::link('app.menu.account_details', 'fa-user-pen', 'account.edit'),
                 ],
             ],
+        };
+    }
+
+    /**
+     * Tellers voor de stippen op de tabs (de app via api/app/ik, de websitepagina's via x-app-tabbar).
+     *
+     * @return array<string, int>
+     */
+    public static function counts(User $user): array
+    {
+        return [
+            'requests' => $user->isHost()
+                ? Booking::whereIn('room_id', $user->rooms()->select('rooms.id'))
+                    ->where('status', BookingStatus::PendingConfirmation)->count()
+                : 0,
+            // Open tickets: wat op de beheerder wacht.
+            'tickets' => $user->isAdmin() ? AdminDesk::openTicketCount() : 0,
+            // Ruimtes die op beoordeling wachten.
+            'queue' => $user->isAdmin() ? AdminDesk::queueCount() : 0,
+        ];
+    }
+
+    /**
+     * Bij welke tab een websitepagina hoort, zodat de onderbalk op die pagina de juiste tab oplicht:
+     * een studio bij Zoeken, betalen of verzetten bij Boekingen, de boekingen van de verhuurder bij
+     * Aanvragen, de rest (facturen, gegevens, ...) bij Account, waar die links ook staan.
+     */
+    public static function tabFor(User $user, ?string $routeName): string
+    {
+        $routeName ??= '';
+
+        return match ($user->role) {
+            UserRole::Artiest => match (true) {
+                str_starts_with($routeName, 'studios') => 'studios',
+                str_starts_with($routeName, 'bookings.') || $routeName === 'dashboard.artist' => 'boekingen',
+                default => 'account',
+            },
+            UserRole::Verhuurder => match (true) {
+                str_starts_with($routeName, 'host.bookings.') => 'inbox',
+                $routeName === 'host.agenda' => 'agenda',
+                default => 'account',
+            },
+            UserRole::Admin => match (true) {
+                $routeName === 'dashboard.admin' => 'overzicht',
+                str_starts_with($routeName, 'admin.tickets.') => 'tickets',
+                str_starts_with($routeName, 'admin.queue.') => 'wachtrij',
+                str_starts_with($routeName, 'admin.bookings.') => 'admin-boekingen',
+                default => 'account',
+            },
         };
     }
 

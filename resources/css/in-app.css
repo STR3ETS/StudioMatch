@@ -1,0 +1,148 @@
+/*
+ * Websitepagina's die in de iOS/Android-app openstaan, in de stijl van de schermen van de app zelf
+ * (mobile/app): grijze achtergrond, witte kaarten met een zachte schaduw en zonder rand, knoppen
+ * rounded-xl en minstens 44px hoog, de paginatitel in de navy kop (x-app-return), meldingen en
+ * bevestigen onderin. Alles staat onder .in-app (de layouts zetten die klasse op <html> als InApp
+ * actief is), dus de website zelf verandert niet.
+ *
+ * Bewust buiten een @layer: dan gaan deze regels voor de utilities van Tailwind.
+ */
+
+.in-app,
+.in-app body {
+    background-color: #f4f4f7;
+}
+
+/* ===== Onderbalk van de app (x-app-tabbar) ===== */
+
+.in-app {
+    --app-tabbar: calc(3.75rem + env(safe-area-inset-bottom));
+}
+
+/* Niets verdwijnt achter de onderbalk. */
+.in-app body:has([data-app-tabbar]) {
+    padding-bottom: var(--app-tabbar);
+}
+
+/* Een eigen vaste balk onderin (bijv. "Boek nu" op een studiopagina) en meldingen komen erboven. */
+.in-app body:has([data-app-tabbar]) main .fixed.bottom-0 {
+    bottom: var(--app-tabbar);
+}
+
+.in-app body:has([data-app-tabbar]) [data-toast] {
+    bottom: calc(var(--app-tabbar) + 1rem);
+}
+
+/* De websitekop is weg: de ruimte die pagina's ervoor vrijhielden ook. */
+.in-app main .pt-28 {
+    padding-top: 1rem;
+}
+
+.in-app main :is(.pt-37, .pt-38) {
+    padding-top: 3rem;
+}
+
+/* ===== Dashboard ===== */
+
+/* Zelfde marges als de app (px-4, pt-4). */
+.in-app [data-dash-main] {
+    padding: 1rem 1rem 2rem;
+}
+
+/* De titel staat in de navy kop; de kop van de pagina blijft voor schermlezers. */
+.in-app [data-dash-main] h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}
+
+.in-app [data-dash-main] h1 + p {
+    margin-top: 0;
+}
+
+/* Het zijmenu is in de app niet te openen (de app is de navigatie); ook zijn schaduw niet aan de rand. */
+@media (max-width: 1023px) {
+    .in-app :is([data-sidebar], [data-sidebar-backdrop]) {
+        display: none;
+    }
+}
+
+/* ===== Inloggen, registreren, wachtwoord vergeten ===== */
+
+.in-app [data-auth-page] {
+    padding: 1rem;
+}
+
+/* Het formulier als witte kaart, bovenaan, zoals de formulieren in de app. */
+.in-app [data-auth-card] {
+    flex: none;
+    justify-content: flex-start;
+    margin: 0;
+    max-width: none;
+    padding: 1.25rem;
+    border-radius: 1rem;
+    background-color: #fff;
+    box-shadow: 0 1px 3px 0 rgb(16 21 41 / 0.07), 0 1px 2px -1px rgb(16 21 41 / 0.07);
+}
+
+/* ===== Bouwstenen ===== */
+
+/* Kaarten: wit, zonder rand, met een zachte schaduw (shadow-sm in de app). */
+.in-app :is(.rounded-2xl, .rounded-3xl).border.bg-white {
+    border-color: transparent;
+    border-radius: 1rem;
+    box-shadow: 0 1px 3px 0 rgb(16 21 41 / 0.07), 0 1px 2px -1px rgb(16 21 41 / 0.07);
+}
+
+/* Knoppen met tekst: rounded-xl en een tikvlak van 44px; kleine chips 36px. Ronde icoonknoppen blijven rond. */
+.in-app :is(a, button, summary).rounded-full[class*='px-'] {
+    border-radius: 0.75rem;
+}
+
+.in-app :is(a, button, summary).rounded-full[class*='px-']:not(.text-xs) {
+    min-height: 2.75rem;
+}
+
+.in-app :is(a, button, summary).rounded-full[class*='px-'].text-xs {
+    min-height: 2.25rem;
+}
+
+.in-app :is(a, button, summary).rounded-full[class*='px-']:is(.inline-flex, .flex) {
+    align-items: center;
+}
+
+/* Invoervelden zoals in de app: wat ruimer, en 16px tekst zodat een iPhone niet inzoomt. */
+.in-app :is(input:not([type='checkbox'], [type='radio'], [type='file'], [type='range']), select, textarea).rounded-xl {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 1rem;
+}
+
+/* Melding van het dashboard: onderin over de volle breedte, zoals in de app. */
+.in-app [data-toast] {
+    left: 1rem;
+    right: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+    width: auto;
+    max-width: none;
+}
+
+/* Bevestigen: een venster onderin in plaats van in het midden, zoals in de app. */
+.in-app [data-confirm-modal] {
+    align-items: flex-end;
+    padding: 0;
+}
+
+.in-app [data-confirm-modal] > div {
+    max-width: none;
+    border-radius: 1.5rem 1.5rem 0 0;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+}
+
+.in-app [data-confirm-modal] button {
+    min-height: 2.75rem;
+    border-radius: 0.75rem;
+}

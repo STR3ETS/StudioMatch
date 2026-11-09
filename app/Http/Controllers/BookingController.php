@@ -10,14 +10,17 @@ use App\Models\Room;
 use App\Models\User;
 use App\Notifications\BookingCancelled;
 use App\Notifications\BookingRescheduled;
+use App\Notifications\NewTicket;
 use App\Notifications\ProblemReported;
 use App\Support\Hours;
+use App\Support\MailDelivery;
 use App\Support\StripeService;
-use Illuminate\Support\Facades\Notification;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -301,7 +304,7 @@ class BookingController extends Controller
         ]);
 
         $photos = collect($validated['photos'] ?? [])
-            ->map(fn ($photo) => $photo->store('disputes/' . $booking->id, 'public'))
+            ->map(fn ($photo) => $photo->store('disputes/'.$booking->id, 'public'))
             ->all();
 
         $booking->update([
@@ -313,12 +316,15 @@ class BookingController extends Controller
         ]);
 
         $booking->room->studio->user->notify(new ProblemReported($booking));
-        Notification::send(User::where('role', UserRole::Admin)->get(), new ProblemReported($booking));
+        $admins = User::where('role', UserRole::Admin)->get();
+        Notification::send($admins, new ProblemReported($booking));
+        // En een pushmelding naar de telefoon van de beheerders (Tickets in de app).
+        MailDelivery::send($admins, new NewTicket($booking, 'dispute'));
 
         return redirect()->route('dashboard.artist')->with('status', __('booking.problem_reported'));
     }
 
-    public function ics(Request $request, Booking $booking): \Illuminate\Http\Response
+    public function ics(Request $request, Booking $booking): Response
     {
         $this->authorizeBooking($request, $booking);
 
@@ -331,19 +337,19 @@ class BookingController extends Controller
             'VERSION:2.0',
             'PRODID:-//StudioMatch//NL',
             'BEGIN:VEVENT',
-            'UID:artist-booking-' . $booking->id . '@studiomatch',
-            'DTSTAMP:' . now()->utc()->format('Ymd\THis\Z'),
-            'DTSTART:' . $booking->startsAt()->copy()->utc()->format('Ymd\THis\Z'),
-            'DTEND:' . $booking->endsAt()->copy()->utc()->format('Ymd\THis\Z'),
-            'SUMMARY:' . $escape(__('booking.ics_summary', ['room' => $booking->room->studio->name . ' - ' . $booking->room->title])),
-            'LOCATION:' . $escape($booking->room->studio->fullAddress()),
+            'UID:artist-booking-'.$booking->id.'@studiomatch',
+            'DTSTAMP:'.now()->utc()->format('Ymd\THis\Z'),
+            'DTSTART:'.$booking->startsAt()->copy()->utc()->format('Ymd\THis\Z'),
+            'DTEND:'.$booking->endsAt()->copy()->utc()->format('Ymd\THis\Z'),
+            'SUMMARY:'.$escape(__('booking.ics_summary', ['room' => $booking->room->studio->name.' - '.$booking->room->title])),
+            'LOCATION:'.$escape($booking->room->studio->fullAddress()),
             'END:VEVENT',
             'END:VCALENDAR',
         ];
 
         return response(implode("\r\n", $lines), 200, [
             'Content-Type' => 'text/calendar; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="studiomatch-boeking-' . $booking->id . '.ics"',
+            'Content-Disposition' => 'attachment; filename="studiomatch-boeking-'.$booking->id.'.ics"',
         ]);
     }
 
@@ -351,8 +357,8 @@ class BookingController extends Controller
     {
         $validated = $request->validate([
             'date' => ['required', 'date', 'after_or_equal:today'],
-            'start' => ['required', 'integer', 'between:0,' . (Hours::max() - 1)],
-            'hours' => ['required', 'integer', 'min:' . $room->min_hours, 'max:' . config('studio.booking_max_hours')],
+            'start' => ['required', 'integer', 'between:0,'.(Hours::max() - 1)],
+            'hours' => ['required', 'integer', 'min:'.$room->min_hours, 'max:'.config('studio.booking_max_hours')],
         ]);
 
         $date = Carbon::parse($validated['date']);

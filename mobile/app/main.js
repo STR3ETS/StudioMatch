@@ -10,10 +10,25 @@ const TOKEN_KEY = 'sm-token';
 const PROFILE_KEY = 'sm-profile';
 const TEXTS_KEY = 'sm-texts';
 const CACHE_PREFIX = 'sm-cache:';
+const PUSH_KEY = 'sm-push';
+// Rollen die pushmeldingen krijgen (nu: de beheerder, bij een nieuw ticket). Anderen vragen we niet om
+// toestemming zolang er niets voor ze is.
+const PUSH_ROLES = ['admin'];
 // Serverpaden die in de app een eigen scherm hebben (AppMenu::SCREENS op de server).
-const SCREEN_PATHS = { '/dashboard/artiest': 'boekingen', '/studios': 'studios', '/dashboard/verhuurder/boekingen': 'inbox', '/dashboard/verhuurder/agenda': 'agenda' };
-// Schermen per rol; 'boeking' is het detailscherm van de artiest, 'account' heeft iedereen.
-const ROLE_SCREENS = { artiest: ['boekingen', 'boeking', 'studios', 'account'], verhuurder: ['inbox', 'agenda', 'account'], admin: ['account'] };
+const SCREEN_PATHS = {
+    '/dashboard/artiest': 'boekingen', '/studios': 'studios', '/dashboard/verhuurder/boekingen': 'inbox', '/dashboard/verhuurder/agenda': 'agenda',
+    '/dashboard/admin': 'overzicht', '/dashboard/admin/tickets': 'tickets', '/dashboard/admin/wachtrij': 'wachtrij', '/dashboard/admin/boekingen': 'admin-boekingen',
+    '/dashboard/admin/gebruikers': 'gebruikers', '/dashboard/admin/omzet': 'omzet', '/dashboard/admin/blog': 'blog',
+};
+// Schermen per rol; 'boeking' en 'ruimte' zijn detailschermen (met een id), 'account' heeft iedereen.
+const ROLE_SCREENS = {
+    artiest: ['boekingen', 'boeking', 'studios', 'account'],
+    verhuurder: ['inbox', 'agenda', 'account'],
+    admin: ['overzicht', 'tickets', 'wachtrij', 'ruimte', 'admin-boekingen', 'gebruikers', 'omzet', 'blog', 'account'],
+};
+// Detailschermen: zonder id naar het beginscherm. Terug: naar het scherm erboven.
+const DETAIL_SCREENS = ['boeking', 'ruimte'];
+const PARENT_SCREENS = { boeking: 'boekingen', ruimte: 'wachtrij', gebruikers: 'account', omzet: 'account', blog: 'account' };
 
 const capacitor = () => window.Capacitor?.Plugins ?? {};
 
@@ -84,6 +99,8 @@ const format = {
             ? `${Alpine.store('app').t('common.today')} ${time}`
             : new Intl.DateTimeFormat(locale, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(date);
     },
+    // "9 nov. 2026"
+    date: (at) => new Intl.DateTimeFormat(Alpine.store('app').locale === 'nl' ? 'nl-NL' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(at)),
 };
 window.smFormat = format;
 
@@ -96,9 +113,16 @@ Alpine.store('app', {
     offline: false,
     shownAt: null,
     toastText: null,
+    toastOpen: false,
     question: null,
     leaving: false,
     chosenLocale: null,
+    previousRoute: null,
+    version: null,
+    // Een venster onderin dat een scherm open heeft (sluiten met de terugknop van Android, smBack).
+    sheetClose: null,
+    // De taal waarnaar de app aan het wisselen is.
+    localeLoading: null,
 
     get signedIn() {
         return Boolean(this.token && this.profile);
@@ -130,6 +154,37 @@ Alpine.store('app', {
     count(name) {
         return this.profile?.counts?.[name] ?? 0;
     },
+    // plural('admin.bookings', 3): "3 boekingen" (sleutels _none, _one en _many)
+    plural(key, count) {
+        return this.t(`${key}_${count === 0 ? 'none' : count === 1 ? 'one' : 'many'}`, { count });
+    },
+    // De kop: de naam van het scherm, en op een detailscherm een knop terug.
+    get title() {
+        const key = {
+            boekingen: 'bookings.title', boeking: 'booking.title', studios: 'studios.title', inbox: 'inbox.title', agenda: 'agenda.title', account: 'account.title',
+            overzicht: 'admin.overview', tickets: 'admin.tickets', wachtrij: 'admin.queue', ruimte: 'admin.room', 'admin-boekingen': 'admin.bookings',
+            gebruikers: 'admin.users', omzet: 'admin.revenue', blog: 'admin.blog',
+        }[this.route];
+        return key ? this.t(key) : '';
+    },
+    get backTo() {
+        return PARENT_SCREENS[this.route] ?? null;
+    },
+    // De tab die oplicht: het scherm zelf, of op een detailscherm het scherm erboven.
+    get activeTab() {
+        return this.tabs.some((tab) => tab.screen === this.route) ? this.route : PARENT_SCREENS[this.route];
+    },
+    // Terug in de geschiedenis als je van de lijst kwam (dan staat die er nog zoals je hem verliet), anders
+    // naar de lijst zonder een extra stap (bijv. na openen vanuit een melding).
+    back() {
+        if (this.previousRoute === this.backTo) history.back();
+        else location.replace(`#/${this.backTo}`);
+    },
+    // Een sessie in de agenda: een aanvraag beantwoord je in Aanvragen, de rest staat op de website.
+    openAgendaEntry(entry) {
+        if (entry.status === 'pending_confirmation') location.hash = '#/inbox';
+        else if (entry.path) this.openWeb(entry.path);
+    },
 
     init() {
         window.addEventListener('hashchange', () => this.navigate());
@@ -148,6 +203,8 @@ Alpine.store('app', {
         });
         capacitor().StatusBar?.setStyle({ style: 'DARK' }).catch(() => {});
         capacitor().StatusBar?.setBackgroundColor({ color: '#101529' }).catch(() => {});
+        // Versie en build onderaan Account, handig bij vragen.
+        capacitor().App?.getInfo().then((info) => { this.version = `${info.version} (${info.build})`; }).catch(() => {});
         this.navigate();
         // Pas na het laden van dit bestand: Alpine roept init() al aan bij het registreren van de store,
         // als fetchScreen en de cache verderop nog niet bestaan.
@@ -170,6 +227,7 @@ Alpine.store('app', {
         }
         preload(this.role);
         await this.refreshProfile();
+        registerPush();
     },
 
     async loadTexts(locale = this.locale) {
@@ -189,7 +247,12 @@ Alpine.store('app', {
 
     navigate() {
         const { route, param } = routeFromHash();
-        if (this.signedIn && (!route || !this.allowed(route) || (route === 'boeking' && !param))) {
+        if (route !== this.route) {
+            this.previousRoute = this.route;
+            this.toastOpen = false;
+        }
+        if (route !== this.route && this.sheetClose) this.sheetClose();
+        if (this.signedIn && (!route || !this.allowed(route) || (DETAIL_SCREENS.includes(route) && !param))) {
             history.replaceState(null, '', `#/${this.home}`);
             this.route = this.home;
             this.param = null;
@@ -214,6 +277,7 @@ Alpine.store('app', {
         this.setProfile(profile);
         this.navigate();
         preload(this.role);
+        registerPush();
     },
 
     setProfile(profile) {
@@ -227,6 +291,7 @@ Alpine.store('app', {
         this.profile = null;
         storage.remove(TOKEN_KEY);
         storage.remove(PROFILE_KEY);
+        storage.remove(PUSH_KEY);
         secure.remove();
         // Ook de websessie van deze telefoon (serverpagina's) eindigt.
         capacitor().CapacitorCookies?.clearAllCookies().catch(() => {});
@@ -245,26 +310,38 @@ Alpine.store('app', {
     async logout() {
         if (!(await this.ask(this.t('account.logout_confirm'), this.t('account.logout')))) return;
         try {
-            await api('uitloggen', { method: 'POST' });
+            // Met het pushtoken, zodat deze telefoon na uitloggen geen meldingen meer krijgt.
+            await api('uitloggen', { method: 'POST', body: { push_token: readJson(PUSH_KEY)?.token } });
         } catch { /* offline: het token vervalt op de telefoon toch */ }
         this.forget();
     },
 
+    // Taal wisselen: laten zien dat het bezig is (localeLoading) tot de teksten én de schermen in de nieuwe
+    // taal binnen zijn, anders staat er even een mengelmoes van twee talen.
     async setLocale(locale) {
-        if (!this.signedIn) {
-            this.chosenLocale = locale;
-            this.loadTexts(locale);
-            return;
-        }
+        if (locale === this.locale || this.localeLoading) return;
+        this.localeLoading = locale;
         try {
+            if (!this.signedIn) {
+                this.chosenLocale = locale;
+                await this.loadTexts(locale);
+                return;
+            }
             this.setProfile(await api('taal', { method: 'PATCH', body: { locale } }));
             // De schermen bevatten teksten van de server: in de nieuwe taal opnieuw ophalen.
             cache.clear();
             Object.keys(fetchedAt).forEach((name) => delete fetchedAt[name]);
-            preload(this.role);
+            await preload(this.role);
+            window.dispatchEvent(new Event('sm-refresh'));
         } catch {
             this.toast(this.t('common.failed'));
+        } finally {
+            this.localeLoading = null;
         }
+    },
+    // "Taal wijzigen..." in de taal waar je naartoe gaat (die zit al in de app).
+    get switchingText() {
+        return (bundledTexts[this.localeLoading] ?? bundledTexts.nl)?.common?.switching ?? '';
     },
 
     // Een scherm dat nog niet in de app zit: de serverpagina openen, ingelogd via een eenmalige code.
@@ -287,9 +364,11 @@ Alpine.store('app', {
         location.href = `${API}${path}`;
     },
 
+    // De tekst blijft staan tot de melding helemaal is weggefaded, anders zie je even een leeg balkje.
     toast(text) {
         this.toastText = text;
-        setTimeout(() => { if (this.toastText === text) this.toastText = null; }, 3500);
+        this.toastOpen = true;
+        setTimeout(() => { if (this.toastText === text) this.toastOpen = false; }, 3500);
     },
 
     // Bevestigen in een eigen venster in plaats van de grijze browserdialoog.
@@ -358,13 +437,54 @@ function fetchScreen(name, path, { force = false } = {}) {
 
 // Bij het opstarten alles van de onderbalk alvast ophalen, zodat elk scherm al vers is als je erheen gaat.
 async function preload(role) {
-    const screens = { artiest: [['boekingen', 'boekingen'], ['studios', 'studios']], verhuurder: [['inbox', 'inbox'], ['agenda', 'agenda']] }[role] ?? [];
+    const screens = { artiest: [['boekingen', 'boekingen'], ['studios', 'studios']], verhuurder: [['inbox', 'inbox'], ['agenda', 'agenda']], admin: [['overzicht', 'beheer/overzicht'], ['tickets', 'beheer/tickets'], ['wachtrij', 'beheer/wachtrij'], ['admin-boekingen', 'beheer/boekingen']] }[role] ?? [];
     for (const [name, path] of screens) {
         try {
             await fetchScreen(name, path);
         } catch { /* offline: het scherm probeert het zelf weer bij openen */ }
     }
 }
+
+// ===== Pushmeldingen (Firebase) =====
+// Na inloggen en bij elke start: toestemming vragen, het token van deze telefoon ophalen en aanmelden bij
+// de server (api/app/apparaten). Niet vaker dan nodig: alleen bij een ander token, een andere gebruiker
+// of na een dag. Zonder Firebase-configuratie (google-services.json) of verbinding gebeurt er niets.
+async function registerPush() {
+    const app = Alpine.store('app');
+    const messaging = capacitor().FirebaseMessaging;
+    if (!messaging || !app.signedIn || !PUSH_ROLES.includes(app.role)) return;
+    try {
+        let { receive } = await messaging.checkPermissions();
+        if (receive !== 'granted') ({ receive } = await messaging.requestPermissions());
+        if (receive !== 'granted') return;
+        const platform = window.Capacitor?.getPlatform?.() ?? 'android';
+        if (platform === 'android') {
+            await messaging.createChannel({ id: 'meldingen', name: app.locale === 'nl' ? 'Meldingen' : 'Notifications', importance: 4 });
+        }
+        const { token } = await messaging.getToken();
+        const user = app.profile?.user?.id;
+        const previous = readJson(PUSH_KEY);
+        if (previous?.token === token && previous?.user === user && Date.now() - previous.at < 86_400_000) return;
+        await api('apparaten', { method: 'POST', body: { token, platform } });
+        storage.set(PUSH_KEY, JSON.stringify({ token, user, at: Date.now() }));
+    } catch { /* geen Firebase of geen verbinding: bij de volgende start opnieuw */ }
+}
+
+// Tikken op een melding opent waar die over gaat (bijv. /dashboard/admin/tickets: het scherm Tickets).
+// Staat de app open, dan toont hij geen melding, maar worden de teller en het scherm meteen ververst.
+setTimeout(() => {
+    const messaging = capacitor().FirebaseMessaging;
+    if (!messaging) return;
+    messaging.addListener('notificationActionPerformed', ({ notification }) => {
+        const url = notification?.data?.url;
+        if (url && Alpine.store('app').signedIn) Alpine.store('app').go(url);
+    });
+    messaging.addListener('notificationReceived', () => {
+        Object.keys(fetchedAt).forEach((name) => delete fetchedAt[name]);
+        Alpine.store('app').refreshProfile();
+        window.dispatchEvent(new Event('sm-refresh'));
+    });
+});
 
 function screen(name, path) {
     return {
@@ -375,8 +495,14 @@ function screen(name, path) {
         failed: false,
         missing: false,
         async init() {
+            // Een pushmelding terwijl dit scherm open is: meteen vers ophalen.
+            this.onRefresh = () => this.load({ force: true });
+            window.addEventListener('sm-refresh', this.onRefresh);
             this.present(cache.read(this.cacheName));
             await this.load();
+        },
+        destroy() {
+            window.removeEventListener('sm-refresh', this.onRefresh);
         },
         // Ander filter: eerst wat er van die weergave bewaard is, dan vers.
         show(cacheName, path) {
@@ -422,6 +548,10 @@ Alpine.data('login', () => ({
     password: '',
     busy: false,
     error: null,
+    // De foutmelding komt van de server in de taal van dat moment: bij een andere taal weg.
+    init() {
+        this.$watch('$store.app.locale', () => { this.error = null; });
+    },
     async submit() {
         const app = Alpine.store('app');
         this.busy = true;
@@ -469,7 +599,8 @@ Alpine.data('inbox', () => ({
         try {
             const result = await api(`inbox/${booking.id}/${action}`, { method: 'POST' });
             this.apply(result.inbox);
-            app.toast(result.message);
+            // Kort houden: de lange tekst van de website bedekt anders drie regels van de lijst.
+            app.toast(app.t(action === 'accepteren' ? 'inbox.accepted' : 'inbox.declined'));
         } catch (error) {
             // Al afgehandeld of verlopen: de melding van de server, en de bijgewerkte inbox.
             if (error.data?.inbox) this.apply(error.data.inbox);
@@ -483,12 +614,234 @@ Alpine.data('inbox', () => ({
 
 Alpine.data('agenda', () => ({ ...screen('agenda', 'agenda') }));
 
+// Beheerder: overzicht van het platform en de tickets. Afhandelen gebeurt op de website (openWeb), op de
+// plek van dat ticket.
+Alpine.data('overzicht', () => ({
+    ...screen('overzicht', 'beheer/overzicht'),
+    get openTickets() {
+        return (this.data?.open_disputes ?? 0) + (this.data?.open_damages ?? 0);
+    },
+    // plural('tickets_open', 'tickets_none', 3): "3 open tickets wachten op jou"
+    plural(key, noneKey, count) {
+        const app = Alpine.store('app');
+        return count === 0 ? app.t(`admin.${noneKey}`) : app.t(`admin.${key}_${count === 1 ? 'one' : 'many'}`, { count });
+    },
+}));
+
+// Een venster onderin met een formulier (ticket afhandelen, afwijzen, status wijzigen). De terugknop van
+// Android sluit het (smBack via app.sheetClose), net als een ander scherm openen.
+const sheet = () => ({
+    sheet: null,
+    busy: false,
+    error: null,
+    openSheet(state) {
+        this.sheet = state;
+        this.error = null;
+        Alpine.store('app').sheetClose = () => this.closeSheet();
+    },
+    closeSheet() {
+        this.sheet = null;
+        this.busy = false;
+        Alpine.store('app').sheetClose = null;
+    },
+});
+
+// De eerste validatiefout van de server ("Toelichting moet minimaal 10 tekens zijn."), anders de melding.
+const errorText = (error) => (error.data?.errors ? Object.values(error.data.errors)[0][0] : (error.data?.message ?? Alpine.store('app').t('common.failed')));
+
+// Na een actie van de beheerder: schermen met andere cijfers bij openen opnieuw ophalen, tellers bijwerken.
+function adminChanged(...screens) {
+    Object.keys(fetchedAt).filter((name) => screens.some((screen) => name === screen || name.startsWith(`${screen}:`))).forEach((name) => delete fetchedAt[name]);
+    Alpine.store('app').refreshProfile();
+}
+
+Alpine.data('tickets', () => ({
+    ...screen('tickets', 'beheer/tickets'),
+    ...sheet(),
+    photos(count) {
+        return Alpine.store('app').t(count === 1 ? 'admin.photos_one' : 'admin.photos_many', { count });
+    },
+    handle(ticket) {
+        this.openSheet({ ticket, percent: 100, note: '', response: '' });
+    },
+    // Een gemeld probleem: terugbetaling en toelichting (eerst bevestigen, want het geld gaat meteen terug).
+    // Een melding van een verhuurder: een reactie.
+    async submit() {
+        const app = Alpine.store('app');
+        const { ticket } = this.sheet;
+        const dispute = ticket.kind === 'dispute';
+        if (dispute && !(await app.ask(app.t('admin.resolve_confirm', { percent: this.sheet.percent }), app.t('admin.handle')))) return;
+        this.busy = true;
+        this.error = null;
+        try {
+            const result = dispute
+                ? await api(`beheer/tickets/${ticket.id}/afhandelen`, { method: 'POST', body: { refund_percent: Number(this.sheet.percent), resolution_note: this.sheet.note } })
+                : await api(`beheer/tickets/${ticket.id}/reageren`, { method: 'POST', body: { damage_response: this.sheet.response } });
+            this.apply(result.tickets);
+            this.closeSheet();
+            app.toast(result.message);
+            adminChanged('overzicht', 'admin-boekingen');
+        } catch (error) {
+            // Al afgehandeld (door iemand anders): de melding en de bijgewerkte lijst.
+            if (error.data?.tickets) {
+                this.apply(error.data.tickets);
+                this.closeSheet();
+                app.toast(error.data.message);
+            } else {
+                this.error = errorText(error);
+            }
+        }
+        this.busy = false;
+    },
+}));
+
+Alpine.data('wachtrij', () => ({ ...screen('wachtrij', 'beheer/wachtrij') }));
+
+// Een ruimte beoordelen: live zetten (eerst bevestigen) of afwijzen met een reden.
+Alpine.data('ruimte', (id) => ({
+    ...screen(`ruimte:${id}`, `beheer/wachtrij/${id}`),
+    ...sheet(),
+    async approve() {
+        const app = Alpine.store('app');
+        if (!(await app.ask(app.t('admin.approve_confirm', { room: this.data.title }), app.t('admin.approve')))) return;
+        await this.decide(`beheer/wachtrij/${id}/goedkeuren`, {});
+    },
+    reject() {
+        this.openSheet({ reason: '' });
+    },
+    sendReject() {
+        return this.decide(`beheer/wachtrij/${id}/afwijzen`, { rejection_reason: this.sheet.reason });
+    },
+    async decide(path, body) {
+        const app = Alpine.store('app');
+        this.busy = true;
+        this.error = null;
+        try {
+            const result = await api(path, { method: 'POST', body });
+            this.closeSheet();
+            app.toast(result.message);
+            adminChanged('wachtrij', 'overzicht', `ruimte:${id}`);
+            app.back();
+        } catch (error) {
+            // Al beoordeeld of Stripe nog niet klaar: de melding, en de ruimte opnieuw ophalen.
+            if (error.status === 409) {
+                this.closeSheet();
+                app.toast(error.data?.message ?? app.t('common.failed'));
+                this.load({ force: true });
+            } else {
+                this.error = errorText(error);
+            }
+        }
+        this.busy = false;
+    },
+}));
+
+// Alle boekingen: filteren op status en de status handmatig wijzigen (vangnet voor randgevallen).
+Alpine.data('adminBookings', () => ({
+    ...screen('admin-boekingen', 'beheer/boekingen'),
+    ...sheet(),
+    status: '',
+    filter(status) {
+        this.status = status;
+        this.show(status ? `admin-boekingen:${status}` : 'admin-boekingen', status ? `beheer/boekingen?status=${status}` : 'beheer/boekingen');
+    },
+    change(booking) {
+        this.openSheet({ booking, status: booking.status });
+    },
+    async saveStatus() {
+        const app = Alpine.store('app');
+        const { booking, status } = this.sheet;
+        if (status === booking.status) return this.closeSheet();
+        const label = this.data.statuses.find((option) => option.value === status)?.label ?? status;
+        if (!(await app.ask(app.t('admin.change_confirm', { status: label }), app.t('admin.save')))) return;
+        this.busy = true;
+        this.error = null;
+        try {
+            const result = await api(`beheer/boekingen/${booking.id}/status`, { method: 'POST', body: { status } });
+            this.apply({ ...this.data, bookings: this.data.bookings.map((item) => (item.id === booking.id ? result.booking : item)) });
+            this.closeSheet();
+            app.toast(result.message);
+            adminChanged('admin-boekingen', 'overzicht', 'tickets', 'omzet');
+        } catch (error) {
+            this.error = errorText(error);
+        }
+        this.busy = false;
+    },
+}));
+
+Alpine.data('gebruikers', () => ({
+    ...screen('gebruikers', 'beheer/gebruikers'),
+    role: '',
+    filter(role) {
+        this.role = role;
+        this.show(role ? `gebruikers:${role}` : 'gebruikers', role ? `beheer/gebruikers?rol=${role}` : 'beheer/gebruikers');
+    },
+    // "3 boekingen, lid sinds 9 nov. 2026"; bij een verhuurder de studio's, en boekingen alleen als die er zijn.
+    line(user) {
+        const app = Alpine.store('app');
+        const host = user.role === 'verhuurder';
+        return [
+            !host || user.bookings > 0 ? app.plural('admin.bookings', user.bookings) : null,
+            host ? app.plural('admin.studios', user.studios) : null,
+            app.t('admin.member_since', { date: format.date(user.since) }),
+        ].filter(Boolean).join(', ');
+    },
+}));
+
+Alpine.data('omzet', () => ({ ...screen('omzet', 'beheer/omzet') }));
+
+// De blog: de lijst in de app; schrijven en bewerken in de editor van de website.
+Alpine.data('blog', () => ({
+    ...screen('blog', 'beheer/blog'),
+    status: '',
+    filter(status) {
+        this.status = status;
+        this.show(status ? `blog:${status}` : 'blog', status ? `beheer/blog?status=${status}` : 'beheer/blog');
+    },
+    line(post) {
+        const app = Alpine.store('app');
+        return [app.plural('admin.sections', post.sections), post.author, format.date(post.updated_at)].filter(Boolean).join(', ');
+    },
+    async remove(post) {
+        const app = Alpine.store('app');
+        if (!(await app.ask(app.t('admin.delete_confirm', { title: post.title }), app.t('admin.delete')))) return;
+        try {
+            const result = await api(`beheer/blog/${post.id}`, { method: 'DELETE' });
+            this.apply({ ...this.data, posts: this.data.posts.filter((item) => item.id !== post.id) });
+            app.toast(result.message);
+            adminChanged('blog');
+        } catch (error) {
+            app.toast(errorText(error));
+        }
+    },
+}));
+
 // <span x-icon="'fa-inbox'" class="h-5 w-5"></span>: dezelfde Font Awesome-iconen als de website.
 Alpine.directive('icon', (el, { expression }, { evaluateLater, effect }) => {
     const name = evaluateLater(expression);
     el.classList.add('sm-icon');
     effect(() => name((value) => { el.innerHTML = iconSvg(value); }));
 });
+
+// De terugknop van Android (MainActivity) vraagt eerst of de app zelf iets terug doet: het venster onderin
+// sluiten, of op een scherm met een scherm erboven (een boeking, een ruimte, Gebruikers) hetzelfde als de
+// terugknop in de kop. De terugstap van de webview zelf slaat stappen over die zonder tik zijn ontstaan.
+window.smBack = () => {
+    const app = Alpine.store('app');
+    if (app.question) {
+        app.answer(false);
+        return true;
+    }
+    if (app.sheetClose) {
+        app.sheetClose();
+        return true;
+    }
+    if (app.backTo) {
+        app.back();
+        return true;
+    }
+    return false;
+};
 
 window.Alpine = Alpine;
 Alpine.start();

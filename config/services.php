@@ -46,6 +46,14 @@ return [
      * Google reCAPTCHA v2 op het contactformulier. Zonder sleutels slaat de controle
      * zichzelf over, zodat de site lokaal en in de tests gewoon blijft werken.
      */
+    /*
+     * Pushmeldingen naar de iOS/Android-app (FirebaseMessaging): pad naar de JSON-sleutel van een
+     * serviceaccount van het Firebase-project, buiten Git. Leeg = geen push (de rest werkt gewoon).
+     */
+    'firebase' => [
+        'credentials' => env('FIREBASE_CREDENTIALS'),
+    ],
+
     'recaptcha' => [
         'site_key' => env('RECAPTCHA_SITE_KEY'),
         'secret' => env('RECAPTCHA_SECRET_KEY'),

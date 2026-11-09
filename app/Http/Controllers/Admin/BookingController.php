@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Actions\ChangeBookingStatus;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Notifications\BookingCancelled;
-use App\Support\StripeService;
+use App\Support\AdminDesk;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,7 +15,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BookingController extends Controller
 {
-
     public function index(Request $request): View
     {
         $status = $request->validate([
@@ -23,35 +22,19 @@ class BookingController extends Controller
         ])['status'] ?? null;
 
         return view('admin.bookings.index', [
-            'bookings' => Booking::query()
-                ->when($status, fn ($query) => $query->where('status', $status))
-                ->with(['room.studio', 'user'])
-                ->latest()
-                ->get(),
+            'bookings' => AdminDesk::bookings($status),
             'status' => $status,
         ]);
     }
 
-    public function updateStatus(Request $request, Booking $booking): RedirectResponse
+    public function updateStatus(Request $request, Booking $booking, ChangeBookingStatus $change): RedirectResponse
     {
         $validated = $request->validate([
             'status' => ['required', Rule::enum(BookingStatus::class)],
             'filter_status' => ['nullable', Rule::enum(BookingStatus::class)],
         ]);
 
-        $newStatus = BookingStatus::from($validated['status']);
-
-        $booking->update([
-            'status' => $newStatus,
-            'cancelled_by' => $newStatus === BookingStatus::Cancelled ? 'admin' : $booking->cancelled_by,
-        ]);
-
-        if ($newStatus === BookingStatus::Cancelled) {
-            StripeService::refund($booking, $booking->refundAmountCents(100));
-
-            $booking->user->notify(new BookingCancelled($booking, 100));
-            $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
-        }
+        $change($booking, BookingStatus::from($validated['status']));
 
         return redirect()->route('admin.bookings.index', array_filter(['status' => $validated['filter_status'] ?? null]))
             ->with('status', __('admin.bookings.updated'));
@@ -76,7 +59,7 @@ class BookingController extends Controller
                     $booking->room->title,
                     $booking->user->name,
                     $booking->user->email,
-                    __('booking.status.' . $booking->status->value),
+                    __('booking.status.'.$booking->status->value),
                     number_format($booking->rent_cents / 100, 2, ',', ''),
                     number_format($booking->service_fee_cents / 100, 2, ',', ''),
                     number_format($booking->vat_cents / 100, 2, ',', ''),
@@ -86,6 +69,6 @@ class BookingController extends Controller
             }
 
             fclose($handle);
-        }, 'studiomatch-boekingen-' . now()->format('Y-m-d') . '.csv', ['Content-Type' => 'text/csv; charset=utf-8']);
+        }, 'studiomatch-boekingen-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);
     }
 }

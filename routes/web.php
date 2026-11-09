@@ -234,6 +234,7 @@ Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.web
 
 // Vanuit de iOS/Android-app naar een serverpagina: de eenmalige code uit api/app/webcode logt in.
 Route::get('/app/sessie', AppWebSessionController::class)->middleware('throttle:30,1')->name('app.web-session');
+Route::get('/app/terug', [AppWebSessionController::class, 'back'])->name('app.back');
 
 Route::get('/ical/ruimte/{room}', IcalController::class)->middleware('signed')->name('ical.room');
 

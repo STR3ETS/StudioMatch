@@ -11,8 +11,8 @@
     <!-- ===== Inloggen ===== -->
     <template x-if="!$store.app.signedIn">
         <div class="flex min-h-screen flex-col bg-prussian-blue px-6 pt-safe pb-safe" x-data="login">
-            <div class="flex flex-1 flex-col justify-center py-10">
-                <img src="./logo-wit.png" alt="StudioMatch" class="mx-auto mb-10 w-48">
+            <div class="flex flex-1 flex-col justify-center py-6">
+                <img src="./logo-wit.png" alt="StudioMatch" class="mx-auto mb-7 w-40">
                 <form @submit.prevent="submit()" class="rounded-3xl bg-white p-6 shadow-xl">
                     <h1 class="text-2xl font-bold" x-text="$store.app.t('login.title')"></h1>
                     <p class="mt-1 mb-6 text-sm text-charcoal-blue" x-text="$store.app.t('login.subtitle')"></p>
@@ -24,18 +24,23 @@
                         <span class="mb-1.5 block text-sm font-semibold" x-text="$store.app.t('login.password')"></span>
                         <input type="password" x-model="password" autocomplete="current-password" required class="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:ring-2 focus:ring-prussian-blue/20 focus:outline-none">
                     </label>
-                    <button type="button" @click="$store.app.openGuestPage('/wachtwoord-vergeten')" class="mb-5 py-2 text-sm font-semibold text-ruby-red" x-text="$store.app.t('login.forgot')"></button>
+                    <button type="button" @click="$store.app.openGuestPage('/wachtwoord-vergeten')" class="mb-4 min-h-11 text-sm font-semibold text-ruby-red" x-text="$store.app.t('login.forgot')"></button>
                     <p x-show="error" x-cloak class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="error"></p>
                     <button type="submit" :disabled="busy" class="w-full rounded-xl bg-ruby-red py-3.5 text-base font-bold text-white active:opacity-90 disabled:opacity-60" x-text="busy ? $store.app.t('login.busy') : $store.app.t('login.submit')"></button>
-                    <p class="mt-5 text-center text-sm text-charcoal-blue">
+                    <p class="mt-3 text-center text-sm text-charcoal-blue">
                         <span x-text="$store.app.t('login.no_account')"></span>
-                        <button type="button" @click="$store.app.openGuestPage('/registreren')" class="py-2 font-semibold text-ruby-red" x-text="$store.app.t('login.register')"></button>
+                        <button type="button" @click="$store.app.openGuestPage('/registreren')" class="min-h-11 px-1 font-semibold text-ruby-red" x-text="$store.app.t('login.register')"></button>
                     </p>
                 </form>
             </div>
-            <div class="flex justify-center gap-2 pb-6">
+            <div class="flex justify-center gap-2 pb-4">
                 <template x-for="code in ['nl', 'en']" :key="code">
-                    <button type="button" @click="$store.app.setLocale(code)" class="rounded-full px-4 py-2 text-sm font-semibold uppercase" :class="$store.app.locale === code ? 'bg-white text-prussian-blue' : 'text-white/70'" x-text="code"></button>
+                    <button type="button" @click="$store.app.setLocale(code)" :disabled="!!$store.app.localeLoading" :aria-busy="$store.app.localeLoading === code"
+                            class="flex min-h-11 min-w-14 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold uppercase"
+                            :class="($store.app.localeLoading ?? $store.app.locale) === code ? 'bg-white text-prussian-blue' : 'text-white/70'">
+                        <span x-show="$store.app.localeLoading === code" class="sm-spinner"></span>
+                        <span x-text="code"></span>
+                    </button>
                 </template>
             </div>
         </div>
@@ -44,25 +49,31 @@
     <!-- ===== App ===== -->
     <template x-if="$store.app.signedIn">
         <div class="min-h-screen pb-[calc(5.5rem_+_env(safe-area-inset-bottom))]">
+            <!-- Kop: de naam van het scherm (en terug op een detailscherm), het merk klein rechts. -->
             <header class="sticky top-0 z-30 bg-prussian-blue pt-safe text-white">
-                <div class="flex h-14 items-center gap-3 px-4">
-                    <img src="./logo-wit.png" alt="StudioMatch" class="h-6">
+                <div class="flex h-14 items-center gap-1 pr-4" :class="$store.app.backTo ? 'pl-1' : 'pl-4'">
+                    <button type="button" x-show="$store.app.backTo" @click="$store.app.back()" :aria-label="$store.app.t('common.back')" class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full active:bg-white/10">
+                        <span x-icon="'fa-chevron-left'" class="h-4 w-4"></span>
+                    </button>
+                    <h1 class="min-w-0 flex-1 truncate text-lg font-bold" x-text="$store.app.title"></h1>
+                    <img src="./mark-wit.png" alt="StudioMatch" class="h-7 w-7 shrink-0">
                 </div>
+                <!-- Bezig met de taal wisselen -->
+                <div x-show="$store.app.localeLoading" x-cloak class="sm-progress" role="progressbar" :aria-label="$store.app.switchingText"></div>
                 <p x-show="$store.app.offline" x-cloak class="flex items-center gap-2 bg-amber-100 px-4 py-2 text-[13px] font-medium text-amber-900">
                     <span x-icon="'fa-wifi'" class="h-3.5 w-3.5"></span>
                     <span x-text="$store.app.shownAt ? $store.app.t('common.offline_since', { time: smFormat.moment($store.app.shownAt) }) : $store.app.t('common.offline')"></span>
                 </p>
             </header>
 
-            <main class="px-4 pt-5">
+            <main class="px-4 pt-4">
 
                 <!-- ===== Artiest: mijn boekingen ===== -->
                 <template x-if="$store.app.route === 'boekingen'">
                     <section x-data="bookings">
-                        <h1 class="mb-4 text-2xl font-bold" x-text="$store.app.t('bookings.title')"></h1>
                         <div class="mb-4 grid grid-cols-2 gap-1 rounded-xl bg-white p-1 shadow-sm">
                             <template x-for="key in ['upcoming', 'past']" :key="key">
-                                <button type="button" @click="tab = key" class="rounded-lg py-2.5 text-sm font-semibold" :class="tab === key ? 'bg-prussian-blue text-white' : 'text-charcoal-blue'">
+                                <button type="button" @click="tab = key" class="min-h-11 rounded-lg text-sm font-semibold" :class="tab === key ? 'bg-prussian-blue text-white' : 'text-charcoal-blue'">
                                     <span x-text="$store.app.t('bookings.' + key)"></span>
                                     <span x-show="data" class="ml-1 opacity-70" x-text="data?.[key].length"></span>
                                 </button>
@@ -109,7 +120,6 @@
                     <div>
                         <template x-for="id in [$store.app.param]" :key="id">
                             <section x-data="booking(id)">
-                                <a href="#/boekingen" class="-ml-1 mb-3 inline-flex items-center gap-1 py-2 text-sm font-semibold text-charcoal-blue"><span x-icon="'fa-chevron-left'" class="h-3.5 w-3.5"></span> <span x-text="$store.app.t('common.back')"></span></a>
                                 <template x-if="missing">
                                     <p class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue" x-text="$store.app.t('booking.not_found')"></p>
                                 </template>
@@ -128,18 +138,19 @@
                                             <img x-show="data.photo" :src="data.photo" alt="" class="aspect-video w-full object-cover">
                                             <div class="p-4">
                                                 <span class="rounded-full px-2 py-0.5 text-xs font-semibold" :class="data.badge" x-text="data.status_label"></span>
-                                                <h1 class="mt-2 text-xl font-bold" x-text="data.studio"></h1>
+                                                <h2 class="mt-2 text-xl font-bold" x-text="data.studio"></h2>
                                                 <p class="text-sm text-charcoal-blue" x-text="data.room + (data.city ? ', ' + data.city : '')"></p>
                                                 <p class="mt-3 flex items-center gap-2 font-semibold"><span x-icon="'fa-clock'" class="h-4 w-4 text-charcoal-blue"></span> <span x-text="data.date_label + ', ' + data.time_label"></span></p>
                                                 <p x-show="data.note" class="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-900" x-text="data.note"></p>
                                             </div>
                                         </div>
-                                        <!-- Het adres pas na bevestiging (net als op de website); bij een afgeronde of geannuleerde boeking geen melding. -->
-                                        <div x-show="data.address || ['pending_payment', 'pending_confirmation'].includes(data.status)" class="rounded-2xl bg-white p-4 shadow-sm">
+                                        <!-- Het adres pas na bevestiging (net als op de website). Nog niet bevestigd: één regel uitleg, tenzij
+                                             de notitie hierboven dat al zegt. Bij een afgeronde of geannuleerde boeking niets. -->
+                                        <div x-show="data.address || (['pending_payment', 'pending_confirmation'].includes(data.status) && !data.note)" class="rounded-2xl bg-white px-4 py-3 shadow-sm">
                                             <template x-if="data.address">
-                                                <div class="space-y-2 text-sm">
-                                                    <p class="flex gap-2"><span x-icon="'fa-location-dot'" class="mt-0.5 h-4 w-4 text-charcoal-blue"></span> <span x-text="data.address"></span></p>
-                                                    <a x-show="data.phone" :href="'tel:' + data.phone" class="flex gap-2 font-semibold text-ruby-red"><span x-icon="'fa-phone'" class="mt-0.5 h-4 w-4"></span> <span x-text="data.phone"></span></a>
+                                                <div class="text-sm">
+                                                    <p class="flex gap-2 py-1"><span x-icon="'fa-location-dot'" class="mt-0.5 h-4 w-4 shrink-0 text-charcoal-blue"></span> <span x-text="data.address"></span></p>
+                                                    <a x-show="data.phone" :href="'tel:' + data.phone" class="flex min-h-11 items-center gap-2 font-semibold text-ruby-red"><span x-icon="'fa-phone'" class="h-4 w-4 shrink-0"></span> <span x-text="data.phone"></span></a>
                                                 </div>
                                             </template>
                                             <p x-show="!data.address" class="text-sm text-charcoal-blue" x-text="$store.app.t('booking.address_later')"></p>
@@ -152,17 +163,23 @@
                                             <p class="mt-1 flex justify-between border-t border-gray-100 pt-2 font-bold"><span x-text="$store.app.t('booking.total')"></span><span x-text="smFormat.euro(data.total_cents)"></span></p>
                                             <p x-show="data.refunded_cents > 0" class="mt-1 flex justify-between text-sm font-semibold text-green-700"><span x-text="$store.app.t('booking.refunded')"></span><span x-text="smFormat.euro(data.refunded_cents)"></span></p>
                                         </div>
+                                        <!-- Wat je meestal wilt eerst, annuleren apart onderaan (niet waar je duim het eerst komt). -->
                                         <div x-show="data.actions.length || data.studio_path" class="space-y-2">
                                             <h2 class="px-1 text-sm font-bold" x-text="$store.app.t('booking.actions')"></h2>
-                                            <template x-for="action in data.actions" :key="action.label">
+                                            <template x-for="action in data.actions.filter((item) => !item.danger)" :key="action.label">
                                                 <button type="button" @click="$store.app.openWeb(action.path)" class="flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-left text-sm font-semibold"
-                                                        :class="action.primary ? 'bg-ruby-red text-white' : (action.danger ? 'bg-white text-red-700 shadow-sm' : 'bg-white shadow-sm')">
+                                                        :class="action.primary ? 'bg-ruby-red text-white' : 'bg-white shadow-sm'">
                                                     <span x-text="action.label"></span><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 opacity-60"></span>
                                                 </button>
                                             </template>
                                             <button type="button" x-show="data.studio_path" @click="$store.app.openWeb(data.studio_path)" class="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3.5 text-left text-sm font-semibold shadow-sm">
                                                 <span x-text="$store.app.t('booking.view_studio')"></span><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 opacity-60"></span>
                                             </button>
+                                            <template x-for="action in data.actions.filter((item) => item.danger)" :key="action.label">
+                                                <button type="button" @click="$store.app.openWeb(action.path)" class="!mt-6 flex w-full items-center justify-between rounded-xl bg-white px-4 py-3.5 text-left text-sm font-semibold text-red-700 shadow-sm">
+                                                    <span x-text="action.label"></span><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 opacity-60"></span>
+                                                </button>
+                                            </template>
                                         </div>
                                     </div>
                                 </template>
@@ -174,15 +191,14 @@
                 <!-- ===== Studio's zoeken ===== -->
                 <template x-if="$store.app.route === 'studios'">
                     <section x-data="studios">
-                        <h1 class="mb-4 text-2xl font-bold" x-text="$store.app.t('studios.title')"></h1>
                         <label class="relative mb-3 block">
                             <span x-icon="'fa-magnifying-glass'" class="pointer-events-none absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-charcoal-blue"></span>
                             <input type="search" x-model="q" @input="search()" :placeholder="$store.app.t('studios.search')" :aria-label="$store.app.t('studios.search')" class="w-full rounded-xl border-0 bg-white py-3.5 pr-4 pl-11 text-base shadow-sm focus:ring-2 focus:ring-prussian-blue/30 focus:outline-none">
                         </label>
                         <div class="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none]">
-                            <button type="button" @click="type = ''; search()" class="shrink-0 rounded-full px-4 py-2 text-sm font-semibold" :class="type === '' ? 'bg-prussian-blue text-white' : 'bg-white text-charcoal-blue shadow-sm'" x-text="$store.app.t('studios.all')"></button>
+                            <button type="button" @click="type = ''; search()" class="min-h-11 shrink-0 rounded-full px-4 text-sm font-semibold" :class="type === '' ? 'bg-prussian-blue text-white' : 'bg-white text-charcoal-blue shadow-sm'" x-text="$store.app.t('studios.all')"></button>
                             <template x-for="option in data?.types ?? []" :key="option.value">
-                                <button type="button" @click="type = option.value; search()" class="shrink-0 rounded-full px-4 py-2 text-sm font-semibold" :class="type === option.value ? 'bg-prussian-blue text-white' : 'bg-white text-charcoal-blue shadow-sm'" x-text="option.label"></button>
+                                <button type="button" @click="type = option.value; search()" class="min-h-11 shrink-0 rounded-full px-4 text-sm font-semibold" :class="type === option.value ? 'bg-prussian-blue text-white' : 'bg-white text-charcoal-blue shadow-sm'" x-text="option.label"></button>
                             </template>
                         </div>
                         <template x-if="failed">
@@ -214,7 +230,6 @@
                 <!-- ===== Verhuurder: aanvragen ===== -->
                 <template x-if="$store.app.route === 'inbox'">
                     <section x-data="inbox">
-                        <h1 class="mb-4 text-2xl font-bold" x-text="$store.app.t('inbox.title')"></h1>
                         <template x-if="failed">
                             <div class="rounded-2xl bg-white p-6 text-center">
                                 <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
@@ -250,10 +265,13 @@
                                 <p x-show="data.upcoming.length === 0" class="rounded-2xl bg-white p-5 text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('inbox.empty_upcoming')"></p>
                                 <div class="divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
                                     <template x-for="booking in data.upcoming" :key="booking.id">
-                                        <div class="p-4">
-                                            <p class="text-sm font-semibold" x-text="booking.date_label + ', ' + booking.time_label"></p>
-                                            <p class="text-sm text-charcoal-blue" x-text="booking.artist + ', ' + booking.room"></p>
-                                        </div>
+                                        <button type="button" @click="$store.app.openWeb(booking.path)" class="flex w-full items-center gap-3 p-4 text-left active:bg-gray-50">
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block text-sm font-semibold" x-text="booking.date_label + ', ' + booking.time_label"></span>
+                                                <span class="block truncate text-sm text-charcoal-blue" x-text="booking.artist + ', ' + booking.room"></span>
+                                            </span>
+                                            <span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 shrink-0 text-charcoal-blue/50"></span>
+                                        </button>
                                     </template>
                                 </div>
                             </div>
@@ -264,7 +282,6 @@
                 <!-- ===== Verhuurder: agenda ===== -->
                 <template x-if="$store.app.route === 'agenda'">
                     <section x-data="agenda">
-                        <h1 class="mb-4 text-2xl font-bold" x-text="$store.app.t('agenda.title')"></h1>
                         <template x-if="failed">
                             <div class="rounded-2xl bg-white p-6 text-center">
                                 <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
@@ -274,26 +291,41 @@
                         <template x-if="!data && !failed">
                             <div class="space-y-3"><div class="skeleton h-20"></div><div class="skeleton h-20"></div><div class="skeleton h-20"></div></div>
                         </template>
-                        <div class="space-y-3">
+                        <!-- Een lege dag is één compacte regel; een dag met sessies een kaart. Een aanvraag opent Aanvragen,
+                             een bevestigde sessie de boekingen op de website. -->
+                        <div class="space-y-2">
                             <template x-for="day in data?.days ?? []" :key="day.date">
-                                <div class="rounded-2xl bg-white p-4 shadow-sm" :class="day.today && 'ring-2 ring-ruby-red/40'">
-                                    <h2 class="mb-1 text-sm font-bold first-letter:uppercase" :class="day.today && 'text-ruby-red'" x-text="day.label"></h2>
-                                    <p x-show="day.entries.length === 0" class="text-sm text-charcoal-blue" x-text="$store.app.t('agenda.nothing')"></p>
-                                    <template x-for="(entry, index) in day.entries" :key="index">
-                                        <div class="flex items-start gap-3 border-t border-gray-100 py-2.5 first-of-type:border-0">
-                                            <span class="w-24 shrink-0 text-sm font-semibold" x-text="entry.time_label"></span>
-                                            <span class="min-w-0 flex-1 text-sm">
-                                                <template x-if="entry.kind === 'booking'">
-                                                    <span>
-                                                        <span class="block truncate font-semibold" x-text="entry.artist"></span>
-                                                        <span class="block truncate text-charcoal-blue" x-text="entry.room"></span>
-                                                        <span x-show="entry.status === 'pending_confirmation'" class="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900" x-text="$store.app.t('agenda.pending')"></span>
-                                                    </span>
-                                                </template>
-                                                <template x-if="entry.kind !== 'booking'">
-                                                    <span class="block truncate text-charcoal-blue" x-text="entry.label + ', ' + entry.title"></span>
-                                                </template>
-                                            </span>
+                                <div>
+                                    <template x-if="day.entries.length === 0">
+                                        <p class="flex items-center justify-between gap-3 rounded-xl bg-white px-4 py-2.5 text-sm shadow-sm" :class="day.today && 'ring-2 ring-ruby-red/40'">
+                                            <span class="font-semibold first-letter:uppercase" :class="day.today && 'text-ruby-red'" x-text="day.label"></span>
+                                            <span class="shrink-0 text-charcoal-blue" x-text="$store.app.t('agenda.nothing')"></span>
+                                        </p>
+                                    </template>
+                                    <template x-if="day.entries.length > 0">
+                                        <div class="rounded-2xl bg-white px-4 pt-3 pb-1 shadow-sm" :class="day.today && 'ring-2 ring-ruby-red/40'">
+                                            <h2 class="text-sm font-bold first-letter:uppercase" :class="day.today && 'text-ruby-red'" x-text="day.label"></h2>
+                                            <template x-for="(entry, index) in day.entries" :key="index">
+                                                <div class="border-t border-gray-100 first-of-type:border-0">
+                                                    <template x-if="entry.kind === 'booking'">
+                                                        <button type="button" @click="$store.app.openAgendaEntry(entry)" class="flex w-full items-start gap-3 py-2.5 text-left text-sm active:bg-gray-50">
+                                                            <span class="min-w-[6.5rem] shrink-0 whitespace-nowrap font-semibold" x-text="entry.time_label"></span>
+                                                            <span class="min-w-0 flex-1">
+                                                                <span class="block truncate font-semibold" x-text="entry.artist"></span>
+                                                                <span class="block truncate text-charcoal-blue" x-text="entry.room"></span>
+                                                                <span x-show="entry.status === 'pending_confirmation'" class="mt-1 inline-block rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900" x-text="$store.app.t('agenda.pending')"></span>
+                                                            </span>
+                                                            <span x-icon="'fa-chevron-right'" class="mt-1 h-3.5 w-3.5 shrink-0 text-charcoal-blue/50"></span>
+                                                        </button>
+                                                    </template>
+                                                    <template x-if="entry.kind !== 'booking'">
+                                                        <p class="flex items-start gap-3 py-2.5 text-sm">
+                                                            <span class="min-w-[6.5rem] shrink-0 whitespace-nowrap font-semibold" x-text="entry.time_label"></span>
+                                                            <span class="min-w-0 flex-1 truncate text-charcoal-blue" x-text="entry.label + ', ' + entry.title"></span>
+                                                        </p>
+                                                    </template>
+                                                </div>
+                                            </template>
                                         </div>
                                     </template>
                                 </div>
@@ -302,10 +334,478 @@
                     </section>
                 </template>
 
+                <!-- ===== Beheerder: overzicht ===== -->
+                <template x-if="$store.app.route === 'overzicht'">
+                    <section x-data="overzicht">
+                        <template x-if="failed">
+                            <div class="rounded-2xl bg-white p-6 text-center">
+                                <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                            </div>
+                        </template>
+                        <template x-if="!data && !failed">
+                            <div class="space-y-3"><div class="skeleton h-28"></div><div class="skeleton h-24"></div><div class="grid grid-cols-2 gap-3"><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div></div>
+                        </template>
+                        <template x-if="data">
+                            <div class="space-y-3">
+                                <!-- Wat op de beheerder wacht eerst: tickets (rood als er iets open staat), dan de wachtrij. -->
+                                <a href="#/tickets" class="flex items-center gap-3 rounded-2xl p-4 shadow-sm" :class="openTickets ? 'bg-ruby-red text-white' : 'bg-white'">
+                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full" :class="openTickets ? 'bg-white/15' : 'bg-prussian-blue/5 text-charcoal-blue'"><span x-icon="'fa-triangle-exclamation'" class="h-5 w-5"></span></span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block font-bold" x-text="plural('tickets_open', 'tickets_none', openTickets)"></span>
+                                        <span x-show="openTickets" class="mt-0.5 block text-sm text-white/80" x-text="$store.app.t('admin.tickets_hint')"></span>
+                                    </span>
+                                    <span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 shrink-0 opacity-70"></span>
+                                </a>
+                                <button type="button" @click="location.hash = '#/wachtrij'" class="flex w-full items-center gap-3 rounded-2xl p-4 text-left shadow-sm" :class="data.in_review ? 'bg-prussian-blue text-white' : 'bg-white'">
+                                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full" :class="data.in_review ? 'bg-white/15' : 'bg-prussian-blue/5 text-charcoal-blue'"><span x-icon="'fa-list-check'" class="h-5 w-5"></span></span>
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block font-bold" x-text="$store.app.t('admin.queue')"></span>
+                                        <span class="mt-0.5 block text-sm" :class="data.in_review ? 'text-white/80' : 'text-charcoal-blue'" x-text="plural('queue', 'queue_none', data.in_review)"></span>
+                                    </span>
+                                    <span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 shrink-0 opacity-70"></span>
+                                </button>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <template x-for="tile in [
+                                        { icon: 'fa-circle-check', value: data.live_rooms, label: $store.app.t('admin.live_rooms') },
+                                        { icon: 'fa-door-open', value: data.in_review, label: $store.app.t('admin.in_review') },
+                                        { icon: 'fa-building', value: data.studios, label: $store.app.t('admin.studios') },
+                                        { icon: 'fa-users', value: data.artists + data.hosts, label: $store.app.t('admin.users_split', { artists: data.artists, hosts: data.hosts }) },
+                                    ]" :key="tile.icon">
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <span x-icon="tile.icon" class="h-4 w-4 text-ruby-red"></span>
+                                            <p class="mt-2 text-2xl font-bold" x-text="tile.value"></p>
+                                            <p class="text-sm text-charcoal-blue" x-text="tile.label"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+
+                <!-- ===== Beheerder: tickets ===== -->
+                <template x-if="$store.app.route === 'tickets'">
+                    <section x-data="tickets">
+                        <template x-if="failed">
+                            <div class="rounded-2xl bg-white p-6 text-center">
+                                <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                            </div>
+                        </template>
+                        <template x-if="!data && !failed">
+                            <div class="space-y-3"><div class="skeleton h-48"></div><div class="skeleton h-32"></div></div>
+                        </template>
+                        <template x-if="data">
+                            <div>
+                                <template x-for="group in [
+                                    { key: 'disputes', title: $store.app.t('admin.disputes'), empty: $store.app.t('admin.disputes_empty'), items: data.disputes },
+                                    { key: 'damages', title: $store.app.t('admin.damages'), empty: $store.app.t('admin.damages_empty'), items: data.damages },
+                                ]" :key="group.key">
+                                    <div class="mb-6">
+                                        <h2 class="mb-2 px-1 text-sm font-bold" x-text="group.title"></h2>
+                                        <p x-show="group.items.length === 0" class="rounded-2xl bg-white p-5 text-sm text-charcoal-blue shadow-sm" x-text="group.empty"></p>
+                                        <div class="space-y-3">
+                                            <template x-for="ticket in group.items" :key="ticket.id">
+                                                <article class="rounded-2xl bg-white p-4 shadow-sm" :class="!ticket.open && 'opacity-80'">
+                                                    <div class="flex items-start justify-between gap-2">
+                                                        <p class="min-w-0 font-semibold" x-text="ticket.title"></p>
+                                                        <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold"
+                                                              :class="ticket.kind === 'dispute' ? 'bg-red-50 text-red-700' : (ticket.open ? 'bg-amber-100 text-amber-900' : 'bg-green-50 text-green-700')"
+                                                              x-text="ticket.kind === 'dispute' || ticket.open ? $store.app.t('admin.open') : $store.app.t('admin.handled')"></span>
+                                                    </div>
+                                                    <p class="mt-1 flex items-center gap-2 text-sm font-semibold"><span x-icon="'fa-clock'" class="h-4 w-4 text-charcoal-blue"></span> <span x-text="ticket.date_label + ', ' + ticket.time_label"></span></p>
+                                                    <div class="mt-2 space-y-1 text-sm text-charcoal-blue">
+                                                        <p class="flex items-center gap-2"><span x-icon="'fa-music'" class="h-3.5 w-3.5 shrink-0"></span> <span class="truncate" x-text="$store.app.t('admin.artist') + ': ' + ticket.artist"></span></p>
+                                                        <p class="flex items-center gap-2"><span x-icon="'fa-building'" class="h-3.5 w-3.5 shrink-0"></span> <span class="truncate" x-text="$store.app.t('admin.host') + ': ' + ticket.host"></span></p>
+                                                        <p class="flex items-center gap-2"><span x-icon="'fa-receipt'" class="h-3.5 w-3.5 shrink-0"></span> <span x-text="smFormat.euro(ticket.total_cents)"></span></p>
+                                                    </div>
+                                                    <p class="mt-3 rounded-xl bg-[#f4f4f7] px-3 py-2 text-sm"><span class="font-semibold" x-text="$store.app.t('admin.reason') + ': '"></span><span x-text="ticket.reason"></span></p>
+                                                    <p x-show="ticket.studio_response" class="mt-2 rounded-xl bg-[#f4f4f7] px-3 py-2 text-sm"><span class="font-semibold" x-text="$store.app.t('admin.studio_response') + ': '"></span><span x-text="ticket.studio_response"></span></p>
+                                                    <p x-show="ticket.response" class="mt-2 rounded-xl bg-green-50 px-3 py-2 text-sm text-green-900"><span class="font-semibold" x-text="$store.app.t('admin.response') + ': '"></span><span x-text="ticket.response"></span></p>
+                                                    <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-charcoal-blue">
+                                                        <span x-show="ticket.reported_at" x-text="$store.app.t('admin.reported', { time: smFormat.moment(ticket.reported_at) })"></span>
+                                                        <span x-show="ticket.photos" class="flex items-center gap-1"><span x-icon="'fa-image'" class="h-3 w-3"></span> <span x-text="photos(ticket.photos)"></span></span>
+                                                    </div>
+                                                    <button type="button" x-show="ticket.open" @click="handle(ticket)" class="mt-3 flex min-h-11 w-full items-center justify-center rounded-xl bg-ruby-red text-sm font-bold text-white" x-text="$store.app.t('admin.handle')"></button>
+                                                </article>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+
+                        <!-- Afhandelen: terugbetaling en toelichting (gemeld probleem) of een reactie (melding van een verhuurder). -->
+                        <div x-show="sheet" x-cloak class="fixed inset-0 z-50 flex items-end bg-prussian-blue/60" @click.self="closeSheet()">
+                            <template x-if="sheet">
+                                <form @submit.prevent="submit()" class="max-h-[88dvh] w-full overflow-y-auto rounded-t-3xl bg-white px-5 pt-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))]">
+                                    <p class="text-base font-bold" x-text="sheet.ticket.title"></p>
+                                    <p class="mb-4 text-sm text-charcoal-blue" x-text="sheet.ticket.date_label + ', ' + sheet.ticket.time_label"></p>
+                                    <template x-if="sheet.ticket.kind === 'dispute'">
+                                        <div>
+                                            <label class="block text-sm font-semibold" for="refund" x-text="$store.app.t('admin.refund_label')"></label>
+                                            <div class="mt-2 flex items-center gap-3">
+                                                <input id="refund" type="range" min="0" max="100" step="5" x-model="sheet.percent" class="min-w-0 flex-1 accent-ruby-red">
+                                                <span class="w-14 shrink-0 text-right text-lg font-bold" x-text="sheet.percent + '%'"></span>
+                                            </div>
+                                            <p class="mt-1 text-sm font-semibold" x-text="smFormat.euro(Math.round(sheet.ticket.total_cents * sheet.percent / 100))"></p>
+                                            <p class="mt-2 text-xs text-charcoal-blue" x-text="$store.app.t('admin.refund_hint')"></p>
+                                            <label class="mt-4 block text-sm font-semibold" for="note" x-text="$store.app.t('admin.note_label')"></label>
+                                            <textarea id="note" x-model="sheet.note" rows="3" required minlength="10" :placeholder="$store.app.t('admin.note_placeholder')" class="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:outline-none"></textarea>
+                                        </div>
+                                    </template>
+                                    <template x-if="sheet.ticket.kind === 'damage'">
+                                        <div>
+                                            <label class="block text-sm font-semibold" for="response" x-text="$store.app.t('admin.respond_label')"></label>
+                                            <textarea id="response" x-model="sheet.response" rows="4" required minlength="10" :placeholder="$store.app.t('admin.respond_placeholder')" class="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:outline-none"></textarea>
+                                        </div>
+                                    </template>
+                                    <p class="mt-1 text-xs text-charcoal-blue" x-text="$store.app.t('admin.min_text')"></p>
+                                    <p x-show="error" class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="error"></p>
+                                    <div class="mt-5 grid grid-cols-2 gap-2">
+                                        <button type="button" @click="closeSheet()" class="min-h-11 rounded-xl border border-gray-300 text-sm font-semibold" x-text="$store.app.t('common.cancel')"></button>
+                                        <button type="submit" :disabled="busy" class="min-h-11 rounded-xl bg-ruby-red text-sm font-bold text-white disabled:opacity-60"
+                                                x-text="sheet.ticket.kind === 'dispute' ? $store.app.t('admin.handle') : $store.app.t('admin.respond_button')"></button>
+                                    </div>
+                                </form>
+                            </template>
+                        </div>
+                    </section>
+                </template>
+
+                <!-- ===== Beheerder: goedkeuringswachtrij ===== -->
+                <template x-if="$store.app.route === 'wachtrij'">
+                    <section x-data="wachtrij">
+                        <template x-if="failed">
+                            <div class="rounded-2xl bg-white p-6 text-center">
+                                <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                            </div>
+                        </template>
+                        <template x-if="!data && !failed">
+                            <div class="space-y-3"><div class="skeleton h-64"></div><div class="skeleton h-64"></div></div>
+                        </template>
+                        <template x-if="data">
+                            <div class="space-y-3">
+                                <p x-show="data.rooms.length === 0" class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('admin.queue_empty')"></p>
+                                <template x-for="room in data.rooms" :key="room.id">
+                                    <a :href="'#/ruimte/' + room.id" class="block overflow-hidden rounded-2xl bg-white shadow-sm active:bg-gray-50">
+                                        <img x-show="room.photo" :src="room.photo" alt="" class="aspect-[16/9] w-full object-cover">
+                                        <span class="block p-4">
+                                            <span class="block font-semibold" x-text="room.title"></span>
+                                            <span class="block text-sm text-charcoal-blue" x-text="room.studio + (room.city ? ' (' + room.city + ')' : '') + ', ' + room.host"></span>
+                                            <span class="mt-1 block text-xs text-charcoal-blue" x-text="$store.app.t('admin.since', { date: smFormat.date(room.since) })"></span>
+                                            <span class="mt-3 flex min-h-11 items-center justify-center gap-2 rounded-xl bg-ruby-red text-sm font-bold text-white">
+                                                <span x-text="$store.app.t('admin.review')"></span><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5"></span>
+                                            </span>
+                                        </span>
+                                    </a>
+                                </template>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+
+                <!-- ===== Beheerder: ruimte beoordelen ===== -->
+                <template x-if="$store.app.route === 'ruimte'">
+                    <div>
+                        <template x-for="id in [$store.app.param]" :key="id">
+                            <section x-data="ruimte(id)">
+                                <template x-if="failed || missing">
+                                    <div class="rounded-2xl bg-white p-6 text-center">
+                                        <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                        <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                                    </div>
+                                </template>
+                                <template x-if="!data && !failed && !missing">
+                                    <div class="space-y-3"><div class="skeleton h-56"></div><div class="skeleton h-40"></div></div>
+                                </template>
+                                <template x-if="data">
+                                    <div class="space-y-3">
+                                        <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+                                            <!-- Foto's om doorheen te vegen -->
+                                            <div x-show="data.photos.length" class="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none]">
+                                                <template x-for="(photo, index) in data.photos" :key="index">
+                                                    <img :src="photo" alt="" class="aspect-[16/10] w-full shrink-0 snap-center object-cover">
+                                                </template>
+                                            </div>
+                                            <div class="p-4">
+                                                <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900" x-text="data.status_label"></span>
+                                                <h2 class="mt-2 text-xl font-bold" x-text="data.title"></h2>
+                                                <p class="text-sm text-charcoal-blue" x-text="data.type"></p>
+                                                <p class="mt-3 flex gap-2 text-sm"><span x-icon="'fa-building'" class="mt-0.5 h-4 w-4 shrink-0 text-charcoal-blue"></span> <span x-text="data.studio + ', ' + data.address"></span></p>
+                                                <p class="mt-1 flex gap-2 text-sm"><span x-icon="'fa-user'" class="mt-0.5 h-4 w-4 shrink-0 text-charcoal-blue"></span> <span class="min-w-0 break-words" x-text="data.host + ' (' + data.host_email + ')'"></span></p>
+                                            </div>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 text-sm shadow-sm">
+                                            <p><b x-text="smFormat.euro(data.hourly_cents)"></b> <span class="text-charcoal-blue" x-text="$store.app.t('admin.per_hour')"></span>, <span x-text="$store.app.t('admin.min_hours', { count: data.min_hours })"></span></p>
+                                            <p x-show="data.day_cents"><b x-text="smFormat.euro(data.day_cents)"></b> <span class="text-charcoal-blue" x-text="$store.app.t('admin.per_day')"></span></p>
+                                            <p class="mt-1 text-charcoal-blue" x-text="[$store.app.t('admin.capacity', { count: data.capacity }), data.engineer].filter(Boolean).join(', ')"></p>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 text-sm shadow-sm">
+                                            <h3 class="mb-1 font-bold" x-text="$store.app.t('admin.description')"></h3>
+                                            <p class="whitespace-pre-line text-charcoal-blue" x-text="data.description"></p>
+                                            <template x-if="data.equipment.length || data.equipment_extra">
+                                                <div>
+                                                    <h3 class="mt-4 mb-2 font-bold" x-text="$store.app.t('admin.equipment')"></h3>
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        <template x-for="item in data.equipment" :key="item"><span class="rounded-full bg-[#f4f4f7] px-3 py-1 text-xs font-medium" x-text="item"></span></template>
+                                                    </div>
+                                                    <p x-show="data.equipment_extra" class="mt-2 text-charcoal-blue" x-text="data.equipment_extra"></p>
+                                                </div>
+                                            </template>
+                                            <template x-if="data.facilities.length">
+                                                <div>
+                                                    <h3 class="mt-4 mb-2 font-bold" x-text="$store.app.t('admin.facilities')"></h3>
+                                                    <div class="flex flex-wrap gap-1.5">
+                                                        <template x-for="item in data.facilities" :key="item"><span class="rounded-full bg-[#f4f4f7] px-3 py-1 text-xs font-medium" x-text="item"></span></template>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                            <template x-if="data.house_rules">
+                                                <div>
+                                                    <h3 class="mt-4 mb-1 font-bold" x-text="$store.app.t('admin.house_rules')"></h3>
+                                                    <p class="whitespace-pre-line text-charcoal-blue" x-text="data.house_rules"></p>
+                                                </div>
+                                            </template>
+                                            <h3 class="mt-4 mb-1 font-bold" x-text="$store.app.t('admin.hours')"></h3>
+                                            <template x-for="day in data.hours" :key="day.day">
+                                                <p class="flex justify-between py-0.5"><span x-text="day.day"></span><span class="text-charcoal-blue" x-text="day.label"></span></p>
+                                            </template>
+                                        </div>
+                                        <!-- Beoordelen -->
+                                        <template x-if="data.in_review">
+                                            <div class="space-y-2">
+                                                <p x-show="data.stripe_blocked" class="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-900" x-text="data.stripe_message"></p>
+                                                <p x-show="!data.stripe_blocked" class="px-1 text-sm text-charcoal-blue" x-text="$store.app.t('admin.approve_text')"></p>
+                                                <div class="grid grid-cols-2 gap-2">
+                                                    <button type="button" @click="reject()" :disabled="busy" class="min-h-11 rounded-xl border border-gray-300 bg-white text-sm font-semibold text-red-700" x-text="$store.app.t('admin.reject')"></button>
+                                                    <button type="button" @click="approve()" :disabled="busy || data.stripe_blocked" class="min-h-11 rounded-xl bg-ruby-red text-sm font-bold text-white disabled:opacity-50" x-text="$store.app.t('admin.approve')"></button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                        <p x-show="!data.in_review" class="rounded-2xl bg-white p-4 text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('admin.reviewed', { status: data.status_label })"></p>
+                                    </div>
+                                </template>
+
+                                <!-- Afwijzen met reden -->
+                                <div x-show="sheet" x-cloak class="fixed inset-0 z-50 flex items-end bg-prussian-blue/60" @click.self="closeSheet()">
+                                    <template x-if="sheet">
+                                        <form @submit.prevent="sendReject()" class="w-full rounded-t-3xl bg-white px-5 pt-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))]">
+                                            <label class="block text-base font-bold" for="reason" x-text="$store.app.t('admin.reject_title')"></label>
+                                            <textarea id="reason" x-model="sheet.reason" rows="4" required maxlength="1000" :placeholder="$store.app.t('admin.reject_placeholder')" class="mt-3 w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:outline-none"></textarea>
+                                            <p x-show="error" class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="error"></p>
+                                            <div class="mt-4 grid grid-cols-2 gap-2">
+                                                <button type="button" @click="closeSheet()" class="min-h-11 rounded-xl border border-gray-300 text-sm font-semibold" x-text="$store.app.t('common.cancel')"></button>
+                                                <button type="submit" :disabled="busy" class="min-h-11 rounded-xl bg-ruby-red text-sm font-bold text-white disabled:opacity-60" x-text="$store.app.t('admin.reject_send')"></button>
+                                            </div>
+                                        </form>
+                                    </template>
+                                </div>
+                            </section>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ===== Beheerder: alle boekingen ===== -->
+                <template x-if="$store.app.route === 'admin-boekingen'">
+                    <section x-data="adminBookings">
+                        <!-- Filter op status: één keuzelijst (de keuzelijst van de telefoon zelf) -->
+                        <label class="relative mb-4 block">
+                            <span class="sr-only" x-text="$store.app.t('admin.change_status')"></span>
+                            <select x-model="status" @change="filter(status)" :aria-label="$store.app.t('admin.bookings')"
+                                    class="min-h-11 w-full appearance-none rounded-xl border-0 bg-white py-3 pr-11 pl-4 text-base font-semibold shadow-sm focus:ring-2 focus:ring-prussian-blue/30 focus:outline-none">
+                                <option value="" x-text="$store.app.t('admin.all_statuses_long')"></option>
+                                <template x-for="option in data?.statuses ?? []" :key="option.value">
+                                    <option :value="option.value" x-text="option.label" :selected="status === option.value"></option>
+                                </template>
+                            </select>
+                            <span x-icon="'fa-chevron-down'" class="pointer-events-none absolute top-1/2 right-4 h-3.5 w-3.5 -translate-y-1/2 text-charcoal-blue"></span>
+                        </label>
+                        <template x-if="failed">
+                            <div class="rounded-2xl bg-white p-6 text-center">
+                                <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                            </div>
+                        </template>
+                        <template x-if="!data && !failed">
+                            <div class="space-y-3"><div class="skeleton h-24"></div><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div>
+                        </template>
+                        <template x-if="data">
+                            <div>
+                                <p x-show="data.bookings.length === 0" class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('admin.bookings_empty')"></p>
+                                <div x-show="data.bookings.length" class="divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
+                                    <template x-for="booking in data.bookings" :key="booking.id">
+                                        <button type="button" @click="change(booking)" class="flex w-full items-start gap-3 p-4 text-left active:bg-gray-50">
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block font-semibold" x-text="'#' + booking.id + ' ' + booking.room"></span>
+                                                <span class="block text-sm text-charcoal-blue" x-text="booking.date_label + ', ' + booking.time_label"></span>
+                                                <span class="block truncate text-sm text-charcoal-blue" x-text="booking.artist + ', ' + smFormat.euro(booking.total_cents)"></span>
+                                            </span>
+                                            <span class="shrink-0 rounded-full bg-[#f4f4f7] px-2 py-0.5 text-xs font-semibold" x-text="booking.status_label"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+
+                        <!-- Status wijzigen -->
+                        <div x-show="sheet" x-cloak class="fixed inset-0 z-50 flex items-end bg-prussian-blue/60" @click.self="closeSheet()">
+                            <template x-if="sheet">
+                                <form @submit.prevent="saveStatus()" class="max-h-[88dvh] w-full overflow-y-auto rounded-t-3xl bg-white px-5 pt-5 pb-[calc(1.25rem_+_env(safe-area-inset-bottom))]">
+                                    <p class="text-base font-bold" x-text="'#' + sheet.booking.id + ' ' + sheet.booking.room"></p>
+                                    <p class="text-sm text-charcoal-blue" x-text="sheet.booking.artist + ', ' + sheet.booking.date_label"></p>
+                                    <p class="mt-4 text-sm font-semibold" x-text="$store.app.t('admin.change_status')"></p>
+                                    <div class="mt-2 grid grid-cols-2 gap-2">
+                                        <template x-for="option in data.statuses" :key="option.value">
+                                            <button type="button" @click="sheet.status = option.value" class="min-h-11 rounded-xl border px-3 text-sm font-semibold"
+                                                    :class="sheet.status === option.value ? 'border-prussian-blue bg-prussian-blue text-white' : 'border-gray-300'" x-text="option.label"></button>
+                                        </template>
+                                    </div>
+                                    <p class="mt-3 text-xs text-charcoal-blue" x-text="$store.app.t('admin.change_hint')"></p>
+                                    <p x-show="error" class="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="error"></p>
+                                    <div class="mt-4 grid grid-cols-2 gap-2">
+                                        <button type="button" @click="closeSheet()" class="min-h-11 rounded-xl border border-gray-300 text-sm font-semibold" x-text="$store.app.t('common.cancel')"></button>
+                                        <button type="submit" :disabled="busy || sheet.status === sheet.booking.status" class="min-h-11 rounded-xl bg-ruby-red text-sm font-bold text-white disabled:opacity-50" x-text="$store.app.t('admin.save')"></button>
+                                    </div>
+                                </form>
+                            </template>
+                        </div>
+                    </section>
+                </template>
+
+                <!-- ===== Beheerder: gebruikers ===== -->
+                <template x-if="$store.app.route === 'gebruikers'">
+                    <section x-data="gebruikers">
+                        <div class="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-white p-1 shadow-sm">
+                            <template x-for="option in [['', 'admin.all_roles'], ['artiest', 'admin.artists'], ['verhuurder', 'admin.hosts']]" :key="option[0]">
+                                <button type="button" @click="filter(option[0])" class="min-h-11 rounded-lg text-sm font-semibold" :class="role === option[0] ? 'bg-prussian-blue text-white' : 'text-charcoal-blue'" x-text="$store.app.t(option[1])"></button>
+                            </template>
+                        </div>
+                        <template x-if="failed">
+                            <div class="rounded-2xl bg-white p-6 text-center">
+                                <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                            </div>
+                        </template>
+                        <template x-if="!data && !failed">
+                            <div class="space-y-3"><div class="skeleton h-20"></div><div class="skeleton h-20"></div><div class="skeleton h-20"></div></div>
+                        </template>
+                        <template x-if="data">
+                            <div>
+                                <p x-show="data.users.length === 0" class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('admin.users_empty')"></p>
+                                <div x-show="data.users.length" class="divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
+                                    <template x-for="user in data.users" :key="user.id">
+                                        <div class="p-4">
+                                            <div class="flex items-start justify-between gap-3">
+                                                <p class="min-w-0 font-semibold" x-text="user.name"></p>
+                                                <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold" :class="user.role === 'verhuurder' ? 'bg-red-50 text-ruby-red' : 'bg-[#f4f4f7] text-charcoal-blue'" x-text="user.role_label"></span>
+                                            </div>
+                                            <p class="break-words text-sm text-charcoal-blue" x-text="user.email"></p>
+                                            <p class="text-xs text-charcoal-blue" x-text="line(user)"></p>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+
+                <!-- ===== Beheerder: omzet ===== -->
+                <template x-if="$store.app.route === 'omzet'">
+                    <section x-data="omzet">
+                        <template x-if="failed">
+                            <div class="rounded-2xl bg-white p-6 text-center">
+                                <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                            </div>
+                        </template>
+                        <template x-if="!data && !failed">
+                            <div class="space-y-3"><div class="grid grid-cols-2 gap-3"><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div><div class="skeleton h-40"></div></div>
+                        </template>
+                        <template x-if="data">
+                            <div class="space-y-3">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                        <p class="text-xl font-bold" x-text="smFormat.euro(data.total_rent_cents)"></p>
+                                        <p class="text-sm text-charcoal-blue" x-text="$store.app.t('admin.total_rent')"></p>
+                                    </div>
+                                    <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                        <p class="text-xl font-bold" x-text="smFormat.euro(data.total_fees_cents)"></p>
+                                        <p class="text-sm text-charcoal-blue" x-text="$store.app.t('admin.total_fees')"></p>
+                                    </div>
+                                    <div class="col-span-2 rounded-2xl bg-white p-4 shadow-sm">
+                                        <p class="text-xl font-bold" x-text="data.total_count"></p>
+                                        <p class="text-sm text-charcoal-blue" x-text="$store.app.t('admin.total_bookings')"></p>
+                                    </div>
+                                </div>
+                                <h2 class="px-1 pt-2 text-sm font-bold" x-text="$store.app.t('admin.per_studio')"></h2>
+                                <p x-show="data.studios.length === 0" class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('admin.revenue_empty')"></p>
+                                <div x-show="data.studios.length" class="divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
+                                    <template x-for="studio in data.studios" :key="studio.id">
+                                        <div class="flex items-start gap-3 p-4">
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block font-semibold" x-text="studio.name"></span>
+                                                <span class="block text-sm text-charcoal-blue" x-text="studio.city"></span>
+                                                <span class="mt-1 block text-xs text-charcoal-blue" x-text="[studio.host, $store.app.plural('admin.bookings', studio.count), $store.app.t('admin.fees_line', { amount: smFormat.euro(studio.fees_cents) })].join(', ')"></span>
+                                            </span>
+                                            <span class="shrink-0 font-bold" x-text="smFormat.euro(studio.rent_cents)"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+
+                <!-- ===== Beheerder: blog ===== -->
+                <template x-if="$store.app.route === 'blog'">
+                    <section x-data="blog">
+                        <div class="mb-3 flex items-center gap-2">
+                            <div class="grid flex-1 grid-cols-3 gap-1 rounded-xl bg-white p-1 shadow-sm">
+                                <template x-for="option in [['', 'admin.all_statuses'], ['concept', 'admin.concept'], ['gepubliceerd', 'admin.published']]" :key="option[0]">
+                                    <button type="button" @click="filter(option[0])" class="min-h-11 rounded-lg text-sm font-semibold" :class="status === option[0] ? 'bg-prussian-blue text-white' : 'text-charcoal-blue'" x-text="$store.app.t(option[1])"></button>
+                                </template>
+                            </div>
+                        </div>
+                        <button type="button" x-show="data" @click="$store.app.openWeb(data.new_path)" class="mb-2 flex min-h-11 w-full items-center justify-center rounded-xl bg-ruby-red text-sm font-bold text-white" x-text="'+ ' + $store.app.t('admin.blog_new')"></button>
+                        <p class="mb-4 px-1 text-xs text-charcoal-blue" x-text="$store.app.t('admin.blog_hint')"></p>
+                        <template x-if="failed">
+                            <div class="rounded-2xl bg-white p-6 text-center">
+                                <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                            </div>
+                        </template>
+                        <template x-if="!data && !failed">
+                            <div class="space-y-3"><div class="skeleton h-28"></div><div class="skeleton h-28"></div></div>
+                        </template>
+                        <template x-if="data">
+                            <div class="space-y-3">
+                                <p x-show="data.posts.length === 0" class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('admin.blog_empty')"></p>
+                                <template x-for="post in data.posts" :key="post.id">
+                                    <article class="rounded-2xl bg-white p-4 shadow-sm">
+                                        <div class="flex items-start justify-between gap-3">
+                                            <p class="min-w-0 font-semibold" x-text="post.title"></p>
+                                            <span class="shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold" :class="post.status === 'gepubliceerd' ? 'bg-green-50 text-green-700' : 'bg-[#f4f4f7] text-charcoal-blue'" x-text="post.status_label"></span>
+                                        </div>
+                                        <p class="text-xs text-charcoal-blue" x-text="line(post)"></p>
+                                        <p x-show="post.scheduled" class="text-xs font-semibold text-amber-800" x-text="post.scheduled ? $store.app.t('admin.scheduled', { time: smFormat.moment(post.scheduled) }) : ''"></p>
+                                        <div class="mt-3 grid grid-cols-3 gap-2">
+                                            <button type="button" @click="$store.app.openWeb(post.edit_path)" class="min-h-11 rounded-xl bg-prussian-blue text-sm font-semibold text-white" x-text="$store.app.t('admin.edit')"></button>
+                                            <button type="button" @click="$store.app.openWeb(post.view_path)" class="min-h-11 rounded-xl border border-gray-300 text-sm font-semibold" x-text="$store.app.t('admin.view_post')"></button>
+                                            <button type="button" @click="remove(post)" class="min-h-11 rounded-xl border border-gray-300 text-sm font-semibold text-red-700" x-text="$store.app.t('admin.delete')"></button>
+                                        </div>
+                                    </article>
+                                </template>
+                            </div>
+                        </template>
+                    </section>
+                </template>
+
                 <!-- ===== Account ===== -->
                 <template x-if="$store.app.route === 'account'">
                     <section>
-                        <h1 class="mb-4 text-2xl font-bold" x-text="$store.app.t('account.title')"></h1>
                         <div class="mb-4 flex items-center gap-3 rounded-2xl bg-white p-4 shadow-sm">
                             <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-prussian-blue text-lg font-bold text-white" x-text="$store.app.profile.user.initials"></span>
                             <span class="min-w-0">
@@ -316,14 +816,22 @@
                         </div>
                         <h2 class="mb-2 px-1 text-sm font-bold" x-text="$store.app.t('account.language')"></h2>
                         <div class="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-white p-1 shadow-sm">
+                            <!-- Tijdens het wisselen: de gekozen taal staat al aan, met een draaiend rondje. -->
                             <template x-for="(name, code) in $store.app.profile.locales" :key="code">
-                                <button type="button" @click="$store.app.setLocale(code)" class="rounded-lg py-2.5 text-sm font-semibold" :class="$store.app.locale === code ? 'bg-prussian-blue text-white' : 'text-charcoal-blue'" x-text="name"></button>
+                                <button type="button" @click="$store.app.setLocale(code)" :disabled="!!$store.app.localeLoading" :aria-busy="$store.app.localeLoading === code"
+                                        class="flex min-h-11 items-center justify-center gap-2 rounded-lg text-sm font-semibold"
+                                        :class="($store.app.localeLoading ?? $store.app.locale) === code ? 'bg-prussian-blue text-white' : 'text-charcoal-blue'">
+                                    <span x-show="$store.app.localeLoading === code" class="sm-spinner"></span>
+                                    <span x-text="name"></span>
+                                </button>
                             </template>
                         </div>
+                        <p x-show="$store.app.localeLoading" x-cloak class="-mt-3 mb-5 px-1 text-xs font-semibold text-charcoal-blue" x-text="$store.app.switchingText"></p>
                         <h2 x-show="$store.app.links.length" class="mb-2 px-1 text-sm font-bold" x-text="$store.app.t('account.more')"></h2>
                         <div class="mb-5 divide-y divide-gray-100 rounded-2xl bg-white shadow-sm">
                             <template x-for="link in $store.app.links" :key="link.path">
-                                <button type="button" @click="$store.app.openWeb(link.path)" class="flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-semibold active:bg-gray-50">
+                                <!-- go(): een scherm in de app als dat er is (AppMenu::SCREENS), anders de websitepagina. -->
+                                <button type="button" @click="$store.app.go(link.path)" class="flex w-full items-center gap-3 px-4 py-3.5 text-left text-sm font-semibold active:bg-gray-50">
                                     <span x-icon="link.icon" class="h-4 w-4 text-charcoal-blue"></span>
                                     <span class="flex-1" x-text="link.label"></span>
                                     <span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 text-charcoal-blue/50"></span>
@@ -333,7 +841,7 @@
                         <button type="button" @click="$store.app.logout()" class="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3.5 text-sm font-semibold text-red-700 shadow-sm">
                             <span x-icon="'fa-arrow-right-from-bracket'" class="h-4 w-4"></span> <span x-text="$store.app.t('account.logout')"></span>
                         </button>
-                        <p class="mt-6 text-center text-xs text-charcoal-blue/70" x-text="$store.app.t('account.version')"></p>
+                        <p class="mt-6 text-center text-xs text-charcoal-blue/70" x-text="$store.app.t('account.version') + ($store.app.version ? ' ' + $store.app.version : '')"></p>
                     </section>
                 </template>
             </main>
@@ -343,7 +851,7 @@
                 <div class="grid" :style="`grid-template-columns: repeat(${$store.app.tabs.length}, minmax(0, 1fr))`">
                     <template x-for="tab in $store.app.tabs" :key="tab.screen">
                         <a :href="'#/' + tab.screen" class="relative flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold"
-                           :class="$store.app.route === tab.screen || ($store.app.route === 'boeking' && tab.screen === 'boekingen') ? 'text-ruby-red' : 'text-charcoal-blue'">
+                           :class="$store.app.activeTab === tab.screen ? 'text-ruby-red' : 'text-charcoal-blue'">
                             <span x-icon="tab.icon" class="h-5 w-5"></span>
                             <span x-text="tab.label"></span>
                             <span x-show="tab.count && $store.app.count(tab.count) > 0" class="absolute top-1.5 left-1/2 ml-2 min-w-5 rounded-full bg-ruby-red px-1.5 text-center text-[11px] leading-5 font-bold text-white" x-text="$store.app.count(tab.count)"></span>
@@ -368,12 +876,16 @@
     </div>
 
     <!-- Naar een serverpagina: meteen iets laten zien tot de pagina er is -->
-    <div x-show="$store.app.leaving" x-cloak class="fixed inset-0 z-40 bg-[#f4f4f7] px-4 pt-[calc(4.5rem_+_env(safe-area-inset-top))]">
-        <p class="mb-4 text-sm font-semibold text-charcoal-blue" x-text="$store.app.t('common.opening')"></p>
-        <div class="space-y-3"><div class="skeleton h-40"></div><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div>
+    <!-- De navy kop blijft staan, zodat de statusbalk niet even licht wordt met witte iconen. -->
+    <div x-show="$store.app.leaving" x-cloak class="fixed inset-0 z-40 bg-[#f4f4f7]">
+        <div class="bg-prussian-blue pt-safe"><div class="h-14"></div></div>
+        <div class="px-4 pt-4">
+            <p class="mb-4 text-sm font-semibold text-charcoal-blue" x-text="$store.app.t('common.opening')"></p>
+            <div class="space-y-3"><div class="skeleton h-40"></div><div class="skeleton h-24"></div><div class="skeleton h-24"></div></div>
+        </div>
     </div>
 
-    <!-- Melding -->
-    <div x-show="$store.app.toastText" x-cloak x-transition.opacity class="fixed inset-x-4 bottom-[calc(5.5rem_+_env(safe-area-inset-bottom))] z-50 rounded-xl bg-prussian-blue px-4 py-3 text-center text-sm font-medium text-white shadow-lg" x-text="$store.app.toastText"></div>
+    <!-- Melding: tik om weg te halen; verdwijnt ook bij een ander scherm. -->
+    <button type="button" x-show="$store.app.toastOpen" x-cloak x-transition.opacity @click="$store.app.toastOpen = false" class="fixed inset-x-4 bottom-[calc(5.5rem_+_env(safe-area-inset-bottom))] z-50 rounded-xl bg-prussian-blue px-4 py-3 text-center text-sm font-medium text-white shadow-lg" x-text="$store.app.toastText"></button>
 </body>
 </html>

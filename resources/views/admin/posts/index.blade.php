@@ -23,8 +23,9 @@
     @else
         <div class="mt-6 overflow-hidden rounded-2xl border border-prussian-blue/10 bg-white">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                    <thead>
+                {{-- Op een telefoon een lijst (titel en status, de rest als regel eronder, knoppen op een eigen rij), vanaf md de tabel. --}}
+                <table class="block w-full text-sm md:table">
+                    <thead class="hidden md:table-header-group">
                         <tr class="border-b border-prussian-blue/10 text-left text-xs font-bold uppercase tracking-wide text-prussian-blue/50">
                             <th class="px-5 py-3.5">{{ __('admin.blog.col_title') }}</th>
                             <th class="px-5 py-3.5">{{ __('admin.blog.col_status') }}</th>
@@ -34,14 +35,21 @@
                             <th class="px-5 py-3.5"></th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="block md:table-row-group">
                         @foreach ($posts as $post)
-                            <tr class="border-b border-prussian-blue/5 last:border-0">
-                                <td class="px-5 py-3.5">
+                            <tr class="flex flex-wrap items-start gap-3 border-b border-prussian-blue/5 px-4 py-3.5 last:border-0 md:table-row md:p-0">
+                                <td class="block min-w-0 flex-1 md:table-cell md:px-5 md:py-3.5">
                                     <a href="{{ route('admin.posts.edit', $post) }}" class="font-semibold text-prussian-blue transition hover:text-ruby-red">{{ $post->title }}</a>
-                                    <p class="text-xs text-prussian-blue/50">/blog/{{ $post->slug }}</p>
+                                    <p class="break-all text-xs text-prussian-blue/50 md:break-normal">/blog/{{ $post->slug }}</p>
+                                    <p class="mt-1 text-xs text-prussian-blue/70 md:hidden">
+                                        {{ collect([
+                                            trans_choice('admin.blog.section_count', $post->sections_count),
+                                            $post->author?->name,
+                                            $post->updated_at->translatedFormat('j M Y'),
+                                        ])->filter()->implode(', ') }}
+                                    </p>
                                 </td>
-                                <td class="px-5 py-3.5">
+                                <td class="block shrink-0 text-right md:table-cell md:px-5 md:py-3.5 md:text-left">
                                     <span class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $post->status->badgeClasses() }}">
                                         {{ $post->status->label() }}
                                     </span>
@@ -52,10 +60,10 @@
                                         </p>
                                     @endif
                                 </td>
-                                <td class="px-5 py-3.5 text-prussian-blue/70">{{ trans_choice('admin.blog.section_count', $post->sections_count) }}</td>
-                                <td class="px-5 py-3.5 text-prussian-blue/70">{{ $post->author?->name ?? '-' }}</td>
-                                <td class="px-5 py-3.5 text-prussian-blue/70">{{ $post->updated_at->translatedFormat('j M Y') }}</td>
-                                <td class="px-5 py-3.5">
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ trans_choice('admin.blog.section_count', $post->sections_count) }}</td>
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $post->author?->name ?? '-' }}</td>
+                                <td class="hidden px-5 py-3.5 text-prussian-blue/70 md:table-cell">{{ $post->updated_at->translatedFormat('j M Y') }}</td>
+                                <td class="block w-full md:table-cell md:w-auto md:px-5 md:py-3.5">
                                     <div class="flex items-center justify-end gap-2">
                                         <a href="{{ route('blog.show', $post->slug) }}" target="_blank" rel="noopener" class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-prussian-blue/15 text-prussian-blue transition hover:bg-prussian-blue/5" title="{{ __('admin.blog.view') }}">
                                             <i class="fa-solid fa-arrow-up-right-from-square fa-sm"></i>

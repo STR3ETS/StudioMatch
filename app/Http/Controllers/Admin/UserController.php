@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\AdminDesk;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -12,7 +13,6 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UserController extends Controller
 {
-
     public function index(Request $request): View
     {
         $role = $request->validate([
@@ -20,12 +20,7 @@ class UserController extends Controller
         ])['role'] ?? null;
 
         return view('admin.users.index', [
-            'users' => User::query()
-                ->where('role', '!=', UserRole::Admin)
-                ->when($role, fn ($query) => $query->where('role', $role))
-                ->withCount(['bookings', 'studios'])
-                ->latest()
-                ->get(),
+            'users' => AdminDesk::users($role),
             'role' => $role,
         ]);
     }
@@ -53,6 +48,6 @@ class UserController extends Controller
             }
 
             fclose($handle);
-        }, 'studiomatch-gebruikers-' . now()->format('Y-m-d') . '.csv', ['Content-Type' => 'text/csv; charset=utf-8']);
+        }, 'studiomatch-gebruikers-'.now()->format('Y-m-d').'.csv', ['Content-Type' => 'text/csv; charset=utf-8']);
     }
 }

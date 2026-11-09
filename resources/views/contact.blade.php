@@ -24,7 +24,7 @@
 
     <section class="py-16">
         <div class="mx-auto max-w-7xl px-6">
-            <div class="grid gap-4 sm:grid-cols-3">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 @foreach (['faq', 'hosts', 'problem'] as $key)
                     <a href="{{ $quickLinks[$key] }}" class="group rounded-2xl border border-prussian-blue/10 p-6 transition hover:-translate-y-1 hover:shadow-lg hover:shadow-prussian-blue/5">
                         <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-ruby-red/10 text-ruby-red"><i class="fa-solid {{ __('contact.quick.' . $key . '.icon') }}"></i></span>
@@ -42,7 +42,7 @@
 
     <section class="bg-dots pb-20">
         <div class="mx-auto max-w-7xl px-6">
-            <div class="grid gap-8 lg:grid-cols-[1fr_380px]">
+            <div class="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_380px]">
                 <form method="POST" action="{{ route('contact.store') }}" class="rounded-3xl border border-prussian-blue/10 bg-white p-8 shadow-sm">
                     @csrf
                     <h2 class="text-2xl font-bold text-prussian-blue">{{ __('contact.form.title') }}</h2>
@@ -54,7 +54,7 @@
                         </div>
                     @endif
 
-                    <div class="mt-6 grid gap-5 sm:grid-cols-2">
+                    <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <label for="contact-name" class="{{ $label }}">{{ __('contact.form.name') }}</label>
                             <input id="contact-name" type="text" name="name" value="{{ old('name') }}" required placeholder="{{ __('contact.form.name_placeholder') }}" class="{{ $field }}">

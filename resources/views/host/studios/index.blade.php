@@ -22,7 +22,8 @@
         <div class="mt-8 space-y-4">
             @foreach ($studios as $studio)
                 <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-5 sm:flex-nowrap">
-                    <div class="min-w-0 flex-1">
+                    {{-- Op een telefoon de volle breedte, met de knoppen eronder; anders persen ze naam en adres samen. --}}
+                    <div class="min-w-0 grow basis-full sm:basis-0">
                         <div class="flex flex-wrap items-center gap-2">
                             <h2 class="font-bold text-prussian-blue">{{ $studio->name }}</h2>
                             @if ($studio->rejected_rooms_count > 0)

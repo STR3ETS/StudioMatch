@@ -2,7 +2,7 @@
 // plaats van het hele lettertype. Nieuw icoon nodig? Zet de naam in deze lijst (staat het in public/
 // fontawesome/svgs/solid, dan werkt het). De menu-iconen komen van de server (AppMenu), als "fa-naam".
 const files = import.meta.glob([
-    '../../public/fontawesome/svgs/solid/{calendar-check,magnifying-glass,user,inbox,calendar-days,file-invoice,user-pen,circle-question,envelope,building,clock,chart-line,building-columns,briefcase,gauge,list-check,triangle-exclamation,users,chevron-right,chevron-left,arrow-right-from-bracket,location-dot,phone,check,xmark,rotate-right,globe,headphones,wifi,circle-exclamation,music,euro-sign}.svg',
+    '../../public/fontawesome/svgs/solid/{calendar-check,magnifying-glass,user,inbox,calendar-days,file-invoice,user-pen,circle-question,envelope,building,clock,chart-line,building-columns,briefcase,gauge,list-check,triangle-exclamation,users,chevron-right,chevron-left,arrow-right-from-bracket,location-dot,phone,check,xmark,rotate-right,globe,headphones,wifi,circle-exclamation,music,euro-sign,receipt,image,circle-check,door-open,newspaper,chevron-down}.svg',
 ], { query: '?raw', import: 'default', eager: true });
 
 const icons = Object.fromEntries(Object.entries(files).map(([path, svg]) => [
