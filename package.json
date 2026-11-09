@@ -4,16 +4,33 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "app:build": "php artisan app:texts && vite build --config vite.app.config.js",
+        "mobile:sync": "cap sync",
+        "mobile:assets": "node mobile/make-assets.mjs",
+        "mobile:android": "cap open android",
+        "mobile:ios": "cap open ios"
     },
     "devDependencies": {
+        "@capacitor/cli": "^8.6.0",
+        "@fontsource/inter": "^5.3.0",
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^9.0.1",
         "laravel-vite-plugin": "^3.1",
+        "sharp": "^0.35.5",
         "tailwindcss": "^4.0.0",
+        "typescript": "^7.0.2",
         "vite": "^8.0.0"
     },
     "dependencies": {
+        "@capacitor/android": "^8.6.0",
+        "@capacitor/app": "^8.1.2",
+        "@capacitor/core": "^8.6.0",
+        "@capacitor/ios": "^8.6.0",
+        "@capacitor/preferences": "^8.0.1",
+        "@capacitor/splash-screen": "^8.0.2",
+        "@capacitor/status-bar": "^8.0.4",
+        "alpinejs": "^3.17.5",
         "leaflet": "^1.9.4",
         "sortablejs": "^1.15.7"
     }

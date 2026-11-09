@@ -21,6 +21,9 @@
 /storage/*.key
 /storage/pail
 /vendor
+# App-build (npm run app:build): uitvoer en de teksten die uit lang/*/app.php worden geëxporteerd.
+/mobile/www
+/mobile/app/texts.json
 _ide_helper.php
 Homestead.json
 Homestead.yaml
