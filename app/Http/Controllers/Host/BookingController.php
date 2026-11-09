@@ -2,20 +2,16 @@
 
 namespace App\Http\Controllers\Host;
 
+use App\Actions\RespondToBookingRequest;
 use App\Enums\BookingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
-use App\Notifications\BookingCancelled;
-use App\Notifications\BookingConfirmed;
-use App\Notifications\BookingDeclined;
-use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-
     public function index(Request $request): View
     {
         $bookings = Booking::query()
@@ -36,58 +32,17 @@ class BookingController extends Controller
         ]);
     }
 
-    public function accept(Request $request, Booking $booking): RedirectResponse
+    public function accept(Request $request, Booking $booking, RespondToBookingRequest $respond): RedirectResponse
     {
-        abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
+        $outcome = $respond->accept($booking, $request->user());
 
-        if ($booking->status !== BookingStatus::PendingConfirmation) {
-            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.already_handled'));
-        }
-
-        if ($booking->startsAt()->subHours(2)->isPast()) {
-            $this->cancelExpiredRequest($booking);
-
-            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.request_expired'));
-        }
-
-        $booking->update(['status' => BookingStatus::Confirmed, 'confirmed_at' => now()]);
-
-        $booking->user->notify(new BookingConfirmed($booking));
-        $booking->room->studio->user->notify(new BookingConfirmed($booking));
-
-        return redirect()->route('host.bookings.index')->with('status', __('host.bookings.accepted'));
+        return redirect()->route('host.bookings.index')->with('status', __('host.bookings.'.$outcome));
     }
 
-    public function decline(Request $request, Booking $booking): RedirectResponse
+    public function decline(Request $request, Booking $booking, RespondToBookingRequest $respond): RedirectResponse
     {
-        abort_unless($booking->room->studio->user_id === $request->user()->id, 403);
+        $outcome = $respond->decline($booking, $request->user());
 
-        if ($booking->status !== BookingStatus::PendingConfirmation) {
-            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.already_handled'));
-        }
-
-        if ($booking->startsAt()->subHours(2)->isPast()) {
-            $this->cancelExpiredRequest($booking);
-
-            return redirect()->route('host.bookings.index')->with('status', __('host.bookings.request_expired'));
-        }
-
-        $booking->update(['status' => BookingStatus::Declined]);
-
-        StripeService::refund($booking, $booking->refundAmountCents(100));
-
-        $booking->user->notify(new BookingDeclined($booking));
-
-        return redirect()->route('host.bookings.index')->with('status', __('host.bookings.declined'));
-    }
-
-    private function cancelExpiredRequest(Booking $booking): void
-    {
-        $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'auto']);
-
-        StripeService::refund($booking, $booking->refundAmountCents(100));
-
-        $booking->user->notify(new BookingCancelled($booking, 100));
-        $booking->room->studio->user->notify(new BookingCancelled($booking, 100));
+        return redirect()->route('host.bookings.index')->with('status', __('host.bookings.'.$outcome));
     }
 }

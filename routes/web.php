@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\OverviewController as AdminOverviewController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
@@ -7,30 +9,35 @@ use App\Http\Controllers\Admin\QueueController;
 use App\Http\Controllers\Admin\RevenueController as AdminRevenueController;
 use App\Http\Controllers\Admin\TicketController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
-use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AppWebSessionController;
 use App\Http\Controllers\Artist\OverviewController as ArtistOverviewController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
-use App\Http\Controllers\BlogController;
-use App\Http\Controllers\BookingController;
-use App\Http\Controllers\Host\BookingController as HostBookingController;
-use App\Http\Controllers\Host\DamageController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\BlogController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Host\AgendaController;
 use App\Http\Controllers\Host\AvailabilityController;
+use App\Http\Controllers\Host\BookingController as HostBookingController;
+use App\Http\Controllers\Host\DamageController;
 use App\Http\Controllers\Host\OverviewController;
-use App\Http\Controllers\Host\RevenueController;
-use App\Http\Controllers\IcalController;
 use App\Http\Controllers\Host\ProfileController;
+use App\Http\Controllers\Host\RevenueController;
 use App\Http\Controllers\Host\RoomController;
 use App\Http\Controllers\Host\RoomPhotoController;
 use App\Http\Controllers\Host\StripeController as HostStripeController;
 use App\Http\Controllers\Host\StudioController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\IcalController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\PublicStudioController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\StripeWebhookController;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -50,7 +57,7 @@ Route::get('/hoe-werkt-het', function () {
 Route::get('/contact', function () {
     return view('contact');
 })->name('contact');
-Route::post('/contact', \App\Http\Controllers\ContactController::class)
+Route::post('/contact', ContactController::class)
     ->middleware('throttle:5,1')->name('contact.store');
 
 Route::get('/faq', function () {
@@ -96,13 +103,13 @@ Route::middleware('auth')->group(function () {
             : view('auth.verify-email');
     })->name('verification.notice');
 
-    Route::get('/email/verifieren/{id}/{hash}', function (\Illuminate\Foundation\Auth\EmailVerificationRequest $request) {
+    Route::get('/email/verifieren/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
 
         return redirect()->route('dashboard')->with('status', __('auth.verify.done'));
     })->middleware('signed')->name('verification.verify');
 
-    Route::post('/email/verifieren', function (\Illuminate\Http\Request $request) {
+    Route::post('/email/verifieren', function (Request $request) {
         $request->user()->sendEmailVerificationNotification();
 
         return back()->with('status', __('auth.verify.sent'));
@@ -110,7 +117,7 @@ Route::middleware('auth')->group(function () {
 
     Route::post('/uitloggen', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
-    Route::get('/adres/suggesties', [\App\Http\Controllers\AddressController::class, 'suggest'])
+    Route::get('/adres/suggesties', [AddressController::class, 'suggest'])
         ->middleware('throttle:60,1')->name('address.suggest');
 });
 
@@ -127,9 +134,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard/artiest', ArtistOverviewController::class)
         ->middleware('role:artiest')->name('dashboard.artist');
 
-    Route::get('/dashboard/facturen', [\App\Http\Controllers\InvoiceController::class, 'index'])
+    Route::get('/dashboard/facturen', [InvoiceController::class, 'index'])
         ->middleware('role:artiest')->name('artist.invoices.index');
-    Route::get('/facturen/{booking}/{type}', [\App\Http\Controllers\InvoiceController::class, 'download'])
+    Route::get('/facturen/{booking}/{type}', [InvoiceController::class, 'download'])
         ->name('invoices.download');
 
     Route::middleware('role:artiest')->group(function () {
@@ -180,7 +187,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::post('/schade/{booking}', [DamageController::class, 'store'])->name('host.damage.store');
 
-        Route::get('/facturen', [\App\Http\Controllers\Host\InvoiceController::class, 'index'])->name('host.invoices.index');
+        Route::get('/facturen', [App\Http\Controllers\Host\InvoiceController::class, 'index'])->name('host.invoices.index');
 
         Route::get('/uitbetalingen', [HostStripeController::class, 'show'])->name('host.stripe.show');
         Route::post('/uitbetalingen/onboarding', [HostStripeController::class, 'onboard'])->name('host.stripe.onboard');
@@ -225,12 +232,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::post('/stripe/webhook', StripeWebhookController::class)->name('stripe.webhook');
 
+// Vanuit de iOS/Android-app naar een serverpagina: de eenmalige code uit api/app/webcode logt in.
+Route::get('/app/sessie', AppWebSessionController::class)->middleware('throttle:30,1')->name('app.web-session');
+
 Route::get('/ical/ruimte/{room}', IcalController::class)->middleware('signed')->name('ical.room');
 
-Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 foreach (['voorwaarden' => 'terms', 'privacy' => 'privacy', 'disclaimer' => 'disclaimer', 'cookiebeleid' => 'cookies'] as $uri => $key) {
-    Route::get('/' . $uri, fn () => view('legal', ['key' => $key, 'title' => __('legal.' . $key)]))->name('legal.' . $key);
+    Route::get('/'.$uri, fn () => view('legal', ['key' => $key, 'title' => __('legal.'.$key)]))->name('legal.'.$key);
 }
 
 Route::get('/language/{locale}', function (string $locale) {
