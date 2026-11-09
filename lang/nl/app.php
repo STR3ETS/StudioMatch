@@ -13,6 +13,9 @@ return [
         'wrong_role' => 'Dit scherm hoort bij een ander soort account.',
     ],
 
+    // Balk op de website als een pagina vanuit de app is geopend (x-app-return).
+    'back_to_app' => 'Terug naar de app',
+
     'menu' => [
         'bookings' => 'Boekingen',
         'search' => 'Zoeken',

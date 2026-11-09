@@ -13,6 +13,9 @@ return [
         'wrong_role' => 'This screen belongs to a different kind of account.',
     ],
 
+    // Bar on the website when a page was opened from the app (x-app-return).
+    'back_to_app' => 'Back to the app',
+
     'menu' => [
         'bookings' => 'Bookings',
         'search' => 'Search',

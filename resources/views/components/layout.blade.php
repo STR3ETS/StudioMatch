@@ -81,6 +81,7 @@
         op korte pagina's een overbodige scrollbalk oplevert.
     --}}
     <body class="flex min-h-dvh flex-col">
+        <x-app-return />
         <x-header />
 
         {{-- Kolom, zodat een korte pagina zoals een foutmelding zich kan uitrekken tot de footer. --}}

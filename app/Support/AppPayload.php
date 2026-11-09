@@ -156,9 +156,13 @@ class AppPayload
         ];
     }
 
-    /** Foto's komen van de server, de app draait op een ander adres: altijd een volledig adres. */
+    /**
+     * Foto's komen van de server, de app draait op een ander adres: altijd een volledig adres, en wel op
+     * de server die de app aanspreekt. Storage::url plakt APP_URL ervoor; die kan anders zijn (een
+     * testserver, of een telefoon die via het wifi-adres verbindt), dus alleen het pad houden.
+     */
     private static function url(?string $url): ?string
     {
-        return $url === null ? null : URL::to($url);
+        return $url === null ? null : URL::to(parse_url($url, PHP_URL_PATH) ?? $url);
     }
 }

@@ -20,6 +20,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
+        <x-app-return />
         <div class="flex min-h-screen">
             <div class="flex w-full flex-col px-6 py-8 sm:px-12 lg:w-1/2 xl:w-[45%]">
                 <div class="flex items-center justify-between">

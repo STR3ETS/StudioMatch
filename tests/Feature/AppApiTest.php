@@ -169,6 +169,19 @@ class AppApiTest extends TestCase
         $this->assertSame('pending_confirmation', $booking->fresh()->status->value);
     }
 
+    public function test_photos_point_to_the_server_the_app_talks_to(): void
+    {
+        $this->room->photos()->create(['path' => 'rooms/1/foto.webp', 'sort_order' => 0]);
+
+        $photo = $this->withServerVariables(['HTTP_HOST' => '192.168.1.20:8000'])
+            ->withToken($this->tokenFor($this->artist))
+            ->getJson('http://192.168.1.20:8000/api/app/studios')
+            ->assertOk()
+            ->json('studios.0.photo');
+
+        $this->assertStringStartsWith('http://192.168.1.20:8000/storage/rooms/1/', $photo);
+    }
+
     public function test_the_agenda_shows_seven_days_with_the_bookings(): void
     {
         $this->booking(['date' => today()->addDays(2)]);
@@ -216,7 +229,12 @@ class AppApiTest extends TestCase
         $this->get($url)->assertRedirect('/dashboard/artiest');
         $this->assertAuthenticatedAs($this->artist, 'web');
         $this->assertSame('https://localhost', session('app_bundle'));
+        // Vanuit de app: een balk terug naar de app (een iPhone heeft geen terugknop).
+        $this->get('/dashboard/artiest')->assertSee('Terug naar de app')->assertSee('href="https://localhost/"', false);
 
+        auth('web')->logout();
+        session()->forget('app_bundle');
+        $this->actingAs($this->artist)->get('/dashboard/artiest')->assertDontSee('Terug naar de app');
         auth('web')->logout();
         $this->get($url)->assertRedirect(route('login'));
 
