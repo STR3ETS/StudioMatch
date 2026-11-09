@@ -28,3 +28,7 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Firebase-configuratie met een API-sleutel: niet in Git (lokaal neerzetten, zie CLAUDE.md).
+/android/app/google-services.json
+/ios/App/App/GoogleService-Info.plist
