@@ -139,7 +139,13 @@ Alpine.store('app', {
         // Elke minuut de tellers; zonder verbinding elke 15 seconden kijken of de server er weer is.
         setInterval(() => document.visibilityState === 'visible' && !this.offline && this.refreshProfile(), 60_000);
         setInterval(() => this.offline && document.visibilityState === 'visible' && this.refreshProfile().then(() => !this.offline && preload(this.role)), 15_000);
-        capacitor().App?.addListener('backButton', () => this.back());
+        // Terug van een serverpagina: de webview kan deze pagina uit zijn geheugen halen, met het
+        // wachtscherm ("pagina openen") er nog over. Dat moet dan weg, en de gegevens vers.
+        window.addEventListener('pageshow', (event) => {
+            if (!event.persisted) return;
+            this.leaving = false;
+            if (this.token) this.refreshProfile().then(() => preload(this.role));
+        });
         capacitor().StatusBar?.setStyle({ style: 'DARK' }).catch(() => {});
         capacitor().StatusBar?.setBackgroundColor({ color: '#101529' }).catch(() => {});
         this.navigate();
@@ -192,16 +198,6 @@ Alpine.store('app', {
             this.param = param;
         }
         window.scrollTo(0, 0);
-    },
-
-    back() {
-        if (this.question) {
-            this.answer(false);
-        } else if (this.route !== this.home && this.signedIn) {
-            history.length > 1 ? history.back() : (location.hash = `#/${this.home}`);
-        } else {
-            capacitor().App?.minimizeApp();
-        }
     },
 
     // Een pad op de server: naar het scherm in de app als dat er is, anders de serverpagina.
@@ -284,6 +280,8 @@ Alpine.store('app', {
     },
 
     // Pagina's voor wie (nog) niet is ingelogd, zoals registreren.
+    // Pagina's voor wie (nog) niet is ingelogd, zoals registreren. De terugknop van Android (MainActivity)
+    // gaat een pagina terug, dus ook van een serverpagina weer naar de app.
     openGuestPage(path) {
         this.leaving = true;
         location.href = `${API}${path}`;
