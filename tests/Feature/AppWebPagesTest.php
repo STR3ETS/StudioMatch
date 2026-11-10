@@ -114,14 +114,14 @@ class AppWebPagesTest extends TestCase
 
     public function test_the_way_back_uses_the_app_address_from_the_session(): void
     {
-        $this->withSession(['app_bundle' => 'https://localhost'])->get(route('app.back'))->assertRedirect('https://localhost/');
+        $this->withSession(['app_bundle' => 'https://localhost'])->get(route('app.back'))->assertOk()->assertSee('location.replace("https://localhost/")', false);
     }
 
     public function test_without_a_session_the_way_back_follows_the_phone(): void
     {
-        $this->withHeader('User-Agent', self::IPHONE)->get(route('app.back'))->assertRedirect('capacitor://localhost/');
+        $this->withHeader('User-Agent', self::IPHONE)->get(route('app.back'))->assertOk()->assertSee('location.replace("capacitor://localhost/")', false);
         // Android over http (een testserver): de app draait dan ook op http://localhost.
-        $this->withHeader('User-Agent', self::APP)->get(route('app.back'))->assertRedirect('http://localhost/');
+        $this->withHeader('User-Agent', self::APP)->get(route('app.back'))->assertOk()->assertSee('location.replace("http://localhost/")', false);
     }
 
     public function test_the_way_back_only_goes_to_the_app_itself(): void
@@ -129,6 +129,6 @@ class AppWebPagesTest extends TestCase
         $this->withHeader('User-Agent', self::APP)
             ->withSession(['app_bundle' => 'https://evil.example'])
             ->get(route('app.back'))
-            ->assertRedirect('http://localhost/');
+            ->assertOk()->assertSee('location.replace("http://localhost/")', false);
     }
 }

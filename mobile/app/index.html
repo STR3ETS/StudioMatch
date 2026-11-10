@@ -167,19 +167,477 @@
                                         <div x-show="data.actions.length || data.studio_path" class="space-y-2">
                                             <h2 class="px-1 text-sm font-bold" x-text="$store.app.t('booking.actions')"></h2>
                                             <template x-for="action in data.actions.filter((item) => !item.danger)" :key="action.label">
-                                                <button type="button" @click="$store.app.openWeb(action.path)" class="flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-left text-sm font-semibold"
+                                                <button type="button" @click="run(action)" class="flex w-full items-center justify-between rounded-xl px-4 py-3.5 text-left text-sm font-semibold"
                                                         :class="action.primary ? 'bg-ruby-red text-white' : 'bg-white shadow-sm'">
                                                     <span x-text="action.label"></span><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 opacity-60"></span>
                                                 </button>
                                             </template>
-                                            <button type="button" x-show="data.studio_path" @click="$store.app.openWeb(data.studio_path)" class="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3.5 text-left text-sm font-semibold shadow-sm">
+                                            <button type="button" x-show="data.studio_path" @click="openStudio()" class="flex w-full items-center justify-between rounded-xl bg-white px-4 py-3.5 text-left text-sm font-semibold shadow-sm">
                                                 <span x-text="$store.app.t('booking.view_studio')"></span><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 opacity-60"></span>
                                             </button>
                                             <template x-for="action in data.actions.filter((item) => item.danger)" :key="action.label">
-                                                <button type="button" @click="$store.app.openWeb(action.path)" class="!mt-6 flex w-full items-center justify-between rounded-xl bg-white px-4 py-3.5 text-left text-sm font-semibold text-red-700 shadow-sm">
+                                                <button type="button" @click="run(action)" :disabled="busy" class="!mt-6 flex w-full items-center justify-between rounded-xl bg-white px-4 py-3.5 text-left text-sm font-semibold text-red-700 shadow-sm disabled:opacity-60">
                                                     <span x-text="action.label"></span><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5 opacity-60"></span>
                                                 </button>
                                             </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </section>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ===== Artiest: studio ===== -->
+                <template x-if="$store.app.route === 'studio'">
+                    <div>
+                        <template x-for="id in [$store.app.param]" :key="id">
+                            <section x-data="studio(id)">
+                                <template x-if="missing">
+                                    <p class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue" x-text="$store.app.t('studio.not_found')"></p>
+                                </template>
+                                <template x-if="failed">
+                                    <div class="rounded-2xl bg-white p-6 text-center">
+                                        <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                        <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                                    </div>
+                                </template>
+                                <template x-if="!data && !failed && !missing">
+                                    <div class="space-y-3"><div class="skeleton h-56"></div><div class="skeleton h-24"></div><div class="skeleton h-40"></div></div>
+                                </template>
+                                <template x-if="data">
+                                    <div class="space-y-3">
+                                        <div class="overflow-hidden rounded-2xl bg-white shadow-sm">
+                                            <!-- Foto's: vegen, met een teller -->
+                                            <div x-show="data.photos.length" class="relative">
+                                                <div @scroll.debounce.50ms="onScroll($event)" class="flex snap-x snap-mandatory overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                                                    <template x-for="(url, index) in data.photos" :key="url">
+                                                        <img :src="url" alt="" :loading="index === 0 ? 'eager' : 'lazy'" class="aspect-[4/3] w-full shrink-0 snap-center object-cover">
+                                                    </template>
+                                                </div>
+                                                <span x-show="data.photos.length > 1" class="absolute right-3 bottom-3 rounded-full bg-prussian-blue/70 px-2.5 py-1 text-xs font-semibold text-white" :aria-label="$store.app.t('studio.photo', { number: photo + 1, total: data.photos.length })" x-text="(photo + 1) + '/' + data.photos.length"></span>
+                                            </div>
+                                            <div class="p-4">
+                                                <p class="text-xs font-semibold text-ruby-red" x-text="data.type"></p>
+                                                <h2 class="mt-1 text-xl font-bold" x-text="data.name"></h2>
+                                                <p class="text-sm text-charcoal-blue" x-text="data.city"></p>
+                                                <div class="mt-3 space-y-1.5">
+                                                    <template x-for="fact in data.facts" :key="fact.text">
+                                                        <p class="flex items-center gap-2 text-sm"><span x-icon="fact.icon" class="h-4 w-4 shrink-0 text-ruby-red"></span><span x-text="fact.text"></span></p>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div x-show="data.description" class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('studio.about')"></h2>
+                                            <p class="text-sm leading-relaxed whitespace-pre-line text-charcoal-blue" x-text="data.description"></p>
+                                        </div>
+                                        <template x-for="block in [['equipment', data.equipment], ['facilities', data.facilities], ['rules', data.rules]]" :key="block[0]">
+                                            <div x-show="block[1].length" class="rounded-2xl bg-white p-4 shadow-sm">
+                                                <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('studio.' + block[0])"></h2>
+                                                <ul class="space-y-1.5">
+                                                    <template x-for="item in block[1]" :key="item">
+                                                        <li class="flex gap-2 text-sm"><span x-icon="'fa-check'" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-ruby-red"></span><span x-text="item"></span></li>
+                                                    </template>
+                                                </ul>
+                                            </div>
+                                        </template>
+                                        <div x-show="data.daws.length" class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('studio.daws')"></h2>
+                                            <div class="flex flex-wrap gap-2">
+                                                <template x-for="daw in data.daws" :key="daw">
+                                                    <span class="rounded-full border border-gray-200 px-3 py-1 text-sm font-medium" x-text="daw"></span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                        <div x-show="data.opening_hours.length" class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-1 text-sm font-bold" x-text="$store.app.t('studio.opening_hours')"></h2>
+                                            <dl class="divide-y divide-gray-100">
+                                                <template x-for="day in data.opening_hours" :key="day.day">
+                                                    <div class="flex justify-between py-2 text-sm" :class="day.today ? 'font-semibold' : 'text-charcoal-blue'">
+                                                        <dt class="capitalize" x-text="day.day"></dt>
+                                                        <dd x-text="day.hours ?? $store.app.t('studio.closed')"></dd>
+                                                    </div>
+                                                </template>
+                                            </dl>
+                                            <p x-show="data.night_note" class="mt-2 flex gap-2 text-xs text-charcoal-blue"><span x-icon="'fa-moon'" class="mt-0.5 h-3 w-3 shrink-0"></span><span x-text="data.night_note"></span></p>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('studio.location')"></h2>
+                                            <p class="flex gap-2 py-0.5 text-sm"><span x-icon="'fa-location-dot'" class="mt-0.5 h-4 w-4 shrink-0 text-charcoal-blue"></span><span x-text="data.city"></span></p>
+                                            <p class="flex gap-2 py-0.5 text-sm text-charcoal-blue"><span x-icon="'fa-lock'" class="mt-0.5 h-4 w-4 shrink-0"></span><span x-text="$store.app.t('studio.location_privacy')"></span></p>
+                                            <p x-show="data.owner" class="flex gap-2 py-0.5 text-sm text-charcoal-blue"><span x-icon="'fa-id-card'" class="mt-0.5 h-4 w-4 shrink-0"></span><span x-text="data.owner"></span></p>
+                                        </div>
+                                        <div class="sticky bottom-[calc(3.8rem_+_env(safe-area-inset-bottom))] z-20 -mx-4 mt-4 -mb-[1.7rem] border-t border-gray-200 bg-white px-4 py-3 flex items-center gap-3">
+                                            <p class="min-w-0 flex-1 text-sm">
+                                                <span class="block text-xs text-charcoal-blue" x-text="$store.app.t('studio.from')"></span>
+                                                <b class="text-lg" x-text="'€ ' + data.price"></b> <span class="text-charcoal-blue" x-text="$store.app.t('studio.per_hour')"></span>
+                                            </p>
+                                            <a :href="'#/boeken/' + id" class="shrink-0 rounded-xl bg-ruby-red px-6 py-3.5 text-sm font-bold text-white active:opacity-90" x-text="$store.app.t('studio.book')"></a>
+                                        </div>
+                                    </div>
+                                </template>
+                            </section>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ===== Artiest: kies een moment ===== -->
+                <template x-if="$store.app.route === 'boeken'">
+                    <div>
+                        <template x-for="id in [$store.app.param]" :key="id">
+                            <section x-data="picker(id)">
+                                <template x-if="missing">
+                                    <p class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue" x-text="$store.app.t('studio.not_found')"></p>
+                                </template>
+                                <template x-if="failed">
+                                    <div class="rounded-2xl bg-white p-6 text-center">
+                                        <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                        <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                                    </div>
+                                </template>
+                                <template x-if="!data && !failed && !missing">
+                                    <div class="space-y-3"><div class="skeleton h-16"></div><div class="skeleton h-80"></div><div class="skeleton h-32"></div></div>
+                                </template>
+                                <template x-if="data">
+                                    <div class="space-y-3">
+                                        <p class="truncate px-1 text-sm font-semibold text-charcoal-blue" x-text="data.name"></p>
+                                        <!-- Per uur of per hele dag, alleen als de studio een dagprijs heeft -->
+                                        <div x-show="data.booking.multi_day" class="grid grid-cols-2 gap-1 rounded-xl bg-white p-1 shadow-sm">
+                                            <template x-for="option in ['hours', 'days']" :key="option">
+                                                <button type="button" @click="setMode(option)" class="min-h-11 rounded-lg text-sm font-semibold" :class="mode === option ? 'bg-prussian-blue text-white' : 'text-charcoal-blue'" x-text="$store.app.t(option === 'hours' ? 'book.mode_hours' : 'book.mode_days')"></button>
+                                            </template>
+                                        </div>
+                                        <div x-show="mode === 'hours'" class="flex items-center justify-between rounded-2xl bg-white p-4 shadow-sm">
+                                            <span>
+                                                <span class="block text-sm font-bold" x-text="$store.app.t('book.duration')"></span>
+                                                <span class="text-sm text-charcoal-blue" x-text="$store.app.t('book.hours', { count: hours })"></span>
+                                            </span>
+                                            <span class="flex items-center gap-2">
+                                                <button type="button" @click="setHours(hours - 1)" :disabled="hours <= data.booking.min_hours" :aria-label="$store.app.t('book.fewer')" class="flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 disabled:opacity-30"><span x-icon="'fa-minus'" class="h-3.5 w-3.5"></span></button>
+                                                <span class="w-6 text-center text-lg font-bold" x-text="hours"></span>
+                                                <button type="button" @click="setHours(hours + 1)" :disabled="hours >= data.booking.max_hours" :aria-label="$store.app.t('book.more')" class="flex h-11 w-11 items-center justify-center rounded-full border border-gray-300 disabled:opacity-30"><span x-icon="'fa-plus'" class="h-3.5 w-3.5"></span></button>
+                                            </span>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <div class="mb-2 flex items-center justify-between">
+                                                <h2 class="text-sm font-bold" x-text="$store.app.t('book.date')"></h2>
+                                                <div class="flex items-center">
+                                                    <button type="button" @click="shiftMonth(-1)" :disabled="!canPrev()" :aria-label="$store.app.t('book.previous_month')" class="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-30"><span x-icon="'fa-chevron-left'" class="h-3.5 w-3.5"></span></button>
+                                                    <span class="w-32 text-center text-sm font-semibold first-letter:uppercase" x-text="monthLabel()"></span>
+                                                    <button type="button" @click="shiftMonth(1)" :disabled="!canNext()" :aria-label="$store.app.t('book.next_month')" class="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-30"><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5"></span></button>
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-7 gap-1 text-center">
+                                                <template x-for="name in weekdays()" :key="name">
+                                                    <span class="py-1 text-[11px] font-bold uppercase text-charcoal-blue" x-text="name"></span>
+                                                </template>
+                                                <template x-for="cell in cells()" :key="cell.key">
+                                                    <button type="button" :disabled="cell.blank || !cell.enabled" @click="pick(cell)"
+                                                            class="aspect-square min-h-10 rounded-lg text-sm" :class="cell.blank ? 'invisible' : cellClass(cell)" x-text="cell.day ?? ''"></button>
+                                                </template>
+                                            </div>
+                                            <p x-show="!view" class="mt-2 text-sm text-charcoal-blue" x-text="$store.app.t('book.no_dates')"></p>
+                                        </div>
+                                        <div x-show="mode === 'hours'">
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('book.time')"></h2>
+                                            <p x-show="!selectedDate" class="text-sm text-charcoal-blue" x-text="$store.app.t('book.pick_date_first')"></p>
+                                            <template x-if="selectedDate">
+                                                <div>
+                                                    <p class="mb-2 text-sm font-semibold first-letter:uppercase" x-text="dateLabel(selectedDate)"></p>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <template x-for="hour in startsFor(selectedDate, hours)" :key="hour">
+                                                            <button type="button" @click="selectedStart = hour" class="min-h-11 rounded-xl border px-1 text-sm"
+                                                                    :class="hour === selectedStart ? 'border-ruby-red bg-ruby-red font-bold text-white' : 'border-gray-200 font-semibold'" x-text="startLabel(hour)"></button>
+                                                        </template>
+                                                    </div>
+                                                    <p x-show="!startsFor(selectedDate, hours).length" class="text-sm text-charcoal-blue" x-text="$store.app.t('book.no_slots')"></p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        </div>
+                                        <div x-show="mode === 'days'" class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-1 text-sm font-bold" x-text="$store.app.t('book.period')"></h2>
+                                            <p class="text-sm" :class="rangeStart ? 'font-semibold' : 'text-charcoal-blue'" x-text="rangeLabel"></p>
+                                            <p x-show="rangeStart && dayCount < data.booking.min_days" class="mt-1 text-sm text-amber-800" x-text="$store.app.t('book.min_days', { count: data.booking.min_days })"></p>
+                                        </div>
+                                        <label x-show="data.booking.engineer_optional" class="flex min-h-11 items-center gap-3 rounded-2xl bg-white p-4 text-sm shadow-sm">
+                                            <span x-icon="'fa-headphones'" class="h-4 w-4 shrink-0 text-charcoal-blue"></span>
+                                            <span class="flex-1" x-text="mode === 'days' ? data.booking.engineer_day_text : data.booking.engineer_hour_text"></span>
+                                            <input type="checkbox" x-model="engineer" class="h-5 w-5 shrink-0 accent-ruby-red">
+                                        </label>
+                                        <p class="px-1 text-xs text-charcoal-blue" x-text="$store.app.t('book.price_note')"></p>
+                                        <p class="flex items-center gap-2 px-1 text-xs text-charcoal-blue"><span x-icon="'fa-shield-halved'" class="h-3.5 w-3.5"></span><span x-text="$store.app.t('book.cancel_note')"></span></p>
+                                        <div class="sticky bottom-[calc(3.8rem_+_env(safe-area-inset-bottom))] z-20 -mx-4 mt-4 -mb-[1.7rem] border-t border-gray-200 bg-white px-4 py-3 flex items-center gap-3">
+                                            <p class="min-w-0 flex-1">
+                                                <span class="block text-xs text-charcoal-blue" x-text="$store.app.t('book.total')"></span>
+                                                <b class="text-lg" x-text="smFormat.euro(totalCents)"></b>
+                                            </p>
+                                            <button type="button" @click="next()" :disabled="!ready" class="shrink-0 rounded-xl bg-ruby-red px-6 py-3.5 text-sm font-bold text-white active:opacity-90 disabled:opacity-40" x-text="$store.app.t('book.next')"></button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </section>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ===== Artiest: controleren ===== -->
+                <template x-if="$store.app.route === 'afrekenen'">
+                    <div>
+                        <template x-for="id in [$store.app.param]" :key="id">
+                            <section x-data="checkout(id)">
+                                <template x-if="problem">
+                                    <div class="rounded-2xl bg-white p-6 text-center shadow-sm">
+                                        <span x-icon="'fa-calendar-xmark'" class="mx-auto mb-3 h-8 w-8 text-ruby-red"></span>
+                                        <p class="text-sm font-semibold" x-text="problem"></p>
+                                        <a :href="'#/boeken/' + id" @click.prevent="location.replace('#/boeken/' + id)" class="mt-4 inline-block rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('payment.choose_again')"></a>
+                                    </div>
+                                </template>
+                                <template x-if="failed && !problem">
+                                    <div class="rounded-2xl bg-white p-6 text-center">
+                                        <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                        <button type="button" @click="load()" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                                    </div>
+                                </template>
+                                <template x-if="!data && !failed && !problem">
+                                    <div class="space-y-3"><div class="skeleton h-28"></div><div class="skeleton h-36"></div><div class="skeleton h-40"></div></div>
+                                </template>
+                                <template x-if="data && !problem">
+                                    <form @submit.prevent="submit()" class="space-y-3">
+                                        <p class="px-1 text-sm text-charcoal-blue" x-text="$store.app.t('checkout.subtitle')"></p>
+                                        <div class="flex gap-3 rounded-2xl bg-white p-3 shadow-sm">
+                                            <img x-show="data.photo" :src="data.photo" alt="" class="h-20 w-20 shrink-0 rounded-xl object-cover">
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block truncate font-semibold" x-text="data.name"></span>
+                                                <span class="block text-sm text-charcoal-blue" x-text="data.city"></span>
+                                                <span class="mt-1 block text-sm font-semibold first-letter:uppercase" x-text="data.date_label"></span>
+                                                <span x-show="data.time_label" class="block text-sm" x-text="data.time_label"></span>
+                                            </span>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('checkout.prices')"></h2>
+                                            <template x-for="line in data.prices" :key="line.label">
+                                                <p class="flex justify-between gap-3 py-1 text-sm"><span class="text-charcoal-blue" x-text="line.label"></span><span class="shrink-0" x-text="smFormat.euro(line.cents)"></span></p>
+                                            </template>
+                                            <p class="mt-1 flex justify-between border-t border-gray-100 pt-2 font-bold"><span x-text="$store.app.t('checkout.total')"></span><span x-text="smFormat.euro(data.total_cents)"></span></p>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="text-sm font-bold" x-text="$store.app.t('checkout.buyer_title')"></h2>
+                                            <p class="mb-3 text-sm text-charcoal-blue" x-text="$store.app.t('checkout.buyer_note')"></p>
+                                            <div class="grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
+                                                <template x-for="option in ['particulier', 'zakelijk']" :key="option">
+                                                    <button type="button" @click="form.buyer_type = option" class="min-h-11 rounded-lg text-sm font-semibold" :class="form.buyer_type === option ? 'bg-white shadow-sm' : 'text-charcoal-blue'" x-text="$store.app.t('checkout.' + option)"></button>
+                                                </template>
+                                            </div>
+                                            <div x-show="form.buyer_type === 'zakelijk'" class="mt-3 space-y-3">
+                                                <label class="block">
+                                                    <span class="mb-1.5 block text-sm font-semibold" x-text="$store.app.t('checkout.company')"></span>
+                                                    <input type="text" x-model="form.buyer_company" autocomplete="organization" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:outline-none">
+                                                    <span x-show="errors.buyer_company" class="mt-1 block text-sm text-red-700" x-text="errors.buyer_company"></span>
+                                                </label>
+                                                <label class="block">
+                                                    <span class="mb-1.5 block text-sm font-semibold" x-text="$store.app.t('checkout.vat')"></span>
+                                                    <input type="text" x-model="form.buyer_vat_number" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:outline-none">
+                                                    <span x-show="errors.buyer_vat_number" class="mt-1 block text-sm text-red-700" x-text="errors.buyer_vat_number"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <!-- Het factuuradres alleen als het nog ontbreekt (de server controleert of het bestaat) -->
+                                        <div x-show="data.needs_address" class="space-y-3 rounded-2xl bg-white p-4 shadow-sm">
+                                            <div>
+                                                <h2 class="text-sm font-bold" x-text="$store.app.t('checkout.address_title')"></h2>
+                                                <p class="text-sm text-charcoal-blue" x-text="$store.app.t('checkout.address_note')"></p>
+                                            </div>
+                                            <label class="block">
+                                                <span class="mb-1.5 block text-sm font-semibold" x-text="$store.app.t('checkout.street')"></span>
+                                                <input type="text" x-model="form.street" autocomplete="street-address" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:outline-none">
+                                                <span x-show="errors.street" class="mt-1 block text-sm text-red-700" x-text="errors.street"></span>
+                                            </label>
+                                            <div class="grid grid-cols-1 gap-3 min-[380px]:grid-cols-[8rem_1fr]">
+                                                <label class="block min-w-0">
+                                                    <span class="mb-1.5 block text-sm font-semibold" x-text="$store.app.t('checkout.postal_code')"></span>
+                                                    <input type="text" x-model="form.postal_code" autocomplete="postal-code" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-base uppercase focus:border-prussian-blue focus:outline-none">
+                                                    <span x-show="errors.postal_code" class="mt-1 block text-sm text-red-700" x-text="errors.postal_code"></span>
+                                                </label>
+                                                <label class="block min-w-0">
+                                                    <span class="mb-1.5 block text-sm font-semibold" x-text="$store.app.t('checkout.city')"></span>
+                                                    <input type="text" x-model="form.city" autocomplete="address-level2" class="w-full rounded-xl border border-gray-300 px-4 py-3 text-base focus:border-prussian-blue focus:outline-none">
+                                                    <span x-show="errors.city" class="mt-1 block text-sm text-red-700" x-text="errors.city"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('checkout.rules_title')"></h2>
+                                            <ul x-show="data.rules.length" class="space-y-1.5">
+                                                <template x-for="rule in data.rules" :key="rule">
+                                                    <li class="flex gap-2 text-sm text-charcoal-blue"><span x-icon="'fa-check'" class="mt-0.5 h-3.5 w-3.5 shrink-0 text-ruby-red"></span><span x-text="rule"></span></li>
+                                                </template>
+                                            </ul>
+                                            <p x-show="!data.rules.length" class="text-sm text-charcoal-blue" x-text="$store.app.t('checkout.no_rules')"></p>
+                                            <label class="mt-4 flex min-h-11 items-start gap-3 text-sm">
+                                                <input type="checkbox" x-model="form.terms" class="mt-0.5 h-5 w-5 shrink-0 accent-ruby-red">
+                                                <span x-text="$store.app.t('checkout.terms')"></span>
+                                            </label>
+                                            <button type="button" @click="$store.app.openWeb('/voorwaarden')" class="min-h-11 text-sm font-semibold text-ruby-red" x-text="$store.app.t('checkout.terms_link')"></button>
+                                            <span x-show="errors.terms" class="block text-sm text-red-700" x-text="errors.terms"></span>
+                                        </div>
+                                        <p class="flex gap-2 px-1 text-xs text-charcoal-blue"><span x-icon="'fa-clock'" class="mt-0.5 h-3.5 w-3.5 shrink-0"></span><span x-text="$store.app.t('checkout.hold_note', { minutes: data.hold_minutes })"></span></p>
+                                        <div class="sticky bottom-[calc(3.8rem_+_env(safe-area-inset-bottom))] z-20 -mx-4 mt-4 -mb-[1.7rem] border-t border-gray-200 bg-white px-4 py-3">
+                                            <button type="submit" :disabled="busy || !form.terms" class="flex w-full items-center justify-center gap-2 rounded-xl bg-ruby-red py-3.5 text-sm font-bold text-white active:opacity-90 disabled:opacity-40">
+                                                <span x-show="busy" class="sm-spinner"></span>
+                                                <span x-text="busy ? $store.app.t('checkout.busy') : $store.app.t('checkout.submit')"></span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </template>
+                            </section>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ===== Artiest: betalen ===== -->
+                <template x-if="$store.app.route === 'betalen'">
+                    <div>
+                        <template x-for="id in [$store.app.param]" :key="id">
+                            <section x-data="payment(id)">
+                                <template x-if="missing">
+                                    <p class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue" x-text="$store.app.t('booking.not_found')"></p>
+                                </template>
+                                <template x-if="failed">
+                                    <div class="rounded-2xl bg-white p-6 text-center">
+                                        <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                        <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                                    </div>
+                                </template>
+                                <template x-if="!data && !failed && !missing">
+                                    <div class="space-y-3"><div class="skeleton h-28"></div><div class="skeleton h-24"></div><div class="skeleton h-36"></div></div>
+                                </template>
+                                <template x-if="data">
+                                    <div class="space-y-3">
+                                        <div class="flex gap-3 rounded-2xl bg-white p-3 shadow-sm">
+                                            <img x-show="data.photo" :src="data.photo" alt="" class="h-20 w-20 shrink-0 rounded-xl object-cover">
+                                            <span class="min-w-0 flex-1">
+                                                <span class="block truncate font-semibold" x-text="data.studio"></span>
+                                                <span class="block truncate text-sm text-charcoal-blue" x-text="data.room"></span>
+                                                <span class="mt-1 block text-sm" x-text="data.date_label + ', ' + data.time_label"></span>
+                                            </span>
+                                        </div>
+                                        <!-- Al betaald, verlopen of iets anders: zeggen wat er is en naar de boeking -->
+                                        <template x-if="data.status !== 'pending_payment' && data.status !== 'expired'">
+                                            <div class="rounded-2xl bg-white p-6 text-center shadow-sm">
+                                                <p class="text-sm font-semibold" x-text="$store.app.t('payment.already')"></p>
+                                                <a :href="'#/boeking/' + id" @click.prevent="location.replace('#/boeking/' + id)" class="mt-4 inline-block rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('payment.view_booking')"></a>
+                                            </div>
+                                        </template>
+                                        <template x-if="expired">
+                                            <div class="rounded-2xl bg-white p-6 text-center shadow-sm">
+                                                <span x-icon="'fa-clock'" class="mx-auto mb-3 h-8 w-8 text-ruby-red"></span>
+                                                <p class="text-sm font-semibold" x-text="$store.app.t('payment.expired')"></p>
+                                                <a x-show="data.studio_id" :href="'#/boeken/' + data.studio_id" class="mt-4 inline-block rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('payment.choose_again')"></a>
+                                            </div>
+                                        </template>
+                                        <template x-if="data.payment && !expired">
+                                            <div class="space-y-3">
+                                                <p class="px-1 text-sm text-charcoal-blue" x-text="$store.app.t('payment.subtitle')"></p>
+                                                <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                                    <p class="flex items-center justify-between text-sm"><span class="text-charcoal-blue" x-text="$store.app.t('payment.time_left')"></span><b class="text-lg tabular-nums" :class="secondsLeft < 120 ? 'text-ruby-red' : ''" x-text="timeLeft"></b></p>
+                                                    <p class="mt-1 text-xs text-charcoal-blue" x-text="data.payment.hold_note"></p>
+                                                </div>
+                                                <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                                    <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('booking.prices')"></h2>
+                                                    <template x-for="line in data.prices" :key="line.label">
+                                                        <p class="flex justify-between py-1 text-sm"><span class="text-charcoal-blue" x-text="line.label"></span><span x-text="smFormat.euro(line.cents)"></span></p>
+                                                    </template>
+                                                    <p class="mt-1 flex justify-between border-t border-gray-100 pt-2 font-bold"><span x-text="$store.app.t('booking.total')"></span><span x-text="smFormat.euro(data.total_cents)"></span></p>
+                                                </div>
+                                                <p class="flex gap-2 rounded-xl px-3 py-2 text-sm" :class="data.payment.stripe ? 'text-charcoal-blue' : 'bg-amber-50 text-amber-900'">
+                                                    <span x-icon="data.payment.stripe ? 'fa-lock' : 'fa-flask'" class="mt-0.5 h-4 w-4 shrink-0"></span><span x-text="data.payment.note"></span>
+                                                </p>
+                                                <div class="sticky bottom-[calc(3.8rem_+_env(safe-area-inset-bottom))] z-20 -mx-4 mt-4 -mb-[1.7rem] border-t border-gray-200 bg-white px-4 py-3">
+                                                    <button type="button" @click="pay()" :disabled="busy" class="flex w-full items-center justify-center gap-2 rounded-xl bg-ruby-red py-3.5 text-sm font-bold text-white active:opacity-90 disabled:opacity-60">
+                                                        <span x-show="busy" class="sm-spinner"></span>
+                                                        <span x-show="!busy" x-icon="'fa-lock'" class="h-3.5 w-3.5"></span>
+                                                        <span x-text="busy ? $store.app.t('payment.busy') : data.payment.submit"></span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </section>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- ===== Artiest: verzetten ===== -->
+                <template x-if="$store.app.route === 'verzetten'">
+                    <div>
+                        <template x-for="id in [$store.app.param]" :key="id">
+                            <section x-data="reschedule(id)">
+                                <template x-if="missing">
+                                    <p class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue" x-text="$store.app.t('booking.not_found')"></p>
+                                </template>
+                                <template x-if="failed">
+                                    <div class="rounded-2xl bg-white p-6 text-center">
+                                        <p class="text-sm font-semibold" x-text="$store.app.t('common.no_data')"></p>
+                                        <button type="button" @click="load({ force: true })" class="mt-3 rounded-xl bg-ruby-red px-5 py-3 text-sm font-bold text-white" x-text="$store.app.t('common.retry')"></button>
+                                    </div>
+                                </template>
+                                <template x-if="!data && !failed && !missing">
+                                    <div class="space-y-3"><div class="skeleton h-24"></div><div class="skeleton h-80"></div></div>
+                                </template>
+                                <template x-if="data">
+                                    <div class="space-y-3">
+                                        <p class="px-1 text-sm text-charcoal-blue" x-text="data.subtitle"></p>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <p class="text-xs font-semibold text-charcoal-blue" x-text="$store.app.t('reschedule.current')"></p>
+                                            <p class="font-semibold" x-text="data.booking.date_label + ', ' + data.booking.time_label"></p>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <div class="mb-2 flex items-center justify-between">
+                                                <h2 class="text-sm font-bold" x-text="$store.app.t('book.date')"></h2>
+                                                <div class="flex items-center">
+                                                    <button type="button" @click="shiftMonth(-1)" :disabled="!canPrev()" :aria-label="$store.app.t('book.previous_month')" class="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-30"><span x-icon="'fa-chevron-left'" class="h-3.5 w-3.5"></span></button>
+                                                    <span class="w-32 text-center text-sm font-semibold first-letter:uppercase" x-text="monthLabel()"></span>
+                                                    <button type="button" @click="shiftMonth(1)" :disabled="!canNext()" :aria-label="$store.app.t('book.next_month')" class="flex h-11 w-11 items-center justify-center rounded-full disabled:opacity-30"><span x-icon="'fa-chevron-right'" class="h-3.5 w-3.5"></span></button>
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-7 gap-1 text-center">
+                                                <template x-for="name in weekdays()" :key="name">
+                                                    <span class="py-1 text-[11px] font-bold uppercase text-charcoal-blue" x-text="name"></span>
+                                                </template>
+                                                <template x-for="cell in cells()" :key="cell.key">
+                                                    <button type="button" :disabled="cell.blank || !cell.enabled" @click="pick(cell)"
+                                                            class="aspect-square min-h-10 rounded-lg text-sm" :class="cell.blank ? 'invisible' : cellClass(cell)" x-text="cell.day ?? ''"></button>
+                                                </template>
+                                            </div>
+                                            <p x-show="!view" class="mt-2 text-sm text-charcoal-blue" x-text="$store.app.t('book.no_dates')"></p>
+                                        </div>
+                                        <div class="rounded-2xl bg-white p-4 shadow-sm">
+                                            <h2 class="mb-2 text-sm font-bold" x-text="$store.app.t('book.time')"></h2>
+                                            <p x-show="!selectedDate" class="text-sm text-charcoal-blue" x-text="$store.app.t('book.pick_date_first')"></p>
+                                            <template x-if="selectedDate">
+                                                <div>
+                                                    <p class="mb-2 text-sm font-semibold first-letter:uppercase" x-text="dateLabel(selectedDate)"></p>
+                                                    <div class="grid grid-cols-3 gap-2">
+                                                        <template x-for="hour in startsFor(selectedDate, data.hours)" :key="hour">
+                                                            <button type="button" @click="selectedStart = hour" class="min-h-11 rounded-xl border px-1 text-sm"
+                                                                    :class="hour === selectedStart ? 'border-ruby-red bg-ruby-red font-bold text-white' : 'border-gray-200 font-semibold'" x-text="startLabel(hour)"></button>
+                                                        </template>
+                                                    </div>
+                                                    <p x-show="!startsFor(selectedDate, data.hours).length" class="text-sm text-charcoal-blue" x-text="$store.app.t('book.no_slots')"></p>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <p x-show="problem" class="rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700" x-text="problem"></p>
+                                        <p class="px-1 text-xs text-charcoal-blue" x-text="data.note"></p>
+                                        <div class="sticky bottom-[calc(3.8rem_+_env(safe-area-inset-bottom))] z-20 -mx-4 mt-4 -mb-[1.7rem] border-t border-gray-200 bg-white px-4 py-3">
+                                            <button type="button" @click="submit()" :disabled="busy || !selectedDate || selectedStart === null" class="flex w-full items-center justify-center gap-2 rounded-xl bg-ruby-red py-3.5 text-sm font-bold text-white active:opacity-90 disabled:opacity-40">
+                                                <span x-show="busy" class="sm-spinner"></span>
+                                                <span x-text="busy ? $store.app.t('reschedule.busy') : $store.app.t('reschedule.submit')"></span>
+                                            </button>
                                         </div>
                                     </div>
                                 </template>
@@ -213,14 +671,14 @@
                         <p x-show="data?.studios.length" class="mb-2 px-1 text-sm text-charcoal-blue" x-text="countLabel()"></p>
                         <div class="space-y-4">
                             <template x-for="studio in data?.studios ?? []" :key="studio.id">
-                                <button type="button" @click="$store.app.openWeb(studio.path)" class="block w-full overflow-hidden rounded-2xl bg-white text-left shadow-sm active:bg-gray-50">
+                                <a :href="'#/studio/' + studio.id" class="block w-full overflow-hidden rounded-2xl bg-white text-left shadow-sm active:bg-gray-50">
                                     <img x-show="studio.photo" :src="studio.photo" alt="" loading="lazy" class="aspect-[16/10] w-full object-cover">
                                     <span class="block p-4">
                                         <span class="block truncate font-semibold" x-text="studio.name"></span>
                                         <span class="block truncate text-sm text-charcoal-blue" x-text="[studio.city, studio.type].filter(Boolean).join(', ')"></span>
                                         <span class="mt-2 block text-sm"><b x-text="'€ ' + studio.price"></b> <span class="text-charcoal-blue" x-text="$store.app.t('studios.per_hour')"></span></span>
                                     </span>
-                                </button>
+                                </a>
                             </template>
                         </div>
                         <p x-show="data && data.studios.length === 0" class="rounded-2xl bg-white p-6 text-center text-sm text-charcoal-blue shadow-sm" x-text="$store.app.t('studios.empty')"></p>

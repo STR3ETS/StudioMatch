@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\App\AdminController;
 use App\Http\Controllers\Api\App\ArtistBookingController;
+use App\Http\Controllers\Api\App\BookingController;
 use App\Http\Controllers\Api\App\DeviceController;
 use App\Http\Controllers\Api\App\HostAgendaController;
 use App\Http\Controllers\Api\App\HostInboxController;
@@ -28,6 +29,17 @@ Route::prefix('app')->name('api.app.')->middleware('app.locale')->group(function
         Route::middleware('app.role:artiest')->group(function () {
             Route::get('boekingen', [ArtistBookingController::class, 'index'])->name('bookings');
             Route::get('boekingen/{booking}', [ArtistBookingController::class, 'show'])->name('bookings.show');
+
+            // Boeken, betalen, annuleren en verzetten (BookingController op de website doet hetzelfde). Elke
+            // limiet heeft een eigen teller (de derde waarde): zonder die delen alle naamloze limieten één
+            // teller per gebruiker, en dan telt elk ander verzoek van de app mee voor deze 10.
+            Route::get('studios/{room}', [BookingController::class, 'studio'])->name('studios.show');
+            Route::get('studios/{room}/afrekenen', [BookingController::class, 'checkout'])->name('studios.checkout');
+            Route::post('studios/{room}/boeken', [BookingController::class, 'store'])->middleware('throttle:10,1,app-boeken')->name('studios.book');
+            Route::post('boekingen/{booking}/betalen', [BookingController::class, 'pay'])->middleware('throttle:10,1,app-betalen')->name('bookings.pay');
+            Route::post('boekingen/{booking}/annuleren', [BookingController::class, 'cancel'])->middleware('throttle:10,1,app-annuleren')->name('bookings.cancel');
+            Route::get('boekingen/{booking}/verzetten', [BookingController::class, 'rescheduleOptions'])->name('bookings.reschedule');
+            Route::post('boekingen/{booking}/verzetten', [BookingController::class, 'reschedule'])->middleware('throttle:10,1,app-verzetten')->name('bookings.reschedule.store');
         });
 
         Route::middleware('app.role:verhuurder')->group(function () {

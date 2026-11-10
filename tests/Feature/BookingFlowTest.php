@@ -196,7 +196,9 @@ class BookingFlowTest extends TestCase
             ->withSession(['app_bundle' => 'https://localhost'])
             ->withHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 16) StudioMatchApp')
             ->post('/boekingen/'.$booking->id.'/betalen')
-            ->assertRedirect('https://localhost/#/boeking/'.$booking->id);
+            ->assertOk()
+            // Geen redirect (die stuurt Android het netwerk op), maar een pagina die zelf naar de app gaat.
+            ->assertSee('location.replace("https://localhost/#/boeking/'.$booking->id.'")', false);
 
         $this->assertSame('pending_confirmation', $booking->fresh()->status->value);
     }

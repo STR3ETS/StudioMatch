@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Actions\ChangeArtistBooking;
 use App\Enums\BookingStatus;
 use App\Enums\ExceptionType;
 use App\Enums\RoomStatus;
@@ -10,6 +11,7 @@ use App\Models\Post;
 use App\Models\Room;
 use App\Models\RoomException;
 use App\Models\User;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -60,12 +62,13 @@ class AppPayload
         $dashboard = route('dashboard.artist', [], false).'#boeking-'.$booking->id;
 
         // Volgorde: wat je meestal wilt eerst, annuleren altijd als laatste (de app zet het apart onderaan).
+        // Met 'screen' heeft de app er een eigen scherm voor, met 'path' opent hij de serverpagina.
         $actions = [];
         if ($status === BookingStatus::PendingPayment) {
-            $actions[] = ['label' => __('booking.finish_payment'), 'path' => route('bookings.payment', $booking, false), 'primary' => true];
+            $actions[] = ['label' => __('booking.finish_payment'), 'screen' => 'betalen/'.$booking->id, 'path' => route('bookings.payment', $booking, false), 'primary' => true];
         }
         if ($booking->canReschedule()) {
-            $actions[] = ['label' => __('booking.reschedule_button'), 'path' => route('bookings.reschedule', $booking, false)];
+            $actions[] = ['label' => __('booking.reschedule_button'), 'screen' => 'verzetten/'.$booking->id, 'path' => route('bookings.reschedule', $booking, false)];
         }
         if ($booking->wasPaid()) {
             $actions[] = ['label' => __('dashboard.artist_nav.invoices'), 'path' => route('artist.invoices.index', [], false)];
@@ -73,8 +76,8 @@ class AppPayload
         if ($booking->canReportProblem()) {
             $actions[] = ['label' => __('booking.problem.title'), 'path' => $dashboard];
         }
-        if (in_array($status, [BookingStatus::PendingConfirmation, BookingStatus::Confirmed], true)) {
-            $actions[] = ['label' => __('booking.cancel_button'), 'path' => $dashboard, 'danger' => true];
+        if (ChangeArtistBooking::canCancel($booking)) {
+            $actions[] = ['label' => __('booking.cancel_button'), 'cancel' => self::cancelQuestion($booking), 'path' => $dashboard, 'danger' => true];
         }
 
         $prices = array_values(array_filter([
@@ -98,8 +101,33 @@ class AppPayload
             'prices' => $prices,
             'refunded_cents' => (int) ($booking->refunded_cents ?? 0),
             'studio_path' => $booking->room->isPubliclyVisible() ? route('studios.show', $booking->room, false) : null,
+            'studio_id' => $booking->room->isPubliclyVisible() ? $booking->room_id : null,
             'actions' => $actions,
+            'payment' => $status === BookingStatus::PendingPayment ? [
+                'expires_at' => $booking->expires_at->toIso8601String(),
+                'hold_note' => __('booking.payment.hold_note', ['time' => $booking->expires_at->format('H:i')]),
+                // Met Stripe betaal je op de beveiligde pagina van Stripe (via de serverpagina), anders is het
+                // een demo en rondt de app de betaling zelf af.
+                'stripe' => StripeService::enabled(),
+                'note' => StripeService::enabled() ? __('booking.payment.stripe_note') : __('booking.payment.demo_note'),
+                'submit' => __('booking.payment.submit', ['amount' => '€ '.number_format($booking->total_cents / 100, 2, ',', '.')]),
+            ] : null,
         ];
+    }
+
+    /**
+     * Wat de artiest terugkrijgt als hij nu annuleert, voor de vraag vooraf.
+     */
+    private static function cancelQuestion(Booking $booking): string
+    {
+        $percent = $booking->refundPercentForArtistCancellation();
+        $amount = '€ '.number_format($booking->refundAmountCents($percent) / 100, 2, ',', '.');
+
+        return match (true) {
+            $percent >= 100 => __('app.cancel.full', ['amount' => $amount]),
+            $percent > 0 => __('app.cancel.partial', ['amount' => $amount, 'percent' => $percent]),
+            default => __('app.cancel.none'),
+        };
     }
 
     /**
@@ -307,6 +335,116 @@ class AppPayload
             'photo' => self::url($room->photos->first()?->thumbUrl()),
             'path' => route('studios.show', $room, false),
         ];
+    }
+
+    /**
+     * De studiopagina in de app: wat er op de website staat, plus alles om te kiezen (vrije uren per dag,
+     * vrije hele dagen) en de prijs vooraf te berekenen zoals de server dat doet (BookRoom::prices).
+     *
+     * @return array<string, mixed>
+     */
+    public static function studioDetail(Room $room): array
+    {
+        $room->loadMissing(['studio.user.hostProfile', 'photos', 'hours', 'exceptions']);
+        $studio = $room->studio;
+        $money = fn (?int $cents) => '€ '.number_format(($cents ?? 0) / 100, 2, ',', '.');
+        $translate = fn (?array $values, string $prefix) => collect($values ?? [])->map(fn ($value) => __($prefix.$value))->values()->all();
+        $multiDay = $room->allowsMultiDay();
+        $engineerOptional = $room->hasOptionalEngineer();
+
+        $engineer = match (true) {
+            (bool) $room->engineer_included => __('studio.facts.engineer_yes'),
+            $engineerOptional => __('studio.facts.engineer_optional', ['amount' => $money($room->engineer_rate_cents)]),
+            default => __('studio.facts.engineer_no'),
+        };
+
+        return [
+            ...self::studio($room),
+            'studio' => $studio->name,
+            'room' => $room->title,
+            'photos' => $room->photos->map(fn ($photo) => self::url($photo->url()))->values(),
+            'facts' => [
+                ['icon' => 'fa-users', 'text' => __('studio.facts.capacity', ['count' => $room->capacity])],
+                ['icon' => 'fa-clock', 'text' => __('studio.facts.min_duration', ['count' => $room->min_hours])],
+                ['icon' => 'fa-headphones', 'text' => $engineer],
+            ],
+            'description' => $room->description,
+            'equipment' => array_values(array_filter([...$translate($room->equipment, 'studios.equipment.'), $room->equipment_extra])),
+            'daws' => array_values($room->daws ?? []),
+            'facilities' => $translate($room->facilities, 'studios.facilities.'),
+            'rules' => self::houseRules($room),
+            'opening_hours' => $room->hours->sortBy('weekday')->map(fn ($day) => [
+                'day' => __('host.availability.days.'.$day->weekday),
+                'today' => (int) $day->weekday === now()->isoWeekday(),
+                'hours' => $day->is_open ? Hours::openingRange((int) $day->weekday, (int) $day->open_hour, (int) $day->close_hour) : null,
+            ])->values(),
+            'night_note' => $room->hours->contains(fn ($day) => $day->is_open && (int) $day->close_hour > 24) ? __('studio.opening_hours_night') : null,
+            'owner' => $studio->user?->hostProfile ? __('studio.owner_'.$studio->user->hostProfile->owner_type->value) : null,
+            'booking' => [
+                'hourly_cents' => (int) $room->hourly_rate_cents,
+                'min_hours' => (int) $room->min_hours,
+                'max_hours' => (int) config('studio.booking_max_hours'),
+                'free_hours' => (object) $room->freeHoursByDate(),
+                'multi_day' => $multiDay,
+                'free_days' => $multiDay ? $room->freeWholeDays() : [],
+                'day_cents' => (int) $room->day_rate_cents,
+                'day_rates' => (object) ($multiDay ? $room->dayRatesByWeekday() : []),
+                'min_days' => max(1, (int) ($room->min_days ?? 2)),
+                'max_days' => (int) config('studio.booking_max_days'),
+                'engineer_optional' => $engineerOptional,
+                'engineer_hour_cents' => $engineerOptional ? (int) $room->engineer_rate_cents : 0,
+                'engineer_day_cents' => $engineerOptional ? $room->engineerDayRateCents() : 0,
+                'engineer_hour_text' => $engineerOptional ? __('studio.booking.engineer_toggle', ['amount' => $money($room->engineer_rate_cents)]) : null,
+                'engineer_day_text' => $engineerOptional ? __('studio.booking.engineer_toggle_day', ['amount' => $money($room->engineerDayRateCents())]) : null,
+                'fee_percent' => (float) config('studio.service_fee_percent'),
+                'vat_percent' => (float) config('studio.vat_percent'),
+            ],
+        ];
+    }
+
+    /**
+     * Afrekenen in de app: het gekozen moment zoals de server het heeft gecontroleerd, met de prijs.
+     *
+     * @param  array{date: Carbon, end_date: ?Carbon, start: ?int, end: ?int, days: ?int, engineer: bool}  $period
+     * @param  array<string, int>  $prices
+     * @return array<string, mixed>
+     */
+    public static function checkout(Room $room, User $user, array $period, array $prices): array
+    {
+        $room->loadMissing(['studio', 'photos']);
+        $days = $period['days'];
+
+        $rent = $days !== null
+            ? trans_choice('booking.day_count', $days, ['count' => $days])
+            : __('studio.booking.hours', ['count' => $period['end'] - $period['start']]);
+
+        return [
+            'room_id' => $room->id,
+            'name' => $room->studio->name.' - '.$room->title,
+            'city' => $room->studio->city,
+            'photo' => self::url($room->photos->first()?->thumbUrl()),
+            'date_label' => $days !== null
+                ? $period['date']->translatedFormat('j F Y').' - '.$period['end_date']->translatedFormat('j F Y')
+                : $period['date']->translatedFormat('l j F Y'),
+            'time_label' => $days !== null ? null : Hours::bookingRange($period['date'], $period['start'], $period['end']),
+            'prices' => [
+                // "Huur (2 uur)": niet "Totaal", dat staat er al onder.
+                ['label' => __('app.price.rent').' ('.$rent.($period['engineer'] ? ', '.__('booking.checkout.with_engineer') : '').')', 'cents' => $prices['rent_cents']],
+                ['label' => __('studio.booking.service_fee'), 'cents' => $prices['service_fee_cents']],
+                ['label' => __('studio.booking.vat'), 'cents' => $prices['vat_cents']],
+            ],
+            'total_cents' => $prices['total_cents'],
+            'rules' => self::houseRules($room),
+            'needs_address' => ! $user->hasCompleteAddress(),
+            'address' => ['street' => $user->street, 'postal_code' => $user->postal_code, 'city' => $user->city],
+            'hold_minutes' => (int) config('studio.checkout_hold_minutes'),
+        ];
+    }
+
+    /** @return array<int, string> */
+    private static function houseRules(Room $room): array
+    {
+        return collect(preg_split('/\r\n|\r|\n/', (string) $room->house_rules))->map(fn ($rule) => trim($rule))->filter()->values()->all();
     }
 
     /**

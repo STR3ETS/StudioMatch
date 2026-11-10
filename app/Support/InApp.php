@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Http\Controllers\Api\App\SessionController;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 /**
  * Of een websitepagina in de iOS/Android-app openstaat. Dan laat de pagina de eigen navigatie van de
@@ -46,5 +47,25 @@ class InApp
         }
 
         return $request->isSecure() ? 'https://localhost' : 'http://localhost';
+    }
+
+    /**
+     * Terug naar een scherm in de app ("#/boeking/5"). Geen redirect van de server: de webview van Android
+     * stuurt een redirect naar https://localhost niet naar de app maar het netwerk op, en dan staat er
+     * "Geen verbinding". Een kleine pagina die zelf naar de app gaat, werkt wel (net als de links in de
+     * kop en de onderbalk). Navy, zodat er geen witte flits is.
+     */
+    public static function toApp(string $screen = '', ?Request $request = null): Response
+    {
+        $url = (self::origin($request) ?? self::guessOrigin($request)).'/'.$screen;
+
+        $html = '<!doctype html><html><head><meta charset="utf-8">'
+            .'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            .'<title>StudioMatch</title><style>html,body{margin:0;min-height:100%;background:#101529}</style>'
+            .'<script>location.replace('.json_encode($url, JSON_UNESCAPED_SLASHES).');</script>'
+            .'</head><body><a href="'.e($url).'" style="display:block;padding:2rem;color:#fff;font-family:sans-serif">'
+            .e(__('app.back_to_app')).'</a></body></html>';
+
+        return new Response($html, 200, ['Cache-Control' => 'no-store']);
     }
 }

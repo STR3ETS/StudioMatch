@@ -82,7 +82,12 @@
             <h1>{{ $heading }}</h1>
             <p class="text">{{ $text }}</p>
 
-            <a href="{{ url('/') }}" class="button">{{ __('errors.home') }}</a>
+            {{-- In de app terug naar de app zelf; een storing mag die keuze niet laten mislukken (rescue). --}}
+            @if (rescue(fn () => \App\Support\InApp::active(), false, false))
+                <a href="{{ route('app.back') }}" class="button">{{ __('app.back_to_app') }}</a>
+            @else
+                <a href="{{ url('/') }}" class="button">{{ __('errors.home') }}</a>
+            @endif
         </div>
     </body>
 </html>

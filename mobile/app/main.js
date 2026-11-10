@@ -22,13 +22,20 @@ const SCREEN_PATHS = {
 };
 // Schermen per rol; 'boeking' en 'ruimte' zijn detailschermen (met een id), 'account' heeft iedereen.
 const ROLE_SCREENS = {
-    artiest: ['boekingen', 'boeking', 'studios', 'account'],
+    artiest: ['boekingen', 'boeking', 'studios', 'studio', 'boeken', 'afrekenen', 'betalen', 'verzetten', 'account'],
     verhuurder: ['inbox', 'agenda', 'account'],
     admin: ['overzicht', 'tickets', 'wachtrij', 'ruimte', 'admin-boekingen', 'gebruikers', 'omzet', 'blog', 'account'],
 };
-// Detailschermen: zonder id naar het beginscherm. Terug: naar het scherm erboven.
-const DETAIL_SCREENS = ['boeking', 'ruimte'];
-const PARENT_SCREENS = { boeking: 'boekingen', ruimte: 'wachtrij', gebruikers: 'account', omzet: 'account', blog: 'account' };
+// Detailschermen: zonder id naar het beginscherm. Terug: naar het scherm erboven (':id' = hetzelfde nummer,
+// bijv. van afrekenen terug naar het kiezen in dezelfde studio). De tab die oplicht staat in TAB_OF.
+const DETAIL_SCREENS = ['boeking', 'ruimte', 'studio', 'boeken', 'afrekenen', 'betalen', 'verzetten'];
+const PARENT_SCREENS = {
+    boeking: 'boekingen', ruimte: 'wachtrij', gebruikers: 'account', omzet: 'account', blog: 'account',
+    studio: 'studios', boeken: 'studio/:id', afrekenen: 'boeken/:id', betalen: 'boeking/:id', verzetten: 'boeking/:id',
+};
+const TAB_OF = { studio: 'studios', boeken: 'studios', afrekenen: 'studios', betalen: 'boekingen', verzetten: 'boekingen' };
+// Het moment dat de artiest koos (Kies een moment), tot het afrekenen: ook na een herstart van de app.
+const DRAFT_KEY = 'sm-draft';
 
 const capacitor = () => window.Capacitor?.Plugins ?? {};
 
@@ -113,11 +120,13 @@ Alpine.store('app', {
     offline: false,
     shownAt: null,
     toastText: null,
+    toastSticky: false,
     toastOpen: false,
     question: null,
     leaving: false,
     chosenLocale: null,
     previousRoute: null,
+    previousPath: null,
     version: null,
     // Een venster onderin dat een scherm open heeft (sluiten met de terugknop van Android, smBack).
     sheetClose: null,
@@ -164,20 +173,21 @@ Alpine.store('app', {
             boekingen: 'bookings.title', boeking: 'booking.title', studios: 'studios.title', inbox: 'inbox.title', agenda: 'agenda.title', account: 'account.title',
             overzicht: 'admin.overview', tickets: 'admin.tickets', wachtrij: 'admin.queue', ruimte: 'admin.room', 'admin-boekingen': 'admin.bookings',
             gebruikers: 'admin.users', omzet: 'admin.revenue', blog: 'admin.blog',
+            studio: 'studio.title', boeken: 'book.title', afrekenen: 'checkout.title', betalen: 'payment.title', verzetten: 'reschedule.title',
         }[this.route];
         return key ? this.t(key) : '';
     },
     get backTo() {
-        return PARENT_SCREENS[this.route] ?? null;
+        return PARENT_SCREENS[this.route]?.replace(':id', this.param) ?? null;
     },
     // De tab die oplicht: het scherm zelf, of op een detailscherm het scherm erboven.
     get activeTab() {
-        return this.tabs.some((tab) => tab.screen === this.route) ? this.route : PARENT_SCREENS[this.route];
+        return this.tabs.some((tab) => tab.screen === this.route) ? this.route : (TAB_OF[this.route] ?? PARENT_SCREENS[this.route]);
     },
     // Terug in de geschiedenis als je van de lijst kwam (dan staat die er nog zoals je hem verliet), anders
     // naar de lijst zonder een extra stap (bijv. na openen vanuit een melding).
     back() {
-        if (this.previousRoute === this.backTo) history.back();
+        if (this.previousPath === this.backTo) history.back();
         else location.replace(`#/${this.backTo}`);
     },
     // Een sessie in de agenda: een aanvraag beantwoord je in Aanvragen, de rest staat op de website.
@@ -247,10 +257,13 @@ Alpine.store('app', {
 
     navigate() {
         const { route, param } = routeFromHash();
-        if (route !== this.route) {
+        if (route !== this.route || param !== this.param) {
             this.previousRoute = this.route;
-            this.toastOpen = false;
+            this.previousPath = this.route ? [this.route, this.param].filter(Boolean).join('/') : null;
         }
+        // Een melding na een actie (bijv. "betaald") blijft staan op het scherm waar de actie heen gaat.
+        if (route !== this.route && !this.toastSticky) this.toastOpen = false;
+        this.toastSticky = false;
         if (route !== this.route && this.sheetClose) this.sheetClose();
         if (this.signedIn && (!route || !this.allowed(route) || (DETAIL_SCREENS.includes(route) && !param))) {
             history.replaceState(null, '', `#/${this.home}`);
@@ -365,7 +378,9 @@ Alpine.store('app', {
     },
 
     // De tekst blijft staan tot de melding helemaal is weggefaded, anders zie je even een leeg balkje.
-    toast(text) {
+    // sticky: de melding blijft staan bij het scherm waar je daarna heen gaat (bijv. na betalen).
+    toast(text, { sticky = false } = {}) {
+        this.toastSticky = sticky;
         this.toastText = text;
         this.toastOpen = true;
         setTimeout(() => { if (this.toastText === text) this.toastOpen = false; }, 3500);
@@ -569,7 +584,439 @@ Alpine.data('login', () => ({
 
 Alpine.data('bookings', () => ({ ...screen('boekingen', 'boekingen'), tab: 'upcoming' }));
 
-Alpine.data('booking', (id) => ({ ...screen(`boeking:${id}`, `boekingen/${id}`) }));
+Alpine.data('booking', (id) => ({
+    ...screen(`boeking:${id}`, `boekingen/${id}`),
+    busy: false,
+    // Een eigen scherm in de app (screen), annuleren hier (cancel), anders de serverpagina (path).
+    async run(action) {
+        const app = Alpine.store('app');
+        if (action.screen) {
+            location.hash = `#/${action.screen}`;
+            return;
+        }
+        if (!action.cancel) {
+            app.openWeb(action.path);
+            return;
+        }
+        if (!(await app.ask(action.cancel, action.label))) return;
+        this.busy = true;
+        try {
+            const result = await api(`boekingen/${id}/annuleren`, { method: 'POST' });
+            this.apply(result.booking);
+            app.toast(result.message);
+            bookingsChanged();
+        } catch (error) {
+            app.toast(errorText(error));
+        }
+        this.busy = false;
+    },
+    openStudio() {
+        if (this.data.studio_id) location.hash = `#/studio/${this.data.studio_id}`;
+        else Alpine.store('app').openWeb(this.data.studio_path);
+    },
+}));
+
+// Na boeken, betalen, annuleren of verzetten: Mijn boekingen en de tellers bij openen opnieuw ophalen.
+function bookingsChanged() {
+    delete fetchedAt.boekingen;
+    Alpine.store('app').refreshProfile();
+}
+
+// ===== Boeken =====
+// "2026-11-10"; de dagen zelf rekenen we zonder tijdzone, zoals de server ze geeft.
+const dayKey = (date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+const parseDay = (key) => new Date(`${key}T00:00:00`);
+// 25 is 01:00 de volgende ochtend (zoals Hours op de server).
+const clock = (hour) => `${String(hour === 24 ? 24 : hour % 24).padStart(2, '0')}:00`;
+const intlLocale = () => (Alpine.store('app').locale === 'nl' ? 'nl-NL' : 'en-GB');
+
+// De kalender met vrije dagen en de starttijden: voor boeken en voor verzetten. free = { dag: [vrije uren] }.
+function calendar() {
+    return {
+        view: null,
+        selectedDate: null,
+        selectedStart: null,
+        // Boven 24 is de volgende ochtend; alleen als alle uren van de sessie vrij zijn.
+        startsFor(key, duration) {
+            const free = this.free()?.[key] ?? [];
+            const set = new Set(free);
+            return free.filter((hour) => {
+                for (let i = 1; i < duration; i++) if (!set.has(hour + i)) return false;
+                return true;
+            });
+        },
+        firstMonth() {
+            const keys = Object.keys(this.free() ?? {});
+            const first = keys.find((key) => this.dayEnabled(key)) ?? keys[0];
+            if (!first) return null;
+            const date = parseDay(first);
+            return new Date(date.getFullYear(), date.getMonth(), 1);
+        },
+        lastMonth() {
+            const keys = Object.keys(this.free() ?? {});
+            if (!keys.length) return null;
+            const date = parseDay(keys[keys.length - 1]);
+            return new Date(date.getFullYear(), date.getMonth(), 1);
+        },
+        ensureView() {
+            if (!this.view && this.free()) this.view = this.firstMonth();
+        },
+        monthLabel() {
+            return this.view ? new Intl.DateTimeFormat(intlLocale(), { month: 'long', year: 'numeric' }).format(this.view) : '';
+        },
+        canPrev() {
+            return this.view && this.firstMonth() && this.view > this.firstMonth();
+        },
+        canNext() {
+            return this.view && this.lastMonth() && this.view < this.lastMonth();
+        },
+        shiftMonth(step) {
+            this.view = new Date(this.view.getFullYear(), this.view.getMonth() + step, 1);
+        },
+        weekdays() {
+            const format = new Intl.DateTimeFormat(intlLocale(), { weekday: 'short' });
+            // 1 januari 2024 was een maandag.
+            return [0, 1, 2, 3, 4, 5, 6].map((i) => format.format(new Date(2024, 0, i + 1)).replace('.', '').slice(0, 2));
+        },
+        // Lege vakjes tot de eerste dag van de maand, daarna elke dag. Methodes en geen getters, want dit
+        // object wordt in een scherm uitgespreid en dan rekent een getter maar een keer.
+        cells() {
+            if (!this.view) return [];
+            const offset = (new Date(this.view.getFullYear(), this.view.getMonth(), 1).getDay() + 6) % 7;
+            const count = new Date(this.view.getFullYear(), this.view.getMonth() + 1, 0).getDate();
+            const cells = Array.from({ length: offset }, (_, i) => ({ key: `leeg-${i}`, blank: true }));
+            for (let day = 1; day <= count; day++) {
+                const key = dayKey(new Date(this.view.getFullYear(), this.view.getMonth(), day));
+                cells.push({ key, day, enabled: this.dayEnabled(key) });
+            }
+            return cells;
+        },
+        nextDayName(key) {
+            const next = parseDay(key);
+            next.setDate(next.getDate() + 1);
+            return new Intl.DateTimeFormat(intlLocale(), { weekday: 'short' }).format(next).replace(/\.$/, '');
+        },
+        startLabel(hour) {
+            return hour >= 24 ? `${clock(hour)} (${this.nextDayName(this.selectedDate)})` : clock(hour);
+        },
+        dateLabel(key) {
+            return key ? new Intl.DateTimeFormat(intlLocale(), { weekday: 'long', day: 'numeric', month: 'long' }).format(parseDay(key)) : '';
+        },
+    };
+}
+
+const readDraft = () => readJson(DRAFT_KEY);
+
+// Kies een moment: per uur (datum, duur, starttijd) of per hele dag (eerste en laatste dag), eventueel met
+// engineer. De prijs rekent de app voor zoals de server (BookRoom::prices); de server rekent hem na.
+Alpine.data('picker', (id) => ({
+    ...screen(`studio:${id}`, `studios/${id}`),
+    ...calendar(),
+    mode: 'hours',
+    hours: 1,
+    rangeStart: null,
+    rangeEnd: null,
+    extending: false,
+    engineer: false,
+    async init() {
+        // Terug van afrekenen: hetzelfde moment staat er weer.
+        const draft = readDraft();
+        if (draft?.roomId === Number(id)) {
+            this.mode = draft.end_date ? 'days' : 'hours';
+            this.engineer = Boolean(draft.engineer);
+            if (draft.end_date) {
+                this.rangeStart = draft.date;
+                this.rangeEnd = draft.end_date;
+            } else {
+                this.selectedDate = draft.date;
+                this.selectedStart = draft.start;
+                this.hours = draft.hours;
+            }
+        }
+        this.$watch('data', () => this.prepare());
+        this.onRefresh = () => this.load({ force: true });
+        window.addEventListener('sm-refresh', this.onRefresh);
+        this.present(cache.read(this.cacheName));
+        this.prepare();
+        // De vrije momenten altijd vers: een ander kan net iets geboekt hebben.
+        await this.load({ force: true });
+    },
+    prepare() {
+        if (!this.data) return;
+        const booking = this.data.booking;
+        this.hours = Math.min(booking.max_hours, Math.max(booking.min_hours, this.hours || booking.min_hours));
+        if (this.selectedDate && !this.startsFor(this.selectedDate, this.hours).includes(this.selectedStart)) this.selectedStart = null;
+        if (this.selectedDate && !this.dayEnabled(this.selectedDate)) this.selectedDate = null;
+        if (this.view) return;
+        const chosen = this.mode === 'days' ? this.rangeStart : this.selectedDate;
+        this.view = chosen ? new Date(parseDay(chosen).getFullYear(), parseDay(chosen).getMonth(), 1) : this.firstMonth();
+    },
+    free() {
+        return this.data?.booking.free_hours ?? null;
+    },
+    dayEnabled(key) {
+        if (this.mode === 'days') return (this.data?.booking.free_days ?? []).includes(key);
+        return this.startsFor(key, this.hours).length > 0;
+    },
+    setMode(mode) {
+        if (mode === this.mode) return;
+        this.mode = mode;
+        this.selectedDate = this.selectedStart = this.rangeStart = this.rangeEnd = null;
+        this.extending = false;
+        this.view = this.firstMonth();
+    },
+    setHours(value) {
+        const booking = this.data.booking;
+        this.hours = Math.min(booking.max_hours, Math.max(booking.min_hours, value));
+        if (this.selectedDate && !this.startsFor(this.selectedDate, this.hours).includes(this.selectedStart)) this.selectedStart = null;
+        if (this.selectedDate && !this.dayEnabled(this.selectedDate)) this.selectedDate = null;
+    },
+    // Eerste tik kiest één dag, een latere dag daarna verlengt de periode (als alle dagen ertussen vrij zijn).
+    pick(cell) {
+        if (!cell.enabled) return;
+        if (this.mode === 'hours') {
+            this.selectedDate = cell.key;
+            this.selectedStart = null;
+            return;
+        }
+        if (this.extending && cell.key > this.rangeStart && this.rangeFree(this.rangeStart, cell.key)) {
+            this.rangeEnd = cell.key;
+            this.extending = false;
+            return;
+        }
+        this.rangeStart = this.rangeEnd = cell.key;
+        this.extending = true;
+    },
+    rangeFree(from, until) {
+        const free = new Set(this.data.booking.free_days);
+        for (const cursor = parseDay(from); cursor <= parseDay(until); cursor.setDate(cursor.getDate() + 1)) {
+            if (!free.has(dayKey(cursor))) return false;
+        }
+        return true;
+    },
+    cellClass(cell) {
+        if (this.mode === 'days') {
+            if (cell.key === this.rangeStart || cell.key === this.rangeEnd) return 'bg-ruby-red font-bold text-white';
+            if (this.rangeStart && this.rangeEnd && cell.key > this.rangeStart && cell.key < this.rangeEnd) return 'bg-ruby-red/15 font-semibold';
+        } else if (cell.key === this.selectedDate) {
+            return 'bg-ruby-red font-bold text-white';
+        }
+        return cell.enabled ? 'font-semibold active:bg-ruby-red/10' : 'text-prussian-blue/25';
+    },
+    get dayCount() {
+        return this.rangeStart && this.rangeEnd ? Math.round((parseDay(this.rangeEnd) - parseDay(this.rangeStart)) / 86_400_000) + 1 : 0;
+    },
+    get rentCents() {
+        const booking = this.data?.booking;
+        if (!booking) return 0;
+        if (this.mode === 'hours') return (booking.hourly_cents + (this.engineer ? booking.engineer_hour_cents : 0)) * this.hours;
+        if (!this.dayCount) return 0;
+        let rent = 0;
+        for (const cursor = parseDay(this.rangeStart); cursor <= parseDay(this.rangeEnd); cursor.setDate(cursor.getDate() + 1)) {
+            const weekday = cursor.getDay() === 0 ? 7 : cursor.getDay();
+            rent += (booking.day_rates[weekday] ?? booking.day_cents) + (this.engineer ? booking.engineer_day_cents : 0);
+        }
+        return rent;
+    },
+    // Huur, dan servicekosten over de huur, dan btw over de servicekosten: zoals de server.
+    get totalCents() {
+        const booking = this.data?.booking;
+        if (!booking) return 0;
+        const fee = Math.round((this.rentCents * booking.fee_percent) / 100);
+        return this.rentCents + fee + Math.round((fee * booking.vat_percent) / 100);
+    },
+    get ready() {
+        if (this.mode === 'hours') return Boolean(this.selectedDate && this.selectedStart !== null);
+        return this.dayCount >= this.data.booking.min_days && this.dayCount <= this.data.booking.max_days;
+    },
+    get rangeLabel() {
+        const app = Alpine.store('app');
+        if (!this.rangeStart) return app.t('book.pick_range');
+        const format = new Intl.DateTimeFormat(intlLocale(), { day: 'numeric', month: 'short' });
+        const days = this.dayCount === 1 ? app.t('book.days_one') : app.t('book.days_many', { count: this.dayCount });
+        return `${format.format(parseDay(this.rangeStart))} - ${format.format(parseDay(this.rangeEnd))}, ${days}`;
+    },
+    next() {
+        if (!this.ready) return;
+        const draft = this.mode === 'days'
+            ? { roomId: Number(id), date: this.rangeStart, end_date: this.rangeEnd, engineer: this.engineer }
+            : { roomId: Number(id), date: this.selectedDate, start: this.selectedStart, hours: this.hours, engineer: this.engineer };
+        storage.set(DRAFT_KEY, JSON.stringify(draft));
+        location.hash = `#/afrekenen/${id}`;
+    },
+}));
+
+const draftQuery = (draft) => new URLSearchParams(Object.entries({
+    date: draft.date, end_date: draft.end_date, start: draft.start, hours: draft.hours, engineer: draft.engineer ? 1 : '',
+}).filter(([, value]) => value !== undefined && value !== null && value !== '')).toString();
+
+// Controleren: het moment en de prijs van de server, gegevens voor de factuur, de huisregels en akkoord.
+// Daarna houdt de server het tijdslot vast (wacht op betaling) en gaat het naar betalen.
+Alpine.data('checkout', (id) => ({
+    data: null,
+    failed: false,
+    // Het moment is niet (meer) te boeken: de melding van de server.
+    problem: null,
+    busy: false,
+    errors: {},
+    form: { buyer_type: 'particulier', buyer_company: '', buyer_vat_number: '', street: '', postal_code: '', city: '', terms: false },
+    async init() {
+        const draft = readDraft();
+        if (draft?.roomId !== Number(id)) {
+            location.replace(`#/boeken/${id}`);
+            return;
+        }
+        await this.load();
+    },
+    async load() {
+        this.failed = false;
+        try {
+            this.data = await api(`studios/${id}/afrekenen?${draftQuery(readDraft())}`);
+            this.form.street ||= this.data.address.street ?? '';
+            this.form.postal_code ||= this.data.address.postal_code ?? '';
+            this.form.city ||= this.data.address.city ?? '';
+        } catch (error) {
+            if (error.status === 422) this.problem = errorText(error);
+            else if (error.status === 404) this.problem = Alpine.store('app').t('studio.not_found');
+            else this.failed = true;
+        }
+    },
+    async submit() {
+        const app = Alpine.store('app');
+        this.errors = {};
+        this.busy = true;
+        try {
+            const draft = readDraft();
+            const booking = await api(`studios/${id}/boeken`, {
+                method: 'POST',
+                body: { ...Object.fromEntries(new URLSearchParams(draftQuery(draft))), ...this.form, terms: this.form.terms ? 1 : 0 },
+            });
+            // Het betaalscherm en de boeking tonen meteen wat de server teruggaf.
+            const json = JSON.stringify(booking);
+            cache.write(`boeking:${booking.id}`, booking, json);
+            fetchedAt[`boeking:${booking.id}`] = Date.now();
+            storage.remove(DRAFT_KEY);
+            delete fetchedAt[`studio:${id}`];
+            bookingsChanged();
+            location.replace(`#/betalen/${booking.id}`);
+        } catch (error) {
+            const errors = error.data?.errors ?? {};
+            if (errors.slot) this.problem = errors.slot[0];
+            else if (error.status === 422) this.errors = Object.fromEntries(Object.entries(errors).map(([key, list]) => [key, list[0]]));
+            else app.toast(errorText(error));
+        }
+        this.busy = false;
+    },
+}));
+
+// Betalen: hoe lang het tijdslot nog vaststaat, en de knop. Met Stripe op de beveiligde betaalpagina (een
+// serverpagina die na betalen terug naar de app gaat), zonder Stripe rondt de app de demo-betaling af.
+Alpine.data('payment', (id) => ({
+    ...screen(`boeking:${id}`, `boekingen/${id}`),
+    now: Date.now(),
+    busy: false,
+    async init() {
+        this.timer = setInterval(() => { this.now = Date.now(); }, 1000);
+        this.onRefresh = () => this.load({ force: true });
+        window.addEventListener('sm-refresh', this.onRefresh);
+        this.present(cache.read(this.cacheName));
+        await this.load();
+    },
+    destroy() {
+        clearInterval(this.timer);
+        window.removeEventListener('sm-refresh', this.onRefresh);
+    },
+    get secondsLeft() {
+        if (!this.data?.payment) return 0;
+        return Math.max(0, Math.floor((new Date(this.data.payment.expires_at) - this.now) / 1000));
+    },
+    get timeLeft() {
+        const seconds = this.secondsLeft;
+        return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+    },
+    get expired() {
+        return this.data?.status === 'expired' || (this.data?.payment && this.secondsLeft === 0);
+    },
+    async pay() {
+        const app = Alpine.store('app');
+        if (this.data.payment.stripe) {
+            app.openWeb(this.data.actions.find((action) => action.primary)?.path ?? `/boekingen/${id}/betalen`);
+            return;
+        }
+        this.busy = true;
+        try {
+            const result = await api(`boekingen/${id}/betalen`, { method: 'POST' });
+            this.apply(result.booking);
+            bookingsChanged();
+            app.toast(result.message, { sticky: true });
+            location.replace(`#/boeking/${id}`);
+        } catch (error) {
+            if (error.data?.booking) this.apply(error.data.booking);
+            app.toast(errorText(error));
+        }
+        this.busy = false;
+    },
+}));
+
+// Verzetten: een nieuw moment met dezelfde duur, één keer.
+Alpine.data('reschedule', (id) => ({
+    ...screen(`verzetten:${id}`, `boekingen/${id}/verzetten`),
+    ...calendar(),
+    busy: false,
+    problem: null,
+    async init() {
+        this.$watch('data', () => this.ensureView());
+        this.onRefresh = () => this.load({ force: true });
+        window.addEventListener('sm-refresh', this.onRefresh);
+        this.present(cache.read(this.cacheName));
+        this.ensureView();
+        await this.load({ force: true });
+    },
+    free() {
+        return this.data?.free_hours ?? null;
+    },
+    dayEnabled(key) {
+        return this.startsFor(key, this.data?.hours ?? 1).length > 0;
+    },
+    pick(cell) {
+        if (!cell.enabled) return;
+        this.selectedDate = cell.key;
+        this.selectedStart = null;
+    },
+    cellClass(cell) {
+        if (cell.key === this.selectedDate) return 'bg-ruby-red font-bold text-white';
+        return cell.enabled ? 'font-semibold active:bg-ruby-red/10' : 'text-prussian-blue/25';
+    },
+    async submit() {
+        const app = Alpine.store('app');
+        this.busy = true;
+        this.problem = null;
+        try {
+            const result = await api(`boekingen/${id}/verzetten`, { method: 'POST', body: { date: this.selectedDate, start: this.selectedStart } });
+            const json = JSON.stringify(result.booking);
+            cache.write(`boeking:${id}`, result.booking, json);
+            fetchedAt[`boeking:${id}`] = Date.now();
+            bookingsChanged();
+            app.toast(result.message, { sticky: true });
+            location.replace(`#/boeking/${id}`);
+        } catch (error) {
+            if (error.status === 422) this.problem = errorText(error);
+            else app.toast(errorText(error));
+            this.load({ force: true });
+        }
+        this.busy = false;
+    },
+}));
+
+// De studio: foto's, wat er is en de prijs; "Boek nu" opent het kiezen van een moment.
+Alpine.data('studio', (id) => ({
+    ...screen(`studio:${id}`, `studios/${id}`),
+    photo: 0,
+    onScroll(event) {
+        const el = event.target;
+        this.photo = Math.round(el.scrollLeft / Math.max(1, el.clientWidth));
+    },
+}));
 
 Alpine.data('studios', () => ({
     ...screen('studios', 'studios'),

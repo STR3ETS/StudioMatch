@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Enums\RoomType;
 use App\Models\Room;
 use App\Support\Geocoder;
+use App\Support\InApp;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -14,7 +16,6 @@ use Illuminate\View\View;
 
 class PublicStudioController extends Controller
 {
-
     private const CITY_COORDS = [
         'amsterdam' => [52.3676, 4.9041],
         'rotterdam' => [51.9244, 4.4777],
@@ -78,7 +79,7 @@ class PublicStudioController extends Controller
 
         if ($center === null && ! empty($filters['location'])) {
             $place = Cache::remember(
-                'geocode-place:' . mb_strtolower(trim($filters['location'])),
+                'geocode-place:'.mb_strtolower(trim($filters['location'])),
                 now()->addDay(),
                 fn () => Geocoder::place($filters['location']) ?? [],
             );
@@ -216,9 +217,14 @@ class PublicStudioController extends Controller
         ]);
     }
 
-    public function show(Room $room): View
+    public function show(Request $request, Room $room): View|Response
     {
         abort_unless($room->isPubliclyVisible(), 404);
+
+        // Een artiest in de app ziet de studio in het scherm van de app, daar boekt hij ook.
+        if (InApp::origin($request) !== null && $request->user()?->isArtist()) {
+            return InApp::toApp('#/studio/'.$room->id, $request);
+        }
 
         $room->load(['studio.user.hostProfile', 'photos', 'hours', 'exceptions']);
 
@@ -242,7 +248,7 @@ class PublicStudioController extends Controller
                     : self::CITY_COORDS[mb_strtolower($room->studio->city)];
 
                 return [
-                    'name' => $room->studio->name . ' - ' . $room->title,
+                    'name' => $room->studio->name.' - '.$room->title,
                     'city' => $room->studio->city,
                     'price' => $room->displayHourlyEuros(),
                     'photos' => $room->photos->map->thumbUrl()->all(),
@@ -258,7 +264,7 @@ class PublicStudioController extends Controller
     public function cardData(Room $room, bool $perDay = false): array
     {
         return array_filter([
-            'name' => $room->studio->name . ' - ' . $room->title,
+            'name' => $room->studio->name.' - '.$room->title,
             'city' => $room->studio->city,
             'per_day' => $perDay ?: null,
             'price' => $perDay && $room->day_rate_cents !== null
@@ -279,8 +285,8 @@ class PublicStudioController extends Controller
      */
     private function blurredCoords(int $studioId, float $lat, float $lng): array
     {
-        $angle = (crc32('studiomatch-map-angle-' . $studioId) % 3600) / 3600 * 2 * M_PI;
-        $metres = 60 + crc32('studiomatch-map-offset-' . $studioId) % 100;
+        $angle = (crc32('studiomatch-map-angle-'.$studioId) % 3600) / 3600 * 2 * M_PI;
+        $metres = 60 + crc32('studiomatch-map-offset-'.$studioId) % 100;
 
         return [
             round($lat + ($metres * cos($angle)) / 111320, 4),

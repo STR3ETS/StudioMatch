@@ -16,7 +16,17 @@
             <p class="mx-auto mt-4 max-w-xl text-white/60">{{ $text }}</p>
 
             <div class="mt-9 flex flex-wrap items-center justify-center gap-3">
-                @if (trim($slot) === '')
+                @inapp
+                    {{-- In de app: terug naar de app zelf, niet naar de website (de app heeft eigen schermen). --}}
+                    <a href="{{ route('app.back') }}" class="inline-flex min-h-11 items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ruby-red shadow-sm transition hover:bg-white/90">
+                        <i class="fa-solid fa-arrow-left fa-sm"></i> {{ __('app.back_to_app') }}
+                    </a>
+                    @if (auth()->user()?->isArtist())
+                        <a href="{{ route('app.back', ['scherm' => 'studios']) }}" class="inline-flex min-h-11 items-center gap-2 rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white/85 transition hover:bg-white/10 hover:text-white">
+                            <i class="fa-solid fa-magnifying-glass fa-sm"></i> {{ __('errors.studios') }}
+                        </a>
+                    @endif
+                @elseif (trim($slot) === '')
                     <a href="{{ route('home') }}" class="inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-ruby-red shadow-sm transition hover:bg-white/90">
                         <i class="fa-solid fa-house fa-sm"></i> {{ __('errors.home') }}
                     </a>
@@ -25,7 +35,7 @@
                     </a>
                 @else
                     {{ $slot }}
-                @endif
+                @endinapp
             </div>
         </div>
     </section>

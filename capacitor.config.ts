@@ -23,8 +23,10 @@ const config: CapacitorConfig = {
         // http://localhost bij een testserver over http, anders blokkeert de webview de API (gemengde inhoud).
         androidScheme: insecure ? 'http' : 'https',
         cleartext: insecure,
-        // Alleen de hostnaam: Capacitor vergelijkt zonder poort.
-        allowNavigation: [new URL(serverUrl).hostname],
+        // Alleen de hostnaam: Capacitor vergelijkt zonder poort. Stripe erbij: betalen gebeurt op de
+        // betaalpagina van Stripe en komt daarna terug op de server; zonder deze regel opent Capacitor die
+        // pagina in de browser van de telefoon en komt de artiest niet terug in de app.
+        allowNavigation: [new URL(serverUrl).hostname, 'checkout.stripe.com', '*.stripe.com'],
         errorPath: 'offline.html',
     },
     ios: {

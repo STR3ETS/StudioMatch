@@ -2,144 +2,59 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\BookRoom;
+use App\Actions\ChangeArtistBooking;
 use App\Enums\BookingStatus;
 use App\Enums\UserRole;
-use App\Http\Controllers\Concerns\VerifiesAddress;
 use App\Models\Booking;
 use App\Models\Room;
 use App\Models\User;
-use App\Notifications\BookingCancelled;
-use App\Notifications\BookingRescheduled;
 use App\Notifications\NewTicket;
 use App\Notifications\ProblemReported;
-use App\Support\Hours;
 use App\Support\InApp;
 use App\Support\MailDelivery;
 use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class BookingController extends Controller
 {
-    use VerifiesAddress;
-
-    public function create(Request $request, Room $room): View|RedirectResponse
+    public function create(Request $request, Room $room, BookRoom $book): View|RedirectResponse|Response
     {
         abort_unless($room->isPubliclyVisible(), 404);
 
-        $withEngineer = $room->hasOptionalEngineer() && $request->boolean('engineer');
-
-        if ($request->filled('end_date')) {
-            [$date, $endDate, $days] = $this->validateDayRange($request, $room);
-
-            return view('book.checkout', [
-                'room' => $room->load(['studio', 'photos']),
-                'date' => $date,
-                'endDate' => $endDate,
-                'days' => $days,
-                'startHour' => null,
-                'endHour' => null,
-                'withEngineer' => $withEngineer,
-                'prices' => $this->dayPrices($room, $date, $endDate, $withEngineer),
-            ]);
+        // In de app boek je in het scherm van de studio zelf.
+        if (InApp::origin($request) !== null && $request->user()->isArtist()) {
+            return InApp::toApp('#/studio/'.$room->id, $request);
         }
 
-        [$date, $startHour, $endHour] = $this->validateSlot($request, $room);
+        $period = $book->period($room, $request->all());
 
         return view('book.checkout', [
             'room' => $room->load(['studio', 'photos']),
-            'date' => $date,
-            'endDate' => null,
-            'days' => null,
-            'startHour' => $startHour,
-            'endHour' => $endHour,
-            'withEngineer' => $withEngineer,
-            'prices' => $this->prices($room, $endHour - $startHour, $withEngineer),
+            'date' => $period['date'],
+            'endDate' => $period['end_date'],
+            'days' => $period['days'],
+            'startHour' => $period['start'],
+            'endHour' => $period['end'],
+            'withEngineer' => $period['engineer'],
+            'prices' => $book->prices($room, $period),
         ]);
     }
 
-    public function store(Request $request, Room $room): RedirectResponse
+    public function store(Request $request, Room $room, BookRoom $book): RedirectResponse
     {
         abort_unless($room->isPubliclyVisible(), 404);
 
-        $multiDay = $request->filled('end_date');
-
-        if ($multiDay) {
-            [$date, $endDate, $days] = $this->validateDayRange($request, $room);
-            $startHour = null;
-            $endHour = null;
-        } else {
-            [$date, $startHour, $endHour] = $this->validateSlot($request, $room);
-            $endDate = null;
-        }
-
-        $request->validate(['terms' => ['accepted']]);
-
-        // Particulier of zakelijk boeken bepaalt wat er op de factuur komt.
-        $buyer = $request->validate([
-            'buyer_type' => ['nullable', 'in:particulier,zakelijk'],
-            'buyer_company' => ['nullable', 'string', 'max:255', 'required_if:buyer_type,zakelijk'],
-            'buyer_vat_number' => ['nullable', 'string', 'max:30'],
-        ]);
-
-        // Niets gekozen betekent particulier, dat is de veiligste aanname voor de consument.
-        $buyer['buyer_type'] ??= 'particulier';
-
-        $user = $request->user();
-        if (! $user->hasCompleteAddress()) {
-            $address = $request->validate([
-                'street' => ['required', 'string', 'max:255'],
-                'postal_code' => ['required', 'string', 'max:10'],
-                'city' => ['required', 'string', 'max:100'],
-            ]);
-
-            $this->verifiedCoords($address, __('account.profile.address_invalid'));
-
-            $user->update($address);
-        }
-
-        $withEngineer = $room->hasOptionalEngineer() && $request->boolean('engineer');
-        $prices = $multiDay
-            ? $this->dayPrices($room, $date, $endDate, $withEngineer)
-            : $this->prices($room, $endHour - $startHour, $withEngineer);
-
-        $booking = DB::transaction(function () use ($request, $room, $date, $endDate, $startHour, $endHour, $multiDay, $withEngineer, $prices, $buyer) {
-            $taken = ($multiDay
-                ? $room->bookingsBetween($date, $endDate)
-                : $room->overlappingBookings($date, $startHour, $endHour))
-                ->lockForUpdate()
-                ->get()
-                ->contains(fn (Booking $booking) => $booking->isActive());
-
-            if ($taken) {
-                throw ValidationException::withMessages(['slot' => __('booking.errors.taken')]);
-            }
-
-            return $room->bookings()->create([
-                'user_id' => $request->user()->id,
-                ...$buyer,
-                'date' => $date,
-                'end_date' => $endDate,
-                'start_hour' => $multiDay ? 0 : $startHour,
-                'end_hour' => $multiDay ? 24 : $endHour,
-                'with_engineer' => $withEngineer,
-                'status' => BookingStatus::PendingPayment,
-                'expires_at' => now()->addMinutes((int) config('studio.checkout_hold_minutes')),
-                'terms_accepted_at' => now(),
-                ...$prices,
-            ]);
-        });
+        $booking = $book->reserve($request->user(), $room, $request->all());
 
         return redirect()->route('bookings.payment', $booking);
     }
 
-    public function payment(Request $request, Booking $booking): View|RedirectResponse
+    public function payment(Request $request, Booking $booking): View|RedirectResponse|Response
     {
         $this->authorizeBooking($request, $booking);
 
@@ -150,9 +65,7 @@ class BookingController extends Controller
         if ($booking->expires_at->isPast()) {
             $booking->update(['status' => BookingStatus::Expired]);
 
-            return redirect()
-                ->route('studios.show', $booking->room)
-                ->withErrors(['slot' => __('booking.errors.expired')]);
+            return $this->backToRoom($booking, __('booking.errors.expired'));
         }
 
         return view('book.payment', [
@@ -161,7 +74,7 @@ class BookingController extends Controller
         ]);
     }
 
-    public function pay(Request $request, Booking $booking): RedirectResponse
+    public function pay(Request $request, Booking $booking): RedirectResponse|Response
     {
         $this->authorizeBooking($request, $booking);
 
@@ -170,9 +83,7 @@ class BookingController extends Controller
         if ($booking->expires_at->isPast()) {
             $booking->update(['status' => BookingStatus::Expired]);
 
-            return redirect()
-                ->route('studios.show', $booking->room)
-                ->withErrors(['slot' => __('booking.errors.expired')]);
+            return $this->backToRoom($booking, __('booking.errors.expired'));
         }
 
         if (StripeService::enabled()) {
@@ -190,7 +101,7 @@ class BookingController extends Controller
         return $this->finished($booking, __('booking.paid'));
     }
 
-    public function paid(Request $request, Booking $booking): RedirectResponse
+    public function paid(Request $request, Booking $booking): RedirectResponse|Response
     {
         $this->authorizeBooking($request, $booking);
 
@@ -206,42 +117,32 @@ class BookingController extends Controller
             if ($booking->status === BookingStatus::Expired) {
                 StripeService::refund($booking, $booking->total_cents);
 
-                return redirect()
-                    ->route('studios.show', $booking->room)
-                    ->withErrors(['slot' => __('booking.errors.expired_refunded')]);
+                return $this->backToRoom($booking, __('booking.errors.expired_refunded'));
             }
         }
 
         return $this->finished($booking, __('booking.paid'));
     }
 
-    public function cancel(Request $request, Booking $booking): RedirectResponse
+    public function cancel(Request $request, Booking $booking, ChangeArtistBooking $change): RedirectResponse|Response
     {
         $this->authorizeBooking($request, $booking);
 
-        abort_unless(
-            in_array($booking->status, [BookingStatus::PendingConfirmation, BookingStatus::Confirmed], true)
-                && $booking->startsAt()->isFuture(),
-            404,
-        );
-
-        $refundPercent = $booking->refundPercentForArtistCancellation();
-
-        $booking->update(['status' => BookingStatus::Cancelled, 'cancelled_by' => 'artist']);
-
-        StripeService::refund($booking, $booking->refundAmountCents($refundPercent));
-
-        $booking->user->notify(new BookingCancelled($booking, $refundPercent));
-        $booking->room->studio->user->notify(new BookingCancelled($booking, $refundPercent));
+        $change->cancel($booking);
 
         return $this->finished($booking, __('booking.cancelled'));
     }
 
-    public function reschedule(Request $request, Booking $booking): View|RedirectResponse
+    public function reschedule(Request $request, Booking $booking): View|Response
     {
         $this->authorizeBooking($request, $booking);
 
         abort_unless($booking->canReschedule(), 404);
+
+        // In de app verzet je in een eigen scherm.
+        if (InApp::origin($request) !== null) {
+            return InApp::toApp('#/verzetten/'.$booking->id, $request);
+        }
 
         return view('book.reschedule', [
             'booking' => $booking->load('room.studio'),
@@ -249,49 +150,16 @@ class BookingController extends Controller
         ]);
     }
 
-    public function rescheduleStore(Request $request, Booking $booking): RedirectResponse
+    public function rescheduleStore(Request $request, Booking $booking, ChangeArtistBooking $change): RedirectResponse|Response
     {
         $this->authorizeBooking($request, $booking);
 
-        abort_unless($booking->canReschedule(), 404);
-
-        $validated = $request->validate([
-            'date' => ['required', 'date', 'after_or_equal:today'],
-            'start' => ['required', 'integer', 'between:0,23'],
-        ]);
-
-        $date = Carbon::parse($validated['date']);
-        $startHour = (int) $validated['start'];
-        $endHour = $startHour + $booking->hours();
-
-        $available = $endHour <= Hours::max()
-            && ! $date->copy()->startOfDay()->addHours($startHour)->isPast()
-            && $booking->room->isAvailableOn($date->copy(), $startHour, $endHour)
-            && ! $booking->room->overlappingBookings($date, $startHour, $endHour)
-                ->whereKeyNot($booking->id)
-                ->exists();
-
-        if (! $available) {
-            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
-        }
-
-        $booking->update([
-            'date' => $date,
-            'start_hour' => $startHour,
-            'end_hour' => $endHour,
-            'status' => BookingStatus::PendingConfirmation,
-            'confirmed_at' => null,
-            'rescheduled_at' => now(),
-            'requested_at' => now(),
-        ]);
-
-        $booking->user->notify(new BookingRescheduled($booking));
-        $booking->room->studio->user->notify(new BookingRescheduled($booking));
+        $change->reschedule($booking, $request->all());
 
         return $this->finished($booking, __('booking.rescheduled'));
     }
 
-    public function reportProblem(Request $request, Booking $booking): RedirectResponse
+    public function reportProblem(Request $request, Booking $booking): RedirectResponse|Response
     {
         $this->authorizeBooking($request, $booking);
 
@@ -354,106 +222,17 @@ class BookingController extends Controller
         ]);
     }
 
-    private function validateSlot(Request $request, Room $room): array
-    {
-        $validated = $request->validate([
-            'date' => ['required', 'date', 'after_or_equal:today'],
-            'start' => ['required', 'integer', 'between:0,'.(Hours::max() - 1)],
-            'hours' => ['required', 'integer', 'min:'.$room->min_hours, 'max:'.config('studio.booking_max_hours')],
-        ]);
-
-        $date = Carbon::parse($validated['date']);
-        $startHour = (int) $validated['start'];
-        $endHour = $startHour + (int) $validated['hours'];
-
-        // Hours above 24 fall on the next morning, so a night session stays one booking.
-        if ($endHour > Hours::max()) {
-            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
-        }
-
-        if ($date->copy()->startOfDay()->addHours($startHour)->isPast()) {
-            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
-        }
-
-        if (! $room->isBookableFor($date, $startHour, $endHour)) {
-            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
-        }
-
-        return [$date, $startHour, $endHour];
-    }
-
-    private function prices(Room $room, int $hours, bool $withEngineer = false): array
-    {
-        $engineerPerHour = $withEngineer ? (int) $room->engineer_rate_cents : 0;
-        $hourly = $room->hourly_rate_cents + $engineerPerHour;
-        $rent = $hourly * $hours;
-        $fee = (int) round($rent * config('studio.service_fee_percent') / 100);
-        $vat = (int) round($fee * config('studio.vat_percent') / 100);
-
-        return [
-            'hourly_rate_cents' => $hourly,
-            'rent_cents' => $rent,
-            'engineer_cents' => $engineerPerHour * $hours,
-            'service_fee_cents' => $fee,
-            'vat_cents' => $vat,
-            'total_cents' => $rent + $fee + $vat,
-        ];
-    }
-
     /**
-     * Meerdaagse boekingen rekenen af per hele dag, zonder starttijd en zonder uurtarief.
+     * De reservering is verlopen: opnieuw kiezen. Op de website op de studiopagina met de melding, in de app
+     * in het scherm van de studio (een redirect naar de app werkt daar niet, zie InApp::toApp).
      */
-    private function dayPrices(Room $room, Carbon $from, Carbon $until, bool $withEngineer = false): array
+    private function backToRoom(Booking $booking, string $message): RedirectResponse|Response
     {
-        $engineer = $withEngineer ? $room->engineerDayRateCents() : 0;
-
-        // Per dag optellen, want een verhuurder mag bijvoorbeeld in het weekend meer vragen.
-        $rent = 0;
-        $days = 0;
-        for ($date = $from->copy(); $date->lte($until); $date->addDay()) {
-            $rent += $room->dayRateOn($date->isoWeekday()) + $engineer;
-            $days++;
+        if (InApp::active()) {
+            return InApp::toApp('#/studio/'.$booking->room_id);
         }
 
-        $fee = (int) round($rent * config('studio.service_fee_percent') / 100);
-        $vat = (int) round($fee * config('studio.vat_percent') / 100);
-
-        return [
-            'hourly_rate_cents' => $room->hourly_rate_cents,
-            'day_rate_cents' => $days > 0 ? (int) round($rent / $days) : (int) $room->day_rate_cents,
-            'rent_cents' => $rent,
-            'engineer_cents' => $engineer * $days,
-            'service_fee_cents' => $fee,
-            'vat_cents' => $vat,
-            'total_cents' => $rent + $fee + $vat,
-        ];
-    }
-
-    /**
-     * @return array{0: Carbon, 1: Carbon, 2: int}
-     */
-    private function validateDayRange(Request $request, Room $room): array
-    {
-        abort_unless($room->allowsMultiDay(), 404);
-
-        $validated = $request->validate([
-            'date' => ['required', 'date', 'after_or_equal:today'],
-            'end_date' => ['required', 'date', 'after_or_equal:date'],
-        ]);
-
-        $from = Carbon::parse($validated['date'])->startOfDay();
-        $until = Carbon::parse($validated['end_date'])->startOfDay();
-        $days = $from->diffInDays($until) + 1;
-
-        if ($days < max(1, (int) $room->min_days) || $days > (int) config('studio.booking_max_days')) {
-            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
-        }
-
-        if (! $room->isBookableForDays($from, $until)) {
-            throw ValidationException::withMessages(['slot' => __('booking.errors.unavailable')]);
-        }
-
-        return [$from, $until, $days];
+        return redirect()->route('studios.show', $booking->room)->withErrors(['slot' => $message]);
     }
 
     private function authorizeBooking(Request $request, Booking $booking): void
@@ -466,10 +245,10 @@ class BookingController extends Controller
      * melding, in de iOS/Android-app terug naar deze boeking in de app zelf (daar staat de nieuwe status),
      * in plaats van de websitepagina met het overzicht.
      */
-    private function finished(Booking $booking, ?string $message = null): RedirectResponse
+    private function finished(Booking $booking, ?string $message = null): RedirectResponse|Response
     {
         if (InApp::active()) {
-            return redirect()->away((InApp::origin() ?? InApp::guessOrigin()).'/#/boeking/'.$booking->id);
+            return InApp::toApp('#/boeking/'.$booking->id);
         }
 
         return redirect()->route('dashboard.artist')->with(array_filter(['status' => $message]));

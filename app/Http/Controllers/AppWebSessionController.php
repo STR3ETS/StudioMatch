@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Support\InApp;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 
@@ -33,10 +34,13 @@ class AppWebSessionController extends Controller
 
     /**
      * De balk terug naar de app op een pagina zonder sessie (zoals een 404): de sessie weet het adres van
-     * de app hier wel, anders het gebruikelijke adres voor dit soort telefoon.
+     * de app hier wel, anders het gebruikelijke adres voor dit soort telefoon. Met ?scherm=studios naar dat
+     * scherm in de app (alleen een schermnaam, eventueel met een nummer).
      */
-    public function back(Request $request): RedirectResponse
+    public function back(Request $request): Response
     {
-        return redirect()->away((InApp::origin($request) ?? InApp::guessOrigin($request)).'/');
+        $screen = (string) $request->query('scherm', '');
+
+        return InApp::toApp(preg_match('/^[a-z-]+(\/\d+)?$/', $screen) === 1 ? '#/'.$screen : '', $request);
     }
 }
