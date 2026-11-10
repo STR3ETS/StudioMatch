@@ -16,7 +16,7 @@
                 @foreach ($requests as $booking)
                     <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-amber-500/30 bg-white p-5 lg:flex-nowrap">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-prussian-blue/10 text-sm font-bold text-prussian-blue">{{ strtoupper(mb_substr($booking->user->name, 0, 1)) }}</span>
-                        <div class="min-w-0 flex-1">
+                        <div class="min-w-0 grow basis-40 lg:basis-0">
                             <p class="font-bold text-prussian-blue">{{ $booking->user->name }}</p>
                             <p class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-prussian-blue/60">
                                 <span><i class="fa-solid fa-door-open fa-xs mr-1.5 text-prussian-blue/40"></i>{{ $booking->room->title }}</span>
@@ -101,7 +101,7 @@
                 @foreach ($upcoming as $booking)
                     <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-5 lg:flex-nowrap">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600"><i class="fa-solid fa-calendar-check"></i></span>
-                        <div class="min-w-0 flex-1">
+                        <div class="min-w-0 grow basis-40 lg:basis-0">
                             <div class="flex flex-wrap items-center gap-2">
                                 <p class="font-bold text-prussian-blue">{{ $booking->user->name }}</p>
                                 <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $booking->status->badgeClasses() }}">{{ __('booking.status.' . $booking->status->value) }}</span>

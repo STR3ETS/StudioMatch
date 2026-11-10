@@ -72,7 +72,7 @@
                 @foreach ($rejectedRooms as $room)
                     <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-ruby-red/30 bg-ruby-red/5 p-5 sm:flex-nowrap">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ruby-red/10 text-ruby-red"><i class="fa-solid fa-circle-exclamation"></i></span>
-                        <div class="min-w-0 flex-1">
+                        <div class="min-w-0 grow basis-40 sm:basis-0">
                             <p class="font-bold text-prussian-blue">{{ __('host.overview.status_rejected', ['room' => $room->title, 'studio' => $room->studio->name]) }}</p>
                             @if ($room->rejection_reason)
                                 <p class="mt-1 text-sm leading-relaxed text-prussian-blue/70">
@@ -89,7 +89,7 @@
                 @if ($inReviewRooms->isNotEmpty())
                     <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5 sm:flex-nowrap">
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-500/10 text-amber-600"><i class="fa-solid fa-hourglass-half"></i></span>
-                        <div class="min-w-0 flex-1">
+                        <div class="min-w-0 grow basis-40 sm:basis-0">
                             <p class="font-bold text-prussian-blue">{{ trans_choice('host.overview.status_in_review', $inReviewRooms->count(), ['rooms' => $inReviewRooms->pluck('title')->join(', ', ' ' . __('host.overview.and') . ' ')]) }}</p>
                             <p class="mt-1 text-sm text-prussian-blue/60">{{ __('host.overview.status_in_review_text') }}</p>
                         </div>

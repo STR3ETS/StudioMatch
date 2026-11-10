@@ -59,7 +59,7 @@ class BookingFlowTest extends TestCase
 
     private function bookingViaFlow(): Booking
     {
-        $this->actingAs($this->artist)->post('/studios/' . $this->room->slug . '/boeken', [
+        $this->actingAs($this->artist)->post('/studios/'.$this->room->slug.'/boeken', [
             ...$this->slot(),
             'terms' => '1',
         ]);
@@ -71,7 +71,7 @@ class BookingFlowTest extends TestCase
     {
         $this->room->update(['engineer_included' => false, 'engineer_rate_cents' => 1000]);
 
-        $this->actingAs($this->artist)->post('/studios/' . $this->room->slug . '/boeken', [
+        $this->actingAs($this->artist)->post('/studios/'.$this->room->slug.'/boeken', [
             ...$this->slot(),
             'engineer' => '1',
             'terms' => '1',
@@ -89,7 +89,7 @@ class BookingFlowTest extends TestCase
 
     public function test_engineer_param_is_ignored_when_room_has_no_optional_engineer(): void
     {
-        $this->actingAs($this->artist)->post('/studios/' . $this->room->slug . '/boeken', [
+        $this->actingAs($this->artist)->post('/studios/'.$this->room->slug.'/boeken', [
             ...$this->slot(),
             'engineer' => '1',
             'terms' => '1',
@@ -103,7 +103,7 @@ class BookingFlowTest extends TestCase
 
     public function test_guest_is_redirected_to_login_from_checkout(): void
     {
-        $this->get('/studios/' . $this->room->slug . '/boeken?date=2030-01-07&start=10&hours=2')
+        $this->get('/studios/'.$this->room->slug.'/boeken?date=2030-01-07&start=10&hours=2')
             ->assertRedirect(route('login'));
     }
 
@@ -112,7 +112,7 @@ class BookingFlowTest extends TestCase
         $slot = $this->slot();
 
         $this->actingAs($this->artist)
-            ->get('/studios/' . $this->room->slug . '/boeken?' . http_build_query($slot))
+            ->get('/studios/'.$this->room->slug.'/boeken?'.http_build_query($slot))
             ->assertOk()
             ->assertSee('€ 150,00')
             ->assertSee('€ 13,50')
@@ -126,7 +126,7 @@ class BookingFlowTest extends TestCase
         $sunday = today()->next('sunday')->toDateString();
 
         $this->actingAs($this->artist)
-            ->get('/studios/' . $this->room->slug . '/boeken?date=' . $sunday . '&start=10&hours=2')
+            ->get('/studios/'.$this->room->slug.'/boeken?date='.$sunday.'&start=10&hours=2')
             ->assertSessionHasErrors('slot');
     }
 
@@ -149,7 +149,7 @@ class BookingFlowTest extends TestCase
 
         $other = User::factory()->create(['role' => 'artiest']);
 
-        $this->actingAs($other)->post('/studios/' . $this->room->slug . '/boeken', [
+        $this->actingAs($other)->post('/studios/'.$this->room->slug.'/boeken', [
             ...$this->slot(),
             'terms' => '1',
         ])->assertSessionHasErrors('slot');
@@ -164,7 +164,7 @@ class BookingFlowTest extends TestCase
 
         $other = User::factory()->create(['role' => 'artiest', 'street' => 'Teststraat 1', 'postal_code' => '1234 AB', 'city' => 'Utrecht']);
 
-        $this->actingAs($other)->post('/studios/' . $this->room->slug . '/boeken', [
+        $this->actingAs($other)->post('/studios/'.$this->room->slug.'/boeken', [
             ...$this->slot(),
             'terms' => '1',
         ])->assertSessionDoesntHaveErrors('slot');
@@ -178,12 +178,27 @@ class BookingFlowTest extends TestCase
         $booking = $this->bookingViaFlow();
 
         $this->actingAs($this->artist)
-            ->post('/boekingen/' . $booking->id . '/betalen')
+            ->post('/boekingen/'.$booking->id.'/betalen')
             ->assertRedirect(route('dashboard.artist'));
 
         $this->assertSame('pending_confirmation', $booking->fresh()->status->value);
         Notification::assertSentTo($this->host, BookingRequested::class);
         Notification::assertSentTo($this->artist, BookingReceived::class);
+    }
+
+    public function test_paying_in_the_app_returns_to_the_booking_in_the_app(): void
+    {
+        Notification::fake();
+        $booking = $this->bookingViaFlow();
+
+        // In de iOS/Android-app: terug naar deze boeking in de app, niet naar het overzicht op de website.
+        $this->actingAs($this->artist)
+            ->withSession(['app_bundle' => 'https://localhost'])
+            ->withHeader('User-Agent', 'Mozilla/5.0 (Linux; Android 16) StudioMatchApp')
+            ->post('/boekingen/'.$booking->id.'/betalen')
+            ->assertRedirect('https://localhost/#/boeking/'.$booking->id);
+
+        $this->assertSame('pending_confirmation', $booking->fresh()->status->value);
     }
 
     public function test_host_can_accept_booking(): void
@@ -192,7 +207,7 @@ class BookingFlowTest extends TestCase
         $booking = $this->bookingViaFlow();
         $booking->update(['status' => 'pending_confirmation']);
 
-        $this->actingAs($this->host)->patch('/dashboard/verhuurder/boekingen/' . $booking->id . '/accepteren');
+        $this->actingAs($this->host)->patch('/dashboard/verhuurder/boekingen/'.$booking->id.'/accepteren');
 
         $booking->refresh();
         $this->assertSame('confirmed', $booking->status->value);
@@ -207,7 +222,7 @@ class BookingFlowTest extends TestCase
         $booking = $this->bookingViaFlow();
         $booking->update(['status' => 'pending_confirmation']);
 
-        $this->actingAs($this->host)->patch('/dashboard/verhuurder/boekingen/' . $booking->id . '/weigeren');
+        $this->actingAs($this->host)->patch('/dashboard/verhuurder/boekingen/'.$booking->id.'/weigeren');
 
         $this->assertSame('declined', $booking->fresh()->status->value);
         Notification::assertSentTo($this->artist, BookingDeclined::class);
@@ -220,7 +235,7 @@ class BookingFlowTest extends TestCase
         $other = User::factory()->create(['role' => 'verhuurder']);
 
         $this->actingAs($other)
-            ->patch('/dashboard/verhuurder/boekingen/' . $booking->id . '/accepteren')
+            ->patch('/dashboard/verhuurder/boekingen/'.$booking->id.'/accepteren')
             ->assertForbidden();
     }
 
@@ -230,7 +245,7 @@ class BookingFlowTest extends TestCase
         $booking = $this->bookingViaFlow();
         $booking->update(['status' => 'confirmed']);
 
-        $this->actingAs($this->artist)->post('/boekingen/' . $booking->id . '/annuleren');
+        $this->actingAs($this->artist)->post('/boekingen/'.$booking->id.'/annuleren');
 
         $booking->refresh();
         $this->assertSame('cancelled', $booking->status->value);
@@ -256,11 +271,11 @@ class BookingFlowTest extends TestCase
         $booking->update(['status' => 'confirmed']);
         $slot = $this->slot();
 
-        $this->get('/studios?date=' . $slot['date'] . '&start=10&end=13')
+        $this->get('/studios?date='.$slot['date'].'&start=10&end=13')
             ->assertDontSee('Live room A')
             ->assertSee('Live room B');
 
-        $this->get('/studios?date=' . $slot['date'] . '&start=14&end=16')
+        $this->get('/studios?date='.$slot['date'].'&start=14&end=16')
             ->assertSee('Live room A');
     }
 
@@ -298,7 +313,7 @@ class BookingFlowTest extends TestCase
     public function test_host_cannot_book(): void
     {
         $this->actingAs($this->host)
-            ->get('/studios/' . $this->room->slug . '/boeken?date=2030-01-07&start=10&hours=2')
+            ->get('/studios/'.$this->room->slug.'/boeken?date=2030-01-07&start=10&hours=2')
             ->assertRedirect(route('dashboard.host'));
     }
 

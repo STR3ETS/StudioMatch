@@ -13,6 +13,7 @@ use App\Notifications\BookingRescheduled;
 use App\Notifications\NewTicket;
 use App\Notifications\ProblemReported;
 use App\Support\Hours;
+use App\Support\InApp;
 use App\Support\MailDelivery;
 use App\Support\StripeService;
 use Illuminate\Http\RedirectResponse;
@@ -143,7 +144,7 @@ class BookingController extends Controller
         $this->authorizeBooking($request, $booking);
 
         if ($booking->status !== BookingStatus::PendingPayment) {
-            return redirect()->route('dashboard.artist');
+            return $this->finished($booking);
         }
 
         if ($booking->expires_at->isPast()) {
@@ -186,7 +187,7 @@ class BookingController extends Controller
 
         $booking->markAsPaid();
 
-        return redirect()->route('dashboard.artist')->with('status', __('booking.paid'));
+        return $this->finished($booking, __('booking.paid'));
     }
 
     public function paid(Request $request, Booking $booking): RedirectResponse
@@ -211,7 +212,7 @@ class BookingController extends Controller
             }
         }
 
-        return redirect()->route('dashboard.artist')->with('status', __('booking.paid'));
+        return $this->finished($booking, __('booking.paid'));
     }
 
     public function cancel(Request $request, Booking $booking): RedirectResponse
@@ -233,7 +234,7 @@ class BookingController extends Controller
         $booking->user->notify(new BookingCancelled($booking, $refundPercent));
         $booking->room->studio->user->notify(new BookingCancelled($booking, $refundPercent));
 
-        return redirect()->route('dashboard.artist')->with('status', __('booking.cancelled'));
+        return $this->finished($booking, __('booking.cancelled'));
     }
 
     public function reschedule(Request $request, Booking $booking): View|RedirectResponse
@@ -287,7 +288,7 @@ class BookingController extends Controller
         $booking->user->notify(new BookingRescheduled($booking));
         $booking->room->studio->user->notify(new BookingRescheduled($booking));
 
-        return redirect()->route('dashboard.artist')->with('status', __('booking.rescheduled'));
+        return $this->finished($booking, __('booking.rescheduled'));
     }
 
     public function reportProblem(Request $request, Booking $booking): RedirectResponse
@@ -321,7 +322,7 @@ class BookingController extends Controller
         // En een pushmelding naar de telefoon van de beheerders (Tickets in de app).
         MailDelivery::send($admins, new NewTicket($booking, 'dispute'));
 
-        return redirect()->route('dashboard.artist')->with('status', __('booking.problem_reported'));
+        return $this->finished($booking, __('booking.problem_reported'));
     }
 
     public function ics(Request $request, Booking $booking): Response
@@ -458,5 +459,19 @@ class BookingController extends Controller
     private function authorizeBooking(Request $request, Booking $booking): void
     {
         abort_unless($booking->user_id === $request->user()->id, 403);
+    }
+
+    /**
+     * Klaar met betalen, annuleren, verzetten of een probleem melden: op de website naar het overzicht met de
+     * melding, in de iOS/Android-app terug naar deze boeking in de app zelf (daar staat de nieuwe status),
+     * in plaats van de websitepagina met het overzicht.
+     */
+    private function finished(Booking $booking, ?string $message = null): RedirectResponse
+    {
+        if (InApp::active()) {
+            return redirect()->away((InApp::origin() ?? InApp::guessOrigin()).'/#/boeking/'.$booking->id);
+        }
+
+        return redirect()->route('dashboard.artist')->with(array_filter(['status' => $message]));
     }
 }

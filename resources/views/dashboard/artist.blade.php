@@ -32,7 +32,9 @@
                             @if ($booking->room->photos->isNotEmpty())
                                 <img src="{{ $booking->room->photos->first()->thumbUrl() }}" alt="{{ $booking->room->title }}" class="h-16 w-24 shrink-0 rounded-xl object-cover">
                             @endif
-                            <div class="min-w-0 flex-1">
+                            {{-- Een minimale breedte: op een telefoon gaan de knoppen dan naar een rij eronder, in plaats
+                                 van de tekst samen te persen tot een smalle kolom. --}}
+                            <div class="min-w-0 grow basis-40 lg:basis-0">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <a href="{{ route('studios.show', $booking->room) }}" class="font-bold text-prussian-blue hover:text-ruby-red">{{ $booking->room->title }}</a>
                                     <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $status->badgeClasses() }}">{{ __('booking.status.' . $status->value) }}</span>

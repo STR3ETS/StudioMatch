@@ -6,6 +6,10 @@ import type { CapacitorConfig } from '@capacitor/cli';
 //   STUDIOMATCH_API_URL=http://127.0.0.1:8000 npm run app:build && npx cap copy android
 const serverUrl = process.env.STUDIOMATCH_API_URL ?? 'https://studiomatch.nl';
 const insecure = serverUrl.startsWith('http://');
+// Een technisch Plesk-domein (*.plesk.page) toont elke browser eerst een waarschuwingspagina (428) met een
+// "Continue"-knop; de app kan die niet wegklikken. Zonder "Mozilla" in de user agent komt hij er niet. Laravel
+// herkent de app nog steeds aan "StudioMatchApp" (InApp). Alleen voor testbuilds tegen zo'n domein.
+const technicalDomain = new URL(serverUrl).hostname.endsWith('.plesk.page');
 
 const config: CapacitorConfig = {
     appId: 'nl.studiomatch.app',
@@ -14,6 +18,7 @@ const config: CapacitorConfig = {
     backgroundColor: '#101529',
     // Laravel herkent de app hieraan.
     appendUserAgent: 'StudioMatchApp',
+    ...(technicalDomain ? { overrideUserAgent: 'StudioMatchApp (testserver)' } : {}),
     server: {
         // http://localhost bij een testserver over http, anders blokkeert de webview de API (gemengde inhoud).
         androidScheme: insecure ? 'http' : 'https',

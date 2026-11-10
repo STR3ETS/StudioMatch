@@ -28,7 +28,7 @@
         <div class="mt-6 space-y-3">
             @foreach ($bookings as $booking)
                 <div class="flex flex-wrap items-center gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-5 xl:flex-nowrap">
-                    <div class="min-w-0 flex-1">
+                    <div class="min-w-0 grow basis-40 xl:basis-0">
                         <div class="flex flex-wrap items-center gap-2">
                             <p class="font-bold text-prussian-blue">#{{ $booking->id }} {{ $booking->room->studio->name }} - {{ $booking->room->title }}</p>
                             <span class="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide {{ $booking->status->badgeClasses() }}">{{ __('booking.status.' . $booking->status->value) }}</span>
