@@ -51,6 +51,17 @@ class StripeController extends Controller
         return redirect()->away($url);
     }
 
+    public function dashboard(Request $request): RedirectResponse
+    {
+        $profile = $request->user()->hostProfile;
+
+        if ($profile?->stripe_account_id === null) {
+            return redirect()->route('host.stripe.show');
+        }
+
+        return redirect()->away(StripeService::dashboardUrl($profile));
+    }
+
     public function returned(Request $request): RedirectResponse
     {
         $profile = $request->user()->hostProfile;

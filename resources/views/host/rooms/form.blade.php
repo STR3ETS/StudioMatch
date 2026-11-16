@@ -91,12 +91,13 @@
 
         <div class="rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.rooms.section_pricing') }}</h2>
+            <x-price-basis :default="$room->exists ? 'incl' : 'excl'" />
             <div class="mt-5 grid gap-5 sm:grid-cols-3">
                 <div>
                     <label for="hourly_rate" class="{{ $label }}">{{ __('host.rooms.fields.hourly_rate') }}</label>
                     <div class="relative">
                         <span class="pointer-events-none absolute left-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-prussian-blue/50">€</span>
-                        <input id="hourly_rate" type="number" name="hourly_rate" step="0.50" min="1" max="1000" value="{{ old('hourly_rate', $room->exists ? number_format($room->hourlyRateEuros(), 2, '.', '') : '') }}" class="{{ $field }} pl-9" required>
+                        <input id="hourly_rate" type="number" name="hourly_rate" step="0.01" data-price min="1" max="1000" value="{{ old('hourly_rate', $room->exists ? number_format($room->hourlyRateEuros(), 2, '.', '') : '') }}" class="{{ $field }} pl-9" required>
                     </div>
                     <x-input-error field="hourly_rate" />
                 </div>
@@ -122,7 +123,7 @@
                     <label for="day_rate" class="{{ $label }}">{{ __('host.rooms.fields.day_rate') }}</label>
                     <div class="relative">
                         <span class="pointer-events-none absolute left-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-prussian-blue/50">&euro;</span>
-                        <input id="day_rate" type="number" name="day_rate" step="0.50" min="1" max="10000" value="{{ old('day_rate', $room->day_rate_cents !== null ? number_format($room->day_rate_cents / 100, 2, '.', '') : '') }}" class="{{ $field }} pl-9">
+                        <input id="day_rate" type="number" name="day_rate" step="0.01" data-price min="1" max="10000" value="{{ old('day_rate', $room->day_rate_cents !== null ? number_format($room->day_rate_cents / 100, 2, '.', '') : '') }}" class="{{ $field }} pl-9">
                     </div>
                     <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.rooms.fields.day_rate_hint') }}</p>
                     <x-input-error field="day_rate" />
@@ -153,7 +154,7 @@
                             <label for="day_rate_{{ $weekday }}" class="{{ $label }}">{{ __('host.availability.days.' . $weekday) }}</label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute left-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-prussian-blue/50">&euro;</span>
-                                <input id="day_rate_{{ $weekday }}" type="number" name="day_rates[{{ $weekday }}]" step="0.50" min="1" max="10000"
+                                <input id="day_rate_{{ $weekday }}" type="number" name="day_rates[{{ $weekday }}]" step="0.01" data-price min="1" max="10000"
                                        value="{{ old('day_rates.' . $weekday, $current !== null ? number_format($current / 100, 2, '.', '') : '') }}"
                                        placeholder="{{ __('host.rooms.fields.day_rates_default') }}" class="{{ $field }} pl-9">
                             </div>
@@ -183,7 +184,7 @@
                     <label for="engineer_rate" class="{{ $label }}">{{ __('host.rooms.fields.engineer_rate') }}</label>
                     <div class="mt-2 flex items-center gap-2">
                         <span class="text-sm text-prussian-blue/50">&euro;</span>
-                        <input id="engineer_rate" type="number" name="engineer_rate" min="1" max="500" step="0.50" value="{{ old('engineer_rate', $room->engineer_rate_cents !== null ? $room->engineer_rate_cents / 100 : '') }}" class="{{ $field }} !mt-0 max-w-40">
+                        <input id="engineer_rate" type="number" name="engineer_rate" min="1" max="500" step="0.01" data-price value="{{ old('engineer_rate', $room->engineer_rate_cents !== null ? $room->engineer_rate_cents / 100 : '') }}" class="{{ $field }} !mt-0 max-w-40">
                         <span class="text-sm text-prussian-blue/50">{{ __('host.rooms.per_hour') }}</span>
                     </div>
                     <x-input-error field="engineer_rate" />
@@ -191,7 +192,7 @@
                     <label for="engineer_day_rate" class="{{ $label }} mt-4">{{ __('host.rooms.fields.engineer_day_rate') }}</label>
                     <div class="mt-2 flex items-center gap-2">
                         <span class="text-sm text-prussian-blue/50">&euro;</span>
-                        <input id="engineer_day_rate" type="number" name="engineer_day_rate" min="1" max="5000" step="0.50" value="{{ old('engineer_day_rate', $room->engineer_day_rate_cents !== null ? $room->engineer_day_rate_cents / 100 : '') }}" class="{{ $field }} !mt-0 max-w-40">
+                        <input id="engineer_day_rate" type="number" name="engineer_day_rate" min="1" max="5000" step="0.01" data-price value="{{ old('engineer_day_rate', $room->engineer_day_rate_cents !== null ? $room->engineer_day_rate_cents / 100 : '') }}" class="{{ $field }} !mt-0 max-w-40">
                         <span class="text-sm text-prussian-blue/50">{{ __('host.rooms.per_day') }}</span>
                     </div>
                     <p class="mt-1.5 text-xs text-prussian-blue/50">{{ __('host.rooms.fields.engineer_day_rate_hint') }}</p>

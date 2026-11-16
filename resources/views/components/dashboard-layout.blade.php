@@ -61,6 +61,7 @@
                         @foreach ($nav as $item)
                             @if ($item['url'])
                                 <a href="{{ $item['url'] }}"
+                                   @if ($item['external'] ?? false) target="_blank" rel="noopener" @endif
                                    @class([
                                        'flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-semibold transition',
                                        'bg-white text-ruby-red shadow-sm' => $active === $item['key'],
@@ -143,7 +144,7 @@
             <div class="min-w-0 flex-1">
                 <header class="sticky top-0 z-[1200] border-b border-prussian-blue/10 bg-white lg:hidden [view-transition-name:dash-topbar]">
                     <div class="flex items-center justify-center px-5 py-3.5">
-                        <a href="{{ route('dashboard') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-8 w-auto"></a>
+                        <a href="{{ route('home') }}" aria-label="{{ __('dashboard.nav.to_site') }}"><img src="/logos/sm-primary-logo-blauw.png" alt="StudioMatch" class="h-8 w-auto"></a>
                     </div>
                 </header>
 

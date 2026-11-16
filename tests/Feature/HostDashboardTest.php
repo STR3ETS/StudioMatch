@@ -176,6 +176,61 @@ class HostDashboardTest extends TestCase
         Storage::disk('public')->assertExists($room->photos->first()->path);
     }
 
+    public function test_a_vat_liable_host_can_enter_prices_excluding_vat(): void
+    {
+        // Feedback: veel studio's rekenen exclusief btw. De pagina toont altijd inclusief.
+        Storage::fake('public');
+        $host = $this->host();
+        $host->hostProfile->update(['btw_plichtig' => true, 'vat_number' => 'NL123456789B01']);
+        $studio = $this->studioFor($host);
+
+        $this->actingAs($host)->post('/dashboard/verhuurder/studios/' . $studio->id . '/ruimtes', [
+            'title' => 'Studio A',
+            'description' => 'Ruime live room met akoestische behandeling.',
+            'type' => 'opname',
+            'price_basis' => 'excl',
+            'hourly_rate' => '50',
+            'day_rate' => '400',
+            'engineer_option' => 'optional',
+            'engineer_rate' => '25',
+            'min_hours' => 2,
+            'capacity' => 6,
+            'photos' => collect(range(1, 5))->map(fn ($i) => UploadedFile::fake()->image("room{$i}.jpg", 1200, 800))->all(),
+        ])->assertSessionHasNoErrors();
+
+        $room = Room::first();
+        $this->assertSame(6050, $room->hourly_rate_cents);
+        $this->assertSame(48400, $room->day_rate_cents);
+        $this->assertSame(3025, $room->engineer_rate_cents);
+    }
+
+    public function test_without_vat_liability_the_entered_price_is_the_page_price(): void
+    {
+        Storage::fake('public');
+        $host = $this->host();
+        $studio = $this->studioFor($host);
+
+        $this->actingAs($host)->get('/dashboard/verhuurder/studios/' . $studio->id . '/ruimtes/nieuw')
+            ->assertOk()
+            ->assertSee(__('host.rooms.price_basis.not_liable'))
+            ->assertDontSee('type="radio" name="price_basis"', false);
+
+        // Ook een geforceerde "excl" telt niet: zonder btw-plicht is er geen btw.
+        $this->actingAs($host)->post('/dashboard/verhuurder/studios/' . $studio->id . '/ruimtes', [
+            'title' => 'Studio A',
+            'description' => 'Ruime live room met akoestische behandeling.',
+            'type' => 'opname',
+            'price_basis' => 'excl',
+            'hourly_rate' => '50',
+            'engineer_option' => 'none',
+            'min_hours' => 2,
+            'capacity' => 6,
+            'photos' => collect(range(1, 5))->map(fn ($i) => UploadedFile::fake()->image("room{$i}.jpg", 1200, 800))->all(),
+        ]);
+
+        $this->assertSame(5000, Room::first()->hourly_rate_cents);
+    }
+
     public function test_host_cannot_add_room_to_another_hosts_studio(): void
     {
         $host = $this->host();

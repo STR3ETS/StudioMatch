@@ -285,6 +285,29 @@ class StripeService
         }
     }
 
+    /** Algemene inlogpagina van het Express-dashboard; daar logt een verhuurder in met zijn e-mail. */
+    public const EXPRESS_LOGIN_URL = 'https://connect.stripe.com/express_login';
+
+    /*
+     * Een inloglink brengt de verhuurder zonder wachtwoord of sms-code direct in zijn eigen
+     * Stripe-dashboard. Die link is eenmalig en verloopt snel, dus hij wordt pas gemaakt op
+     * het moment dat iemand klikt. Lukt dat niet, dan de gewone inlogpagina van Stripe.
+     */
+    public static function dashboardUrl(HostProfile $profile): string
+    {
+        if (! self::enabled() || $profile->stripe_account_id === null) {
+            return self::EXPRESS_LOGIN_URL;
+        }
+
+        try {
+            return self::client()->accounts->createLoginLink($profile->stripe_account_id)->url;
+        } catch (Throwable $e) {
+            Log::warning('Stripe inloglink mislukt, door naar de algemene inlogpagina', ['profile' => $profile->id, 'error' => $e->getMessage()]);
+
+            return self::EXPRESS_LOGIN_URL;
+        }
+    }
+
     public static function refreshAccountStatus(HostProfile $profile): void
     {
         if (! self::enabled() || $profile->stripe_account_id === null) {

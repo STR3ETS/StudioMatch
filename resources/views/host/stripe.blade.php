@@ -53,6 +53,15 @@
             </div>
         @endif
 
+        @if ($stripeEnabled && $profile->stripe_account_id !== null)
+            <div class="mt-6 flex flex-col gap-4 rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-sm leading-relaxed text-prussian-blue/60">{{ __('host.stripe.dashboard_text') }}</p>
+                <a href="{{ route('host.stripe.dashboard') }}" target="_blank" rel="noopener" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-prussian-blue px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-prussian-blue/90">
+                    <i class="fa-solid fa-arrow-up-right-from-square fa-sm"></i>{{ __('host.stripe.dashboard_button') }}
+                </a>
+            </div>
+        @endif
+
         <x-info-note class="mt-6">{{ __('host.stripe.payout_note') }}</x-info-note>
     </div>
 </x-host-layout>

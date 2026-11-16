@@ -42,6 +42,30 @@ class AuthTest extends TestCase
         $this->assertSame('verhuurder', User::first()->role->value);
     }
 
+    public function test_the_header_offers_login_and_register_as_separate_buttons(): void
+    {
+        // Feedback: op mobiel was er één "Log in / Registreer"-knop die naar registreren ging.
+        $html = $this->get('/')->assertOk()->getContent();
+        $header = substr($html, 0, strpos($html, 'data-mobile-menu'));
+
+        $this->assertStringContainsString('href="' . route('login') . '"', $header);
+        $this->assertStringContainsString('href="' . route('register') . '"', $header);
+        $this->assertStringNotContainsString('Log in / Registreer', $html);
+
+        // De inlogknop mag niet meer verborgen zijn op kleine schermen.
+        $this->assertDoesNotMatchRegularExpression('/href="' . preg_quote(route('login'), '/') . '" class="hidden/', $header);
+    }
+
+    public function test_the_dashboard_logo_on_mobile_leads_to_the_website(): void
+    {
+        $user = User::factory()->create(['role' => 'artiest']);
+
+        $html = $this->actingAs($user)->get('/dashboard/artiest')->assertOk()->getContent();
+        $topbar = substr($html, strpos($html, '<header'));
+
+        $this->assertMatchesRegularExpression('/<a href="' . preg_quote(route('home'), '/') . '"[^>]*><img src="\/logos\/sm-primary-logo-blauw/', $topbar);
+    }
+
     public function test_the_consent_checkbox_links_to_the_documents_you_agree_to(): void
     {
         // Je kunt niet akkoord gaan met iets dat je niet kunt lezen; de links stonden op '#'.

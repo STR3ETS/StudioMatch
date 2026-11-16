@@ -9,6 +9,10 @@
         ['key' => 'inbox', 'icon' => 'fa-inbox', 'url' => route('host.bookings.index'), 'mobile' => true],
         ['key' => 'agenda', 'icon' => 'fa-calendar', 'url' => route('host.agenda'), 'mobile' => true],
         ['key' => 'revenue', 'icon' => 'fa-chart-line', 'url' => route('host.revenue')],
+        // Snel naar het eigen Stripe-dashboard; pas zinvol zodra er een Stripe-account is.
+        ...(auth()->user()->hostProfile?->stripe_account_id
+            ? [['key' => 'stripe_dashboard', 'icon' => 'fa-arrow-up-right-from-square', 'url' => route('host.stripe.dashboard'), 'external' => true]]
+            : []),
         ['key' => 'invoices', 'icon' => 'fa-file-invoice', 'url' => route('host.invoices.index')],
         ['key' => 'stripe', 'icon' => 'fa-shield-halved', 'url' => route('host.stripe.show')],
         ['key' => 'account', 'icon' => 'fa-user-gear', 'url' => route('account.edit')],

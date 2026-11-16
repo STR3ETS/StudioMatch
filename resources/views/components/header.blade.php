@@ -27,7 +27,7 @@
             @endforeach
         </ul>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5 sm:gap-2">
             <details data-dropdown class="group relative max-lg:hidden">
                 <summary class="list-none [&::-webkit-details-marker]:hidden h-9 px-3 gap-2 flex items-center rounded-full text-sm font-semibold text-prussian-blue/70 hover:text-prussian-blue hover:bg-prussian-blue/5 transition cursor-pointer select-none">
                     <i class="fa-solid fa-globe fa-sm"></i>
@@ -59,11 +59,12 @@
                     <i class="fa-solid fa-gauge-high fa-sm"></i> {{ __('nav.dashboard') }}
                 </a>
             @else
-                <a href="{{ route('login') }}" class="hidden h-9 items-center rounded-full border border-prussian-blue/20 px-4 text-sm font-semibold text-prussian-blue transition hover:bg-prussian-blue/5 sm:flex">
+                {{-- Op mobiel ook twee knoppen: wie al een account heeft hoort niet eerst langs het registratieformulier te moeten. --}}
+                <a href="{{ route('login') }}" class="flex h-9 items-center whitespace-nowrap rounded-full border border-prussian-blue/20 px-3 text-sm font-semibold text-prussian-blue transition hover:bg-prussian-blue/5 sm:px-4">
                     {{ __('nav.login') }}
                 </a>
-                <a href="{{ route('register') }}" class="flex h-9 items-center gap-2 rounded-full bg-ruby-red px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90">
-                    <i class="fa-solid fa-user fa-sm"></i> <span class="sm:hidden">{{ __('nav.login_register') }}</span><span class="hidden sm:inline">{{ __('nav.register') }}</span>
+                <a href="{{ route('register') }}" class="flex h-9 items-center gap-2 whitespace-nowrap rounded-full bg-ruby-red px-3 text-sm font-semibold text-white shadow-sm transition hover:bg-ruby-red/90 sm:px-4">
+                    <i class="fa-solid fa-user fa-sm"></i> {{ __('nav.register') }}
                 </a>
             @endauth
 

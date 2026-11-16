@@ -110,12 +110,13 @@
 
         <div data-wizard-step data-step-title="{{ __('host.wizard.steps.pricing') }}" class="mt-4 hidden rounded-2xl border border-prussian-blue/10 bg-white p-6 sm:p-8">
             <h2 class="font-bold text-prussian-blue">{{ __('host.wizard.steps.pricing') }}</h2>
+            <x-price-basis default="excl" />
             <div class="mt-5 grid gap-5 sm:grid-cols-3">
                 <div>
                     <label for="hourly_rate" class="{{ $label }}">{{ __('host.rooms.fields.hourly_rate') }}</label>
                     <div class="relative">
                         <span class="pointer-events-none absolute left-4 top-1/2 mt-1 -translate-y-1/2 text-sm text-prussian-blue/50">&euro;</span>
-                        <input id="hourly_rate" type="number" name="hourly_rate" step="0.50" min="1" max="1000" value="{{ old('hourly_rate') }}" class="{{ $field }} pl-9" required>
+                        <input id="hourly_rate" type="number" name="hourly_rate" step="0.01" data-price min="1" max="1000" value="{{ old('hourly_rate') }}" class="{{ $field }} pl-9" required>
                     </div>
                     <x-input-error field="hourly_rate" />
                 </div>
@@ -153,7 +154,7 @@
                     <label for="engineer_rate" class="{{ $label }}">{{ __('host.rooms.fields.engineer_rate') }}</label>
                     <div class="mt-2 flex items-center gap-2">
                         <span class="text-sm text-prussian-blue/50">&euro;</span>
-                        <input id="engineer_rate" type="number" name="engineer_rate" min="1" max="500" step="0.50" value="{{ old('engineer_rate') }}" class="{{ $field }} !mt-0 max-w-40">
+                        <input id="engineer_rate" type="number" name="engineer_rate" min="1" max="500" step="0.01" data-price value="{{ old('engineer_rate') }}" class="{{ $field }} !mt-0 max-w-40">
                         <span class="text-sm text-prussian-blue/50">{{ __('host.rooms.per_hour') }}</span>
                     </div>
                     <x-input-error field="engineer_rate" />

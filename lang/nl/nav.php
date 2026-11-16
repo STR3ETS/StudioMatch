@@ -11,6 +11,5 @@ return [
     'account' => 'Account',
     'login' => 'Log in',
     'register' => 'Registreer',
-    'login_register' => 'Log in / Registreer',
     'dashboard' => 'Dashboard',
 ];

@@ -142,6 +142,38 @@ class StripeTest extends TestCase
         $this->assertStringNotContainsString(__('dashboard.toast.error_text'), $html);
     }
 
+    public function test_a_connected_host_gets_a_shortcut_to_their_stripe_dashboard(): void
+    {
+        $this->hostProfile();
+        $this->host->hostProfile->update(['stripe_account_id' => 'acct_test123']);
+        config(['services.stripe.secret' => '']);
+
+        $this->actingAs($this->host->fresh())
+            ->get('/dashboard/verhuurder')
+            ->assertOk()
+            ->assertSee(route('host.stripe.dashboard'), false)
+            ->assertSee(__('host.nav.stripe_dashboard'));
+
+        // Zonder werkende sleutel toch naar Stripe, via de algemene inlogpagina.
+        $this->actingAs($this->host->fresh())
+            ->get('/dashboard/verhuurder/uitbetalingen/stripe-dashboard')
+            ->assertRedirect(StripeService::EXPRESS_LOGIN_URL);
+    }
+
+    public function test_a_host_without_stripe_account_has_no_shortcut(): void
+    {
+        $this->hostProfile();
+
+        $this->actingAs($this->host->fresh())
+            ->get('/dashboard/verhuurder')
+            ->assertOk()
+            ->assertDontSee(route('host.stripe.dashboard'), false);
+
+        $this->actingAs($this->host->fresh())
+            ->get('/dashboard/verhuurder/uitbetalingen/stripe-dashboard')
+            ->assertRedirect(route('host.stripe.show'));
+    }
+
     public function test_host_sees_stripe_page_in_simulation_mode(): void
     {
         $this->hostProfile();

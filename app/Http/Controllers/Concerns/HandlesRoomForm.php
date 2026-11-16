@@ -24,6 +24,7 @@ trait HandlesRoomForm
             'type' => ['required', Rule::enum(RoomType::class)],
             'types' => ['nullable', 'array'],
             'types.*' => [Rule::enum(RoomType::class)],
+            'price_basis' => ['nullable', Rule::in(['incl', 'excl'])],
             'hourly_rate' => ['required', 'numeric', 'min:1', 'max:1000'],
             'min_hours' => ['required', 'integer', 'min:2', 'max:8'],
             'day_rate' => ['nullable', 'numeric', 'min:1', 'max:10000'],
@@ -55,12 +56,23 @@ trait HandlesRoomForm
         // De aangevinkte categorieen, met de hoofdcategorie er altijd bij.
         $validated['types'] = array_values(array_unique([$validated['type'], ...($validated['types'] ?? [])]));
 
-        $validated['hourly_rate_cents'] = (int) round($validated['hourly_rate'] * 100);
+        /*
+         * Prijzen staan opgeslagen en op de pagina inclusief btw. Veel studio's rekenen
+         * exclusief; wie btw-plichtig is mag zo invullen en dan tellen wij de btw erbij.
+         * Voor wie niet btw-plichtig is bestaat er geen btw en blijft het bedrag gelijk.
+         */
+        $exclusive = ($validated['price_basis'] ?? 'incl') === 'excl'
+            && (bool) $request->user()->hostProfile?->btw_plichtig;
+        $factor = $exclusive ? 1 + config('studio.vat_percent') / 100 : 1;
+        $toCents = fn ($euros) => (int) round($euros * $factor * 100);
+        unset($validated['price_basis']);
+
+        $validated['hourly_rate_cents'] = $toCents($validated['hourly_rate']);
         unset($validated['hourly_rate']);
 
         // Zonder dagtarief blijft de ruimte alleen per uur boekbaar.
         $validated['day_rate_cents'] = isset($validated['day_rate']) && $validated['day_rate'] !== null
-            ? (int) round($validated['day_rate'] * 100)
+            ? $toCents($validated['day_rate'])
             : null;
         $validated['min_days'] = (int) ($validated['min_days'] ?? 1);
         unset($validated['day_rate']);
@@ -68,15 +80,15 @@ trait HandlesRoomForm
         // Afwijkende dagtarieven per weekdag, bijvoorbeeld een hoger weekendtarief.
         $dayRates = collect($validated['day_rates'] ?? [])
             ->filter(fn ($rate) => $rate !== null && $rate !== '')
-            ->mapWithKeys(fn ($rate, $weekday) => [(int) $weekday => (int) round($rate * 100)])
+            ->mapWithKeys(fn ($rate, $weekday) => [(int) $weekday => $toCents($rate)])
             ->all();
         unset($validated['day_rates']);
 
         $option = $validated['engineer_option'];
         $validated['engineer_included'] = $option === 'included';
-        $validated['engineer_rate_cents'] = $option === 'optional' ? (int) round($validated['engineer_rate'] * 100) : null;
+        $validated['engineer_rate_cents'] = $option === 'optional' ? $toCents($validated['engineer_rate']) : null;
         $validated['engineer_day_rate_cents'] = $option === 'optional' && ! empty($validated['engineer_day_rate'])
-            ? (int) round($validated['engineer_day_rate'] * 100)
+            ? $toCents($validated['engineer_day_rate'])
             : null;
         unset($validated['engineer_option'], $validated['engineer_rate'], $validated['engineer_day_rate']);
 

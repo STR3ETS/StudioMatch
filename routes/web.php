@@ -185,6 +185,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/uitbetalingen', [HostStripeController::class, 'show'])->name('host.stripe.show');
         Route::post('/uitbetalingen/onboarding', [HostStripeController::class, 'onboard'])->name('host.stripe.onboard');
         Route::get('/uitbetalingen/terug', [HostStripeController::class, 'returned'])->name('host.stripe.return');
+        Route::get('/uitbetalingen/stripe-dashboard', [HostStripeController::class, 'dashboard'])->name('host.stripe.dashboard');
 
         Route::get('/beschikbaarheid', [AvailabilityController::class, 'index'])->name('host.availability.index');
         Route::get('/beschikbaarheid/{room}', [AvailabilityController::class, 'edit'])->name('host.availability.edit');
