@@ -13,7 +13,6 @@ return [
         'invoices' => 'Facturen',
         'damage' => 'Schade melden',
         'stripe' => 'Stripe & uitbetalingen',
-        'stripe_dashboard' => 'Naar mijn Stripe',
         'account' => 'Account',
     ],
 
@@ -215,7 +214,7 @@ return [
         'expected' => 'Verwacht (komende sessies)',
         'total' => 'Totale omzet',
         'on_hold' => 'Uitbetaling gepauzeerd',
-        'payout_note' => 'Uitbetalingen lopen automatisch via Stripe en worden vrijgegeven op de starttijd + 24 uur, zodra het meldvenster is gesloten.',
+        'payout_note' => 'Het verhuurdersbedrag wordt 24 uur na de starttijd vrijgegeven via Stripe. De bijschrijving op je bankrekening duurt daarna meestal enkele werkdagen.',
         'payouts_title' => 'Uitbetalingsspecificatie',
         'payouts_empty' => 'Nog geen uitbetalingen. Na elke afgeronde sessie zie je hier het bedrag en de status.',
         'col_session' => 'Ruimte',
@@ -253,7 +252,7 @@ return [
         'dashboard_text' => 'In je eigen Stripe-dashboard zie je je inkomsten, uitbetalingen naar je bankrekening en je gegevens. Het opent in een nieuw tabblad.',
         'active_title' => 'Uitbetalingen actief',
         'active_text' => 'Je Stripe-account is gekoppeld en geverifieerd. Uitbetalingen gaan vanaf nu automatisch.',
-        'payout_note' => 'De huur van een sessie wordt 24 uur na de starttijd automatisch naar je Stripe-account overgemaakt, zodra het meldvenster is gesloten.',
+        'payout_note' => 'Het verhuurdersbedrag wordt 24 uur na de starttijd vrijgegeven via Stripe. De bijschrijving op je bankrekening duurt daarna meestal enkele werkdagen.',
     ],
 
     'bookings' => [

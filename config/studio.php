@@ -60,4 +60,12 @@ return [
         'Ableton',
         'Cubase',
     ],
+
+    // Zonder de volg- en deelcodes die in gedeelde links meekomen.
+    'socials' => [
+        ['icon' => 'fa-instagram', 'label' => 'Instagram', 'url' => 'https://www.instagram.com/studiomatch.nl/'],
+        ['icon' => 'fa-tiktok', 'label' => 'TikTok', 'url' => 'https://www.tiktok.com/@studiomatchnl'],
+        ['icon' => 'fa-facebook-f', 'label' => 'Facebook', 'url' => 'https://www.facebook.com/share/1FxVi6DJRn/'],
+        ['icon' => 'fa-linkedin-in', 'label' => 'LinkedIn', 'url' => 'https://www.linkedin.com/company/studiomatchnl/'],
+    ],
 ];

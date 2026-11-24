@@ -140,7 +140,7 @@ return [
         'title' => 'Frequently asked questions',
         'items' => [
             ['q' => 'What does it cost to join?', 'a' => 'Nothing. Signing up is free and there are no subscription or setup fees. The platform service fee is charged to the artist at booking. You simply receive your full hourly rate.'],
-            ['q' => 'When do I get paid?', 'a' => 'Payouts run through Stripe Connect and are released shortly after the session, once the dispute window has passed.'],
+            ['q' => 'When do I get paid?', 'a' => 'The host amount is released through Stripe 24 hours after the start time, once the reporting window has closed. Stripe then processes the payout to your bank account. Allow a few business days for processing.'],
             ['q' => 'Do I have to rent exclusively through StudioMatch?', 'a' => "No. You're free to keep renting your space through your own channels too."],
             ['q' => 'Will I have to manage my calendar twice?', 'a' => 'No. You manage your availability entirely in StudioMatch. Booked times automatically disappear from search results.'],
             ['q' => 'What about VAT and invoices?', 'a' => 'The platform automatically generates the correct invoices based on your VAT status. You never have to do it manually.'],

@@ -18,6 +18,9 @@ from collections import Counter
 
 import pymupdf
 
+# "8.8 Uitbetalingen ..." of "10.1 Een Huurder ...": het begin van een artikel.
+ARTICLE = re.compile(r"^\d{1,2}\.\d{1,2}\s")
+
 BULLETS = ("", "•", "", "●", "▪")
 
 
@@ -48,6 +51,15 @@ def main() -> int:
 
         if not text:
             continue
+
+        # Paginanummers verschillen per pagina en vallen dus niet onder de herhaalde regels.
+        if is_page_number(line):
+            continue
+
+        # Een nieuw artikel begint altijd een eigen alinea, ook als het in de PDF in
+        # hetzelfde tekstblok staat als het opsommingspunt ervoor.
+        if pending_list and ARTICLE.match(text):
+            flush(blocks, pending_list, state)
 
         # De documenttitel staat al als kop boven de pagina.
         if line["size"] >= body_size * 2:
@@ -272,6 +284,13 @@ def repeating_lines(lines, pages: int) -> set:
     return {key for key, found in seen.items() if len(found) >= 2}
 
 
+def is_page_number(line) -> bool:
+    margin = line["height"] * 0.09
+    in_margin = line["y"] < margin or line["y"] > line["height"] - margin
+
+    return in_margin and line["nkey"].isdigit()
+
+
 def is_bullet(line) -> bool:
     if any(line["text"].lstrip().startswith(bullet) for bullet in BULLETS):
         return True
@@ -347,12 +366,36 @@ def merge_lines(blocks, margin=0.0) -> list:
             merged.append(strip_fonts(block))
             continue
 
-        if merged and merged[-1].get("block") == block["block"] and merged[-1].get("type") in ("p", "callout"):
+        text = "".join(run.get("text", "") for run in block["runs"]).strip()
+        before = "".join(run.get("text", "") for run in merged[-1].get("runs", [])).rstrip() if merged else ""
+        same_block = merged and merged[-1].get("block") == block["block"]
+
+        # Een alinea die onderaan de pagina halverwege een zin afbreekt, loopt op de
+        # volgende pagina door in een nieuw tekstblok.
+        continues_on_next_page = (
+            merged
+            and not same_block
+            and merged[-1].get("type") == "p"
+            and merged[-1].get("block", "").split("-")[0] != block["block"].split("-")[0]
+            and before
+            and before[-1] not in ".!?:;"
+            and text[:1].islower()
+        )
+
+        if (same_block and merged[-1].get("type") in ("p", "callout")) or continues_on_next_page:
             # Bleef er meer ruimte over dan het volgende woord nodig had? Dan stond daar een enter.
             gap = margin - previous_end if previous_end is not None else 0.0
-            hard_break = gap > 15 and gap > lead_width(block) * 1.15
+            hard_break = not continues_on_next_page and gap > 15 and gap > lead_width(block) * 1.15
 
-            merged[-1]["runs"].append({"br": True} if hard_break else {"text": " ", "bold": False})
+            # "reverse-" aan het eind van de regel en "engineeren" op de volgende: één woord.
+            hyphenated = re.search(r"[a-zà-ÿ]-$", before) and text[:1].islower()
+
+            if hard_break:
+                merged[-1]["runs"].append({"br": True})
+            elif not hyphenated:
+                merged[-1]["runs"].append({"text": " ", "bold": False})
+
+            merged[-1]["block"] = block["block"]
             merged[-1]["runs"].extend(clean_runs(block["runs"]))
             previous_end = block.get("x1")
             continue
@@ -374,7 +417,9 @@ def merge_lines(blocks, margin=0.0) -> list:
 
 def clean_runs(runs) -> list:
     return [
-        {"br": True} if run.get("br") else {"text": run["text"], "bold": run["bold"]}
+        # Een harde spatie houdt de hele regel bij elkaar, wat op mobiel buiten beeld
+        # loopt; het zachte afbreekteken staat in deze PDF's voor een gewoon streepje.
+        {"br": True} if run.get("br") else {"text": run["text"].replace("\xa0", " ").replace("\xad", "-"), "bold": run["bold"]}
         for run in runs
     ]
 

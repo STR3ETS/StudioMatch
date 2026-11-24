@@ -173,8 +173,7 @@
 </div>
 
 <h3>10.1 Account verwijderen</h3>
-<p>Wanneer een account wordt verwijderd, eindigt de normale toegang tot het account. Accountgegevens, advertenties, studio’s, roosters, foto’s en andere gegevens die niet meer nodig zijn worden verwijderd of waar passend</p>
-<p>geanonimiseerd. Historische boekings-, factuur-, transactie- en fiscale gegevens worden technisch losgekoppeld van het actieve account en alleen geanonimiseerd voor zover dit verenigbaar is met fiscale bewaarplichten, DAC7, betalingsafhandeling en de behandeling van geschillen of claims.</p>
+<p>Wanneer een account wordt verwijderd, eindigt de normale toegang tot het account. Accountgegevens, advertenties, studio’s, roosters, foto’s en andere gegevens die niet meer nodig zijn worden verwijderd of waar passend geanonimiseerd. Historische boekings-, factuur-, transactie- en fiscale gegevens worden technisch losgekoppeld van het actieve account en alleen geanonimiseerd voor zover dit verenigbaar is met fiscale bewaarplichten, DAC7, betalingsafhandeling en de behandeling van geschillen of claims.</p>
 <p>Gegevens die wettelijk in identificeerbare vorm moeten worden bewaard, blijven gedurende de toepasselijke termijn bewaard. Verwijdering van een account betekent daarom niet dat elk gegeven onmiddellijk uit alle administratieve systemen kan worden gewist.</p>
 <h2>11. DAC7 en fiscale rapportage</h2>
 <p>StudioMatch kan als platformexploitant wettelijk verplicht zijn gegevens over verhuurders en relevante activiteiten te verzamelen, te controleren, te bewaren en aan de Belastingdienst of andere bevoegde belastingautoriteiten te rapporteren. Dit kan onder meer gelden voor verhuur van onroerend goed en persoonlijke diensten, zoals een via de verhuurder aangeboden engineer.</p>

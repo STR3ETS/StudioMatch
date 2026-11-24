@@ -48,8 +48,7 @@
 <p>Foto’s, teksten, logo’s en andere content van gebruikers kunnen eigendom zijn van de betreffende gebruiker of een andere rechthebbende. Publicatie op het Platform betekent niet dat derden deze content vrij mogen kopiëren, hergebruiken, scrapen, publiceren of commercieel exploiteren.</p>
 <p>Voor toegestane en verboden vormen van gebruik van het Platform en gebruikerscontent gelden de Algemene Voorwaarden.</p>
 <h2>13. Geen professioneel advies</h2>
-<p>Informatie op StudioMatch over boekingen, overeenkomsten, betalingen, belastingen, DAC7, verzekeringen, apparatuur, akoestiek, veiligheid, vergunningen, auteursrechten of andere onderwerpen is algemeen van aard. Deze</p>
-<p>informatie vormt geen juridisch, fiscaal, financieel, verzekerings-, technisch, bouwkundig of ander professioneel advies en is niet toegespitst op de individuele situatie van een gebruiker.</p>
+<p>Informatie op StudioMatch over boekingen, overeenkomsten, betalingen, belastingen, DAC7, verzekeringen, apparatuur, akoestiek, veiligheid, vergunningen, auteursrechten of andere onderwerpen is algemeen van aard. Deze informatie vormt geen juridisch, fiscaal, financieel, verzekerings-, technisch, bouwkundig of ander professioneel advies en is niet toegespitst op de individuele situatie van een gebruiker.</p>
 <p>Gebruikers mogen belangrijke juridische, fiscale, veiligheids- of zakelijke beslissingen niet uitsluitend baseren op algemene informatie op het Platform wanneer voor hun situatie specialistisch advies redelijkerwijs aangewezen is.</p>
 <h2>14. Aansprakelijkheid</h2>
 <p>De aansprakelijkheid van StudioMatch wordt geregeld in de Algemene Voorwaarden en het toepasselijke recht. Deze disclaimer creëert geen ruimere aansprakelijkheid, garantie of resultaatsverplichting dan daaruit volgt.</p>

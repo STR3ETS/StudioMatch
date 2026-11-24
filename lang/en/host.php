@@ -13,7 +13,6 @@ return [
         'invoices' => 'Invoices',
         'damage' => 'Report damage',
         'stripe' => 'Stripe & payouts',
-        'stripe_dashboard' => 'Go to my Stripe',
         'account' => 'Account',
     ],
 
@@ -215,7 +214,7 @@ return [
         'expected' => 'Expected (upcoming sessions)',
         'total' => 'Total revenue',
         'on_hold' => 'Payout paused',
-        'payout_note' => 'Payouts run automatically through Stripe and are released at start time + 24 hours, once the report window has closed.',
+        'payout_note' => 'The host amount is released through Stripe 24 hours after the start time. It then usually takes a few business days to reach your bank account.',
         'payouts_title' => 'Payout specification',
         'payouts_empty' => 'No payouts yet. After every completed session you will see the amount and status here.',
         'col_session' => 'Room',
@@ -253,7 +252,7 @@ return [
         'dashboard_text' => 'Your own Stripe dashboard shows your earnings, payouts to your bank account and your details. It opens in a new tab.',
         'active_title' => 'Payouts active',
         'active_text' => 'Your Stripe account is connected and verified. Payouts now run automatically.',
-        'payout_note' => 'The rent for a session is transferred to your Stripe account automatically 24 hours after the start time, once the report window has closed.',
+        'payout_note' => 'The host amount is released through Stripe 24 hours after the start time. It then usually takes a few business days to reach your bank account.',
     ],
 
     'bookings' => [

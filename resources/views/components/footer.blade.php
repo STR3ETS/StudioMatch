@@ -1,10 +1,5 @@
 @php
-    $socials = [
-        ['icon' => 'fa-instagram', 'label' => 'Instagram'],
-        ['icon' => 'fa-tiktok', 'label' => 'TikTok'],
-        ['icon' => 'fa-facebook-f', 'label' => 'Facebook'],
-        ['icon' => 'fa-linkedin-in', 'label' => 'LinkedIn'],
-    ];
+    $socials = config('studio.socials');
 @endphp
 
 <footer class="bg-ruby-red text-white">
@@ -16,7 +11,7 @@
                 <p class="mt-2 max-w-xs text-sm leading-relaxed text-white/70">{{ __('footer.description') }}</p>
                 <div class="mt-6 flex items-center gap-3">
                     @foreach ($socials as $social)
-                        <a href="#" aria-label="{{ $social['label'] }}"
+                        <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['label'] }}"
                            class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:-translate-y-0.5 hover:bg-white/20 hover:text-white">
                             <i class="fa-brands {{ $social['icon'] }} fa-sm"></i>
                         </a>

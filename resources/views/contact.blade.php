@@ -9,12 +9,7 @@
             'problem' => route('how'),
         ];
 
-        $socials = [
-            ['icon' => 'fa-instagram', 'label' => 'Instagram'],
-            ['icon' => 'fa-tiktok', 'label' => 'TikTok'],
-            ['icon' => 'fa-facebook-f', 'label' => 'Facebook'],
-            ['icon' => 'fa-linkedin-in', 'label' => 'LinkedIn'],
-        ];
+        $socials = config('studio.socials');
     @endphp
 
     <x-hero compact>
@@ -110,7 +105,7 @@
                             <p class="text-xs font-bold uppercase tracking-wide text-white/50">{{ __('contact.info.socials_title') }}</p>
                             <div class="mt-3 flex items-center gap-3">
                                 @foreach ($socials as $social)
-                                    <a href="#" aria-label="{{ $social['label'] }}" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:-translate-y-0.5 hover:bg-white/20 hover:text-white">
+                                    <a href="{{ $social['url'] }}" target="_blank" rel="noopener" aria-label="{{ $social['label'] }}" class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:-translate-y-0.5 hover:bg-white/20 hover:text-white">
                                         <i class="fa-brands {{ $social['icon'] }} fa-sm"></i>
                                     </a>
                                 @endforeach

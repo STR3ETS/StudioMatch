@@ -142,17 +142,17 @@ class StripeTest extends TestCase
         $this->assertStringNotContainsString(__('dashboard.toast.error_text'), $html);
     }
 
-    public function test_a_connected_host_gets_a_shortcut_to_their_stripe_dashboard(): void
+    public function test_a_connected_host_reaches_their_stripe_dashboard_from_the_stripe_page_only(): void
     {
         $this->hostProfile();
         $this->host->hostProfile->update(['stripe_account_id' => 'acct_test123']);
         config(['services.stripe.secret' => '']);
 
+        // Feedback: een los menu-item "Naar mijn Stripe" was dubbelop naast "Stripe & uitbetalingen".
         $this->actingAs($this->host->fresh())
             ->get('/dashboard/verhuurder')
             ->assertOk()
-            ->assertSee(route('host.stripe.dashboard'), false)
-            ->assertSee(__('host.nav.stripe_dashboard'));
+            ->assertDontSee(route('host.stripe.dashboard'), false);
 
         // Zonder werkende sleutel toch naar Stripe, via de algemene inlogpagina.
         $this->actingAs($this->host->fresh())

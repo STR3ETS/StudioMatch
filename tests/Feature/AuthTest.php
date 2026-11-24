@@ -80,10 +80,18 @@ class AuthTest extends TestCase
         foreach (['/', '/registreren', '/studios', '/contact'] as $path) {
             $html = $this->get($path)->assertOk()->getContent();
 
-            // Social media wacht nog op echte accounts; die staan bewust leeg.
-            $dead = substr_count($html, 'href="#"') - substr_count($html, 'href="#" aria-label=');
+            $this->assertSame(0, substr_count($html, 'href="#"'), $path . ' heeft nog een link die nergens heen gaat.');
+        }
+    }
 
-            $this->assertSame(0, $dead, $path . ' heeft nog een link die nergens heen gaat.');
+    public function test_the_social_media_icons_link_to_the_real_accounts(): void
+    {
+        foreach (['/', '/contact'] as $path) {
+            $html = $this->get($path)->assertOk()->getContent();
+
+            foreach (config('studio.socials') as $social) {
+                $this->assertStringContainsString('href="' . $social['url'] . '" target="_blank"', $html, $path . ' mist ' . $social['label']);
+            }
         }
     }
 

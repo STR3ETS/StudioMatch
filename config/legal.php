@@ -26,8 +26,8 @@ return array (
   ),
   'terms' => 
   array (
-    'updated' => '22 september 2026',
+    'updated' => '23 november 2026',
     'pdf' => 'documenten/algemene-voorwaarden.pdf',
-    'source' => 'Algemene_Voorwaarden_StudioMatch_2026_v4.docx',
+    'source' => 'Algemene_Voorwaarden_StudioMatch_2026_v5.pdf',
   ),
 );
